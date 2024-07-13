@@ -1,12 +1,112 @@
-body {
-  margin: 0;
-  background: linear-gradient(180deg, rgb(117, 81, 194), rgb(255, 255, 255));
-  display: flex;
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  height: 100vh;
-  width: 100vw;
-  justify-content: center;
-  align-items: center;
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0px;
+    }
+    body {
+   	background: linear-gradient(180deg, rgb(117, 81, 194), rgb(255, 255, 255));
+  	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+      	transform: perspective(1400px) matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+      	transform-style: preserve-3d;
+    }
+    body * {
+      transform-style: preserve-3d;
+    }
+    .gwd-p-1l8f {
+      text-align: center;
+      font-weight: bold;
+      font-size: 30px;
+      position: relative;
+    }
+    .rightText {
+      float: right;
+      font-size: 17px;
+    }
+    .leftText {
+      float: left;
+      font-size: 17px;
+      width: 50px;
+      height: 40px;
+    }
+    #nav {
+      background-color: rgb(51, 74, 148);
+      height: 300px;
+      width: 150px;
+      padding: 5px;
+      position: absolute;
+      top: 100%;
+    }
+    ul {
+      list-style-type: none;
+      margin: 0px;
+      padding: 0px;
+      width: 100%;
+      background-color: rgb(51, 74, 148);
+    }
+    li {
+      position: relative;
+    }
+    li a {
+      font-family: Calibri;
+      font-size: 14pt;
+      display: block;
+      color: rgb(255, 255, 255);
+      padding: 8px 0px 8px 16px;
+      text-decoration: none;
+    }
+    li a:visited {
+      background-color: rgb(76, 175, 80);
+      color: rgb(255, 255, 255);
+    }
+    li:hover > a {
+      background-color: rgb(120, 110, 212);
+      color: rgb(0, 0, 0);
+    }
+    ul ul{
+  position:absolute;
+  left:0%;
+  top:0;
+  width:100%;
+  visibility:hidden;
+  opacity:0;
+  transition: transform 0.2s;
+  transform: translateX(50px);
+}
+
+    li:hover > ul {
+  left:100%;
+  visibility:visible;
+  opacity:1;
+  transform: translateX(0px);
+}
+
+/* Style the navigation menu */
+.topnav {
+  overflow: hidden;
+  background-color: #333;
+  position: relative;
+  top: 0;
+  width:100%;
+}
+
+/* Style navigation menu links */
+.topnav a {
+  color: white;
+  text-decoration: none;
+  font-size: 17px;
+  display: block;
+}
+
+/* Add a grey background color on mouse-over */
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Style the active link (or home/logo) */
+.active {
+  background-color: #04AA6D;
+  color: white;
 }
 
 main {
@@ -15,51 +115,6 @@ main {
   align-items: stretch;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-  color: white;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-ul {
-  padding-inline-start: 0;
-  margin-block-start: 0;
-  margin-block-end: 0;
-  list-style-type: none;
-  display: flex;
-  flex-direction: column;
-  margin: 8px 0;
-  border: 1px solid black;
-  gap: 1px;
-  background-color: black;
-  border-radius: 8px;
-  overflow: auto;
-}
-
-li {
-  background-color: white;
-  padding: 8px;
-}
-
-li:hover {
-  background: #dadbf9;
-}
-
-a {
-  font-weight: 800;
+font-weight: 800;
   text-decoration: none;
 }

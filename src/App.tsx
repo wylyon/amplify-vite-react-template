@@ -24,29 +24,54 @@ function App() {
   function deleteTodo(id: string) {
     client.models.Todo.delete({ id })
   }
+
   
   return (
         
     <Authenticator>
       {({ signOut, user }) => (
       <main>
-      <h1>{user?.signInDetails?.loginId}'s todos</h1>
-      <button onClick={createTodo}>+ new</button>
-      <ul>
-        {todos.map(todo => <li
-          onClick={() => deleteTodo(todo.id)}
-          key={todo.id}>
-          {todo.content}
-        </li>)}                
-      </ul>
-      <div>
-        🥳 App successfully hosted. Try creating a new todo.
-        <br />
-        <a href="https://docs.amplify.aws/react/start/quickstart/#make-frontend-updates">
-          Review next step of this tutorial.
-        </a>
-      </div>
-        <button onClick={signOut}>Sign out</button>
+  	<div id="nav">
+    	  <ul>
+      	    <li><a href="index.html">Home</a></li>
+      	    <li><a href="about.html">Report</a></li>
+      	    <li><a href="products.html">SetUp +</a>
+		<ul>
+		  <li><a href="#">Company</a></li>
+		  <li><a href="#">Division</a></li>
+		  <li><a href="#">Users +</a>
+		    <ul>
+			<li><a href="#">Admin</a></li>
+			<li><a href="#">Customer</a></li>
+		    </ul>
+		  </li>
+		  <li><a href="#">Template</a></li>
+		</ul>
+	    </li>
+	    <li><a href="about.html">Update +</a>
+		<ul>
+		  <li><a href="#">Company</a></li>
+		  <li><a href="#">Division</a></li>
+		  <li><a href="#">Users +</a>
+		    <ul>
+			<li><a href="#">Admin</a></li>
+			<li><a href="#">Customer</a></li>
+		    </ul>
+		  </li>
+		  <li><a href="#">Template</a></li>
+		</ul>
+	    </li>
+   	  </ul>
+  	</div>
+	<div class="topnav">
+  	  <a href="#home" class="active"><img src={"/public/log.png"} class="leftText" alt="My Image" />
+	    <div class="rightText">
+		({user?.signInDetails?.loginId})
+		<button type="button" onClick={signOut}>Sign Off</button>
+	    </div>
+	  </a>
+	</div>
+	<p class="gwd-p-1l8f">Log/Report Capture Tool</p>
       </main>
       )}
     </Authenticator>
