@@ -1,10 +1,8 @@
 
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
-import { useEffect, useState } from "react";
 
 function App() {
-  
   return (
         
     <Authenticator>
@@ -43,7 +41,7 @@ function App() {
    	  </ul>
   	</div>
 	<div class="topnav">
-  	  <a href="#home" class="active"><img src={"/public/log.png"} class="leftText" alt="My Image" />
+  	  <a href="#home" class="active"><img src="/public/log.png" class="leftText" alt="My Image" />
 	    <div class="rightText">
 		({user?.signInDetails?.loginId})
 		<button type="button" onClick={signOut}>Sign Off</button>
