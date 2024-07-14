@@ -41,12 +41,7 @@ function App() {
    	  </ul>
   	</div>
 	<div class="topnav">
-  	  <a href="#home" class="active"><img src="/public/log.png" class="leftText" alt="My Image" />
-	    <div class="rightText">
-		({user?.signInDetails?.loginId})
-		<button type="button" onClick={signOut}>Sign Off</button>
-	    </div>
-	  </a>
+  	  <a href="#home" class="active"><img src="/public/log.png" class="leftText" alt="My Image" /><p class="rightText">({user?.signInDetails?.loginId})</p><button class="rightText" type="button" onClick={signOut}>Sign Off</button></a>
 	</div>
 	<p class="gwd-p-1l8f">Log/Report Capture Tool</p>
       </main>
