@@ -2,7 +2,6 @@
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { useEffect, useState } from "react";
-import { generateClient } from "aws-amplify/data";
 
 function App() {
   
