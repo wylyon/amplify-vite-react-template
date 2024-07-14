@@ -40,14 +40,7 @@ function App() {
 	    </li>
    	  </ul>
   	</div>
-	<div class="topnav">
-  	  <a href="#home" class="active"><img src="/public/log.png" class="leftText" alt="My Image" />
-	    <div class="rightText">
-		( me )
-		<button type="button" onClick={signOut}>Sign Off</button>
-	    </div>
-	  </a>
-	</div>
+
 	<p class="gwd-p-1l8f">Log/Report Capture Tool</p>
       </main>
       )}
