@@ -9,6 +9,7 @@ function App() {
     <Authenticator>
       {({ signOut, user }) => (
       <main>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
   	<div id="nav">
     	  <ul>
       	    <li><a href="index.html">Home</a></li>
@@ -42,10 +43,9 @@ function App() {
    	  </ul>
   	</div>
 	<div class="topnav">
-  	  <a href="#home" class="active"><img src="/public/log.png" class="leftText" alt="My Image" />
+  	  <a href="#home" class="active"><img src="./public/log.png" class="leftText" alt="My Image" />
 	    <div class="rightText">
-		({user?.signInDetails?.loginId})
-		<button onClick={signOut}>Sign Off</button>
+		({user?.signInDetails?.loginId}) <i className="fa fa-sign-out" style={{fontSize:24}}  onClick={signOut} />
 	    </div>
 	  </a>
 	</div>
