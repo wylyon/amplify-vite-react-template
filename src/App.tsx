@@ -43,7 +43,7 @@ function App() {
    	  </ul>
   	</div>
 	<div class="topnav">
-  	  <a href="#home" class="active"><img src="./images/log.png" class="leftText" alt="My Image" />
+  	  <a href="#home" class="active"><img src="images/log.png" class="leftText" alt="My Image" />
 	    <div class="rightText">
 		({user?.signInDetails?.loginId}) <i className="fa fa-sign-out" style={{fontSize:24}}  onClick={signOut} />
 	    </div>
