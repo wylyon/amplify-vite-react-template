@@ -2,6 +2,14 @@
 // @ts-nocheck
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
+
+const client = generateClient<Schema>();
+
+const fetchSettings = async () => {
+  const { data: settings, errors } = await client.models.Settings.list();
+};
 
 function App() {
   return (
