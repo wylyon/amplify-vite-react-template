@@ -1,5 +1,6 @@
 
 // @ts-nocheck
+import { useState, useEffect } from "react";
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { generateClient } from 'aws-amplify/data';
@@ -7,13 +8,26 @@ import type { Schema } from '../amplify/data/resource'; // Path to your backend 
 
 const client = generateClient<Schema>();
 
-const fetchSettings = async () => {
-  const { data: settings, errors } = await client.models.Settings.list();
-};
-
 function App() {
+
+  var disableMsg;
+  const [settings, setSettings] = useState<Schema["Settings"]["type"][]>([]);
+
+  useEffect(() => {
+    const sub = client.models.Settings.observeQuery().subscribe({
+      next: (data) => setSettings([...data.items]),
+    });
+    return () => sub.unsubscribe();
+  }, []);
+
+  function isAccessDisabled() {
+    var isDisabled = false;
+    {settings.map( setting => {isDisabled = setting.isDisabled; disableMsg = setting.content} )}
+    return isDisabled;
+  }
+
   return (
-     
+    isAccessDisabled() ? <main><h1>Access Disabled : {disableMsg}</h1></main> :
     <Authenticator>
       {({ signOut, user }) => (
       <main>
