@@ -28,7 +28,7 @@ function App() {
 
   return (
     isAccessDisabled() ? <main><h1>Access Disabled : {disableMsg}</h1></main> :
-    <Authenticator>
+    <Authenticator  hideSignUp socialProviders={['amazon', 'apple', 'facebook', 'google']}>
       {({ signOut, user }) => (
       <main>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
