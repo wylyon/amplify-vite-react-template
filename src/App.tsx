@@ -26,6 +26,10 @@ function App() {
     return isDisabled;
   }
 
+  function createDisableSetting() {
+    client.models.Settings.create({ content: "Site Down for Maintenance", isDisabled: true });
+  }  
+
   return (
     isAccessDisabled() ? <main><h1>Access Disabled : {disableMsg}</h1></main> :
     <Authenticator  hideSignUp socialProviders={['amazon', 'apple', 'facebook', 'google']}>
@@ -60,6 +64,11 @@ function App() {
 		    </ul>
 		  </li>
 		  <li><a href="#">Template</a></li>
+		</ul>
+	    </li>
+	    <li><a href="about.html">Settings +</a>
+		<ul>
+		  <li onClick={() => createDisableSetting()}><a href="#">Disable Website</a></li>
 		</ul>
 	    </li>
    	  </ul>
