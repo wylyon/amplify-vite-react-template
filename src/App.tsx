@@ -26,8 +26,18 @@ function App() {
     return isDisabled;
   }
 
+  function deleteEnableDisableSetting(id: string) {
+    client.models.Settings.delete({ id })
+  }
+
   function createDisableSetting() {
+    {settings.map( setting => {deleteEnableDisableSetting(setting.id)} )}
     client.models.Settings.create({ content: "Site Down for Maintenance", isDisabled: true });
+  }  
+
+  function createEnableSetting() {
+    {settings.map( setting => {deleteEnableDisableSetting(setting.id)} )}
+    client.models.Settings.create({ content: "Site Down for Maintenance", isDisabled: false });
   }  
 
   return (
@@ -69,6 +79,7 @@ function App() {
 	    <li><a href="about.html">Settings +</a>
 		<ul>
 		  <li onClick={() => createDisableSetting()}><a href="#">Disable Website</a></li>
+		  <li onClick={() => createEnableSetting()}><a href="#">Enable Website</a></li>
 		</ul>
 	    </li>
    	  </ul>
