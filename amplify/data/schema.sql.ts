@@ -124,7 +124,7 @@ export const schema = configure({
         question_type: a.enum([
             "photo",
             "dropdown",
-            "multiple dropdown",
+            "multiple_dropdown",
             "radiobox",
             "input",
             "text",
