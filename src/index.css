@@ -28,13 +28,26 @@
       width: 50px;
       height: 40px;
     }
+    .grid-container {
+      display: grid;
+      grid-template-columns: auto auto auto auto;
+      grid-gap: 20px;
+    }
+    .inputData {
+      background-color: lightblue;
+      width: 400px;
+      height: 300px;
+      padding: 10px;
+    }
+    .cancelButton {background-color: #f44336;
+      margin: 8px 0;
+      Padding: 10px;
+    } /* Red */ 
     #nav {
       background-color: rgb(51, 74, 148);
       height: 300px;
       width: 150px;
       padding: 5px;
-      position: absolute;
-      top: 100%;
     }
     ul {
       list-style-type: none;
