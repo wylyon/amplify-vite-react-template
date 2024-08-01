@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 import { useState, useEffect } from "react";
 import { generateClient } from 'aws-amplify/data';
@@ -58,8 +57,6 @@ export default function InputCompanyAdd(props) {
   }
 
   const updateCompany = async() => {
-    const now = new Date();
-    const currentDateTime = now.toLocaleString();
 
     await client.models.company.update({ 
 	id: props.updateFormData.id,
@@ -71,9 +68,7 @@ export default function InputCompanyAdd(props) {
 	state: formData.state,
 	zipcode: formData.zipcode,
 	ref_department: formData.ref_department,
-	notes: formData.notes,
-	created: now,
-	created_by: 0});
+	notes: formData.notes});
   }
 
   const handleSubmit = (e) => {
@@ -175,9 +170,9 @@ export default function InputCompanyAdd(props) {
 	 onChange={handleChange} 
 	/>
 	<div class="button-container">
-  	  <button type="submit" style={{ margin: '8px 0', padding: '10px' }}>{props.isAddMode || isGoAdd ? "Add" : "Update"}</button>
+  	  <button type="submit" style={{ margin: '8px 0', padding: '5px' }}>{props.isAddMode || isGoAdd ? "Add" : "Update"}</button>
 	  {!props.isAddMode && !isGoAdd ?  
-	    <button type="button" onClick={resetForm} style={{ margin: '8px 0', padding: '10px' }}>New</button> : null}
+	    <button type="button" onClick={resetForm} style={{ margin: '8px 0', padding: '5px' }}>New</button> : null}
 	  <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>
 	</div>
       </form>

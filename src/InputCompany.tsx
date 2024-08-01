@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 import { useState, useEffect, CSSProperties} from "react";
 import BeatLoader from 'react-spinners/BeatLoader';
@@ -23,6 +22,7 @@ export default function InputCompany(props) {
   const [isUpdateCustomer, setIsUpdateCustomer] = useState(false);
   const [isUpdateCustomer2, setIsUpdateCustomer2] = useState(false);
   const [rowCount, setRowCount] = useState(0);
+  const [filtered, setFiltered] = useState('');
 
   const client = generateClient<Schema>();
   const [company, setCompany] = useState<Schema["company"]["type"][]>([]);
@@ -66,9 +66,16 @@ export default function InputCompany(props) {
     setFormData(updateFormData);
   }
 
-  function handleOnDelete(id: string) {
-    client.models.company.delete({ id });
-    setRowCount(rowCount-1);
+  const filter = company.filter(comp => comp.name.includes(filtered));
+
+  const handleOnDelete = async(id, deactiveDate) => {
+    const now = new Date();
+    const currentDateTime = now.toLocaleString();
+    const isNull = (!deactiveDate);
+
+    await client.models.company.update({ 
+	id: id,
+	deactive_date: (isNull) ? now : null});
   }
 
   const handleOnCancel = (e) => {
@@ -84,6 +91,14 @@ export default function InputCompany(props) {
       setRowCount(company.length);
       setLoading(false);
     }
+  }
+
+  const handleChange = (e) => {
+    setFiltered(e.target.value);
+  };
+
+  const handleReset = (e) => {
+    setFiltered('');
   }
   
   let [loading, setLoading] = useState(true);
@@ -104,7 +119,14 @@ export default function InputCompany(props) {
   return (
     <div className="inputCustomerData">
       <h1 align="center">Company Maintenance</h1>
-      <p className="rowCountText">{rowCount} rows  <i className="fa fa-download" style={{fontSize:24}}  onClick={exportToExcel} /></p>
+      <p className="rowCountText">{rowCount} rows  <i className="fa fa-download" style={{fontSize:24}}  onClick={exportToExcel} />
+	<input
+          type="text"
+	  name="filter"
+	  placeholder="Filter Name Results"
+	  size="30"
+          value={filtered}
+	  onChange={handleChange}/><button onClick={handleReset}>Reset</button></p>
       <div className="showCustomerData">
       {(company.length > 0 && <BeatLoader
         color={color}
@@ -122,18 +144,19 @@ export default function InputCompany(props) {
 	      <th>Email</th>
 	      <th>Address</th>
 	      <th>City/State/Zipcode</th>
-	      <th className="colD">Delete</th>
+	      <th className="colD">DeActivate</th>
 	    </tr>
 	  </thead>
 	  <tbody>
-	  {company.map(comp => <tr
+	  {filter.map(comp => <tr
 	    key={comp.id}>
-	    <td><a href="#" onClick={() => setCurrent(comp)}>{comp.id}{setRowChange ()}</a></td>
+	    <td><a href="#" onClick={() => setCurrent(comp)}>{comp.id.substr(0,14) + '...'}{setRowChange ()}</a></td>
 	    <td>{comp.name}</td>
 	    <td>{comp.email}</td>
 	    <td>{comp.address1}</td>
 	    <td>{comp.city}, {comp.state} {comp.zipcode}</td>
-	    <td className="colD"><button className="cancelButton" onClick={() => handleOnDelete(comp.id)}>Delete</button></td>
+	    <td className="colD"><button className={(!comp.deactive_date) ? "cancelButton" : "activateButton"}
+		onClick={() => handleOnDelete(comp.id, comp.deactive_date)}>{(!comp.deactive_date) ? "DeActivate" : "Activate"}</button></td>
 	  </tr>)}
 	  </tbody>
 	</table>

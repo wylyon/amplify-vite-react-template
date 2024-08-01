@@ -67,6 +67,7 @@ export const schema = configure({
         zipcode: a.string().required(),
         ref_department: a.string(),
         notes: a.string(),
+        deactive_date: a.datetime(),
         created: a.datetime().required(),
         created_by: a.integer().required()
     }).identifier([
@@ -84,6 +85,7 @@ export const schema = configure({
         zipcode: a.string(),
         ref_department: a.string(),
         notes: a.string(),
+        deactive_date: a.datetime(),
         created: a.datetime().required(),
         created_by: a.integer().required()
     }).identifier([

@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 import { useState, useEffect, CSSProperties} from "react";
 import BeatLoader from 'react-spinners/BeatLoader';
@@ -63,9 +62,14 @@ export default function InputDivision(props) {
     setFormData(updateFormData);
   }
 
-  function handleOnDelete(id: string) {
-    client.models.division.delete({ id });
-    setRowCount(rowCount-1);
+  const handleOnDelete = async(id, deactiveDate) => {
+    const now = new Date();
+    const currentDateTime = now.toLocaleString();
+    const isNull = (!deactiveDate);
+
+    await client.models.division.update({ 
+	id: id,
+	deactive_date: (isNull) ? now : null});
   }
 
   const handleOnCancel = (e) => {
@@ -133,7 +137,8 @@ export default function InputDivision(props) {
 	    <td>{comp.email}</td>
 	    <td>{comp.address1}</td>
 	    <td>{comp.city}, {comp.state} {comp.zipcode}</td>
-	    <td className="colD"><button className="cancelButton" onClick={() => handleOnDelete(comp.id)}>Delete</button></td>
+	    <td className="colD"><button className={(!comp.deactive_date) ? "cancelButton" : "activateButton"}
+		onClick={() => handleOnDelete(comp.id, comp.deactive_date)}>{(!comp.deactive_date) ? "DeActivate" : "Activate"}</button></td>
 	  </tr>)}
 	  </tbody>
 	</table>

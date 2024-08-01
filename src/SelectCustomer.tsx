@@ -27,8 +27,8 @@ export default function SelectCustomer(props) {
       <label for="companyToUse"><b>Company:</b></label>
 	<select name="companyToUse" id="companyToUse" onChange={handleSelectChange}>
 	  <option value="All">All</option>
-	  {company.map(comp => <option
-	    value={comp.name + "|" + comp.id}>{comp.name}</option>)}
+	  {company.map(comp => (!comp.deactive_date) ? <option
+	    value={comp.name + "|" + comp.id}>{comp.name}</option> : null)}
 	</select>
     </div>
   );
