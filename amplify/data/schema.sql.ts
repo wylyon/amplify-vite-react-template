@@ -45,12 +45,67 @@ export const schema = configure({
         }
     }
 }).schema({
-    "admin": a.model({
-        id: a.string().required(),
-        username: a.string(),
-        email_address: a.string().required(),
-        company_id: a.string(),
-        active_date: a.date(),
+    "template": a.model({
+        id: a.integer().required(),
+        division_id: a.integer().required(),
+        title: a.string().required(),
+        description: a.string(),
+        pre_load_page_attributes: a.string(),
+        post_load_page_attributes: a.string(),
+        live_date: a.datetime(),
+        prod_date: a.datetime(),
+        notes: a.string(),
+        created: a.datetime().required(),
+        created_by: a.integer().required()
+    }).identifier([
+        "id"
+    ]),
+    "template_permissions": a.model({
+        id: a.integer().required(),
+        template_id: a.integer().required(),
+        user_id: a.integer().required(),
+        enabled_date: a.datetime(),
+        verified_date: a.datetime(),
+        created: a.datetime().required(),
+        created_by: a.integer().required()
+    }).identifier([
+        "id"
+    ]),
+    "question_result": a.model({
+        id: a.integer().required(),
+        template_question_id: a.integer().required(),
+        result_photo_value: a.string(),
+        result_option_value: a.string(),
+        result_date_value: a.datetime(),
+        gps_lat: a.float(),
+        gps_long: a.float(),
+        what2words: a.string(),
+        created: a.datetime().required(),
+        created_by: a.integer().required()
+    }).identifier([
+        "id"
+    ]),
+    "template_question": a.model({
+        id: a.integer().required(),
+        template_id: a.integer().required(),
+        question_order: a.integer(),
+        pre_load_attributes: a.string(),
+        title: a.string().required(),
+        description: a.string(),
+        question_type: a.enum([
+            "photo",
+            "dropdown",
+            "multiple_dropdown",
+            "radiobox",
+            "input",
+            "text",
+            "datepicker"
+        ]),
+        question_values: a.string(),
+        post_load_attributes: a.string(),
+        optional_flag: a.integer(),
+        actions_flag: a.integer(),
+        notes: a.string(),
         created: a.datetime().required(),
         created_by: a.integer().required()
     }).identifier([
@@ -91,72 +146,6 @@ export const schema = configure({
     }).identifier([
         "id"
     ]),
-    "question_result": a.model({
-        id: a.integer().required(),
-        template_question_id: a.integer().required(),
-        result_photo_value: a.string(),
-        result_option_value: a.string(),
-        result_date_value: a.datetime(),
-        gps_lat: a.float(),
-        gps_long: a.float(),
-        what2words: a.string(),
-        created: a.datetime().required(),
-        created_by: a.integer().required()
-    }).identifier([
-        "id"
-    ]),
-    "template": a.model({
-        id: a.integer().required(),
-        division_id: a.integer().required(),
-        title: a.string().required(),
-        description: a.string(),
-        pre_load_page_attributes: a.string(),
-        post_load_page_attributes: a.string(),
-        live_date: a.datetime(),
-        prod_date: a.datetime(),
-        notes: a.string(),
-        created: a.datetime().required(),
-        created_by: a.integer().required()
-    }).identifier([
-        "id"
-    ]),
-    "template_permissions": a.model({
-        id: a.integer().required(),
-        template_id: a.integer().required(),
-        user_id: a.integer().required(),
-        enabled_date: a.datetime(),
-        verified_date: a.datetime(),
-        created: a.datetime().required(),
-        created_by: a.integer().required()
-    }).identifier([
-        "id"
-    ]),
-    "template_question": a.model({
-        id: a.integer().required(),
-        template_id: a.integer().required(),
-        question_order: a.integer(),
-        pre_load_attributes: a.string(),
-        title: a.string().required(),
-        description: a.string(),
-        question_type: a.enum([
-            "photo",
-            "dropdown",
-            "multiple_dropdown",
-            "radiobox",
-            "input",
-            "text",
-            "datepicker"
-        ]),
-        question_values: a.string(),
-        post_load_attributes: a.string(),
-        optional_flag: a.integer(),
-        actions_flag: a.integer(),
-        notes: a.string(),
-        created: a.datetime().required(),
-        created_by: a.integer().required()
-    }).identifier([
-        "id"
-    ]),
     "user": a.model({
         id: a.string().required(),
         division_id: a.string().required(),
@@ -165,7 +154,24 @@ export const schema = configure({
         last_name: a.string().required(),
         middle_name: a.string(),
         active_date: a.date(),
+        deactive_date: a.datetime(),
         notes: a.string(),
+        created: a.datetime().required(),
+        created_by: a.integer().required()
+    }).identifier([
+        "id"
+    ]),
+    "admin": a.model({
+        id: a.string().required(),
+        username: a.string(),
+        email_address: a.string().required(),
+        company_id: a.string(),
+        company_name: a.string(),
+        first_name: a.string().required(),
+        last_name: a.string().required(),
+        middle_name: a.string(),
+        active_date: a.date(),
+        deactive_date: a.datetime(),
         created: a.datetime().required(),
         created_by: a.integer().required()
     }).identifier([

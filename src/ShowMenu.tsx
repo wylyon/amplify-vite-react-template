@@ -2,6 +2,7 @@
 // @ts-nocheck
 import { useState, useEffect } from "react";
 import InputSettings from '../src/InputSettings';
+import InputAdmin from '../src/InputAdmin';
 import InputCompany from '../src/InputCompany';
 import InputCustCompany from '../src/InputCustCompany';
 import SelectCustomer from '../src/SelectCustomer';
@@ -24,6 +25,16 @@ export default function ShowMenu(props) {
     ref_department: '',
     notes: '',
   });
+
+  const [selectedCompany, setSelectedCompany] = useState('');
+  const [selectedCompanyId, setSelectedCompanyId] = useState(props.selectedCompanyId);
+
+  const getCompanyById = async (companyId) => {
+    const { data: item, errors } = await client.models.company.get({
+	    id: companyId });
+    setSelectedCompany(item.name);
+  };
+
   useEffect(() => {
     const sub = client.models.company.observeQuery().subscribe({
       next: (data) => setCompany([...data.items]),
@@ -32,11 +43,10 @@ export default function ShowMenu(props) {
   }, []);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isDivisionOpen, setIsDivisionOpen] = useState(false);
   const [isCompanyOpen, setIsCompanyOpen] = useState(false);
   const [isCompanySelected, setIsCompanySelected] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState('');
-  const [selectedCompanyId, setSelectedCompanyId] = useState('');
 
   const handleSelectChange = (e) => {
     setSelectedCompany(e.split("|")[0]);
@@ -50,9 +60,16 @@ if (isCompanySelected) { setIsCompanySelected((isCompanySelected) => ! isCompany
     setIsSettingsOpen((isSettingsOpen) => ! isSettingsOpen);
   }
 
+  function toggleAdmin() {
+    if (isCompanyOpen || isCompanySelected) { toggleCompany() };
+    if (isSettingsOpen) { toggleSettings() } ;
+    setIsAdminOpen((isAdminOpen) => ! isAdminOpen);
+  }
+
   function toggleDivision() {
     if (isCompanyOpen || isCompanySelected) { toggleCompany() };
     if (isSettingsOpen) { toggleSettings() } ;
+    if (isAdminOpen) { toggleAdmin() };
     if (selectedCompany != "All" && selectedCompany != "") {
       setIsDivisionOpen((isDivisionOpen) => ! isDivisionOpen);
     }
@@ -60,6 +77,7 @@ if (isCompanySelected) { setIsCompanySelected((isCompanySelected) => ! isCompany
 
   function toggleCompany() {
     if (isSettingsOpen) { toggleSettings() } ;
+    if (isAdminOpen) { toggleAdmin() };
     if (selectedCompany != "All" && selectedCompany != "") {
       if (isCompanyOpen) { setIsCompanyOpen((isCompanyOpen) => ! isCompanyOpen) };
       for (let i = 0; i < company.length; i++) {
@@ -74,9 +92,16 @@ if (isCompanySelected) { setIsCompanySelected((isCompanySelected) => ! isCompany
     }
   }
 
+  function getCompanyName() {
+    (props.selectedCompanyId) ? getCompanyById(props.selectedCompanyId) : null;
+    return true;
+  }
+
   return (
     <div>
-      <SelectCustomer props={props} onSelectCompany={handleSelectChange} />
+      {!props.isSuperAdmin && getCompanyName() ? <div>
+      <label><b>Company:</b> {selectedCompany}</label></div> : null}
+      {props.isSuperAdmin  && <SelectCustomer props={props} selected="All" onSelectCompany={handleSelectChange} /> }
       <div className="grid-container">
   	<div id="nav">
     	  <ul>
@@ -89,7 +114,7 @@ if (isCompanySelected) { setIsCompanySelected((isCompanySelected) => ! isCompany
 	      </a></li>
 	    <li><a href="#">Users +</a>
 		    <ul>
-			<li><a href="#">Admin</a></li>
+			<li onClick={toggleAdmin}><a href="#">Admin</a></li>
 			<li><a href="#">
 		{(selectedCompany != "All" && selectedCompany != "") ? "Customer" : 
 		<i>Customer</i>}</a></li>
@@ -107,6 +132,7 @@ if (isCompanySelected) { setIsCompanySelected((isCompanySelected) => ! isCompany
   	</div>
 	<div>
 	  {isSettingsOpen && <InputSettings onSubmitChange={toggleSettings}/>}
+	  {isAdminOpen && <InputAdmin onSubmitChange={toggleAdmin} props={props} />}
 	  {isCompanyOpen && <InputCompany onSubmitChange={toggleCompany}/>}
 	  {isDivisionOpen && <InputDivision onSubmitChange={toggleDivision} props={props} 
 		companyId = {selectedCompanyId}
