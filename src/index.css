@@ -18,6 +18,12 @@
       font-size: 30px;
       position: relative;
     }
+    .rowUserCountText {
+      float: left;
+      font-size: 17px;
+      position: absolute;
+      top: 0px;
+    }
     .rowCountText {
       float: right;
       font-size: 17px;
@@ -51,6 +57,14 @@
       height: 650px;
       padding: 10px;
     }
+    .addSignUpData {
+      background-color: ocean;
+      position: absolute;
+      width: 500px;
+      top: 0px;
+      left: 690px;
+      Border: 3px solid #73AD21;
+    }
     .addCustomerData {
       background-color: dodgerblue;
       position: absolute;
@@ -76,6 +90,13 @@
   display: table-header-group;
       Border: 3px solid #73AD21;
     }
+    .cancelUserButton {background-color: #f44336;
+      margin: 8px 0;
+      Padding: 5px;
+      right: 10px;
+      position: absolute;
+      top: 0px;
+    } /* Red */ 
     .cancelButton {background-color: #f44336;
       margin: 8px 0;
       Padding: 5px;

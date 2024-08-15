@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { useState, useEffect, CSSProperties} from "react";
-import BeatLoader from 'react-spinners/BeatLoader';
+import { useState, useEffect} from "react";
+import { ProgressBar } from 'react-loader-spinner';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { generateClient } from 'aws-amplify/data';
@@ -35,11 +35,6 @@ export default function InputCompany(props) {
   }, []);
 
   var numberRows = 0;
-  const override: CSSProperties = {
-    display: "block",
-    margin: "0 auto",
-    borderColor: "red",
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -81,6 +76,11 @@ export default function InputCompany(props) {
   const handleOnCancel = (e) => {
     props.onSubmitChange(false);
   };
+
+  const handleUpdateOnCancel = (e) => {
+    setIsUpdateCustomer(false);
+    setIsUpdateCustomer2(false);
+  }
 
   const handleTheChange = (e) => {
     setIsUpdateCustomer(false);
@@ -128,13 +128,14 @@ export default function InputCompany(props) {
           value={filtered}
 	  onChange={handleChange}/><button onClick={handleReset}>Reset</button></p>
       <div className="showCustomerData">
-      {(company.length > 0 && <BeatLoader
+      {(props.numCompanies > 0 && <ProgressBar
+	visible={loading}
         color={color}
-        loading={loading}
-        cssOverride={override}
-        size={50}
+        height="50"
+	width="50"
         aria-label="Loading Spinner"
-        data-testid="loader"
+  wrapperStyle={{}}
+  wrapperClass=""
       />)}
 	<table>
 	  <thead>
@@ -162,10 +163,10 @@ export default function InputCompany(props) {
 	</table>
       </div>
       <InputCompanyAdd props={props} onSubmitChange={handleOnCancel} onChange={handleTheChange} updateFormData = {formData} isAddMode = {true}/>
-      {isUpdateCustomer && <InputCompanyAdd props={props} onSubmitChange={handleOnCancel} updateFormData = {{id: formData.id, name: formData.name, email: formData.email,
+      {isUpdateCustomer && <InputCompanyAdd props={props} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, name: formData.name, email: formData.email,
         address1: formData.address1, address2: formData.address2, city: formData.city, state: formData.state, zipcode: formData.zipcode,
         ref_department: formData.ref_department, notes: formData.notes}} isAddMode = {false} />}
-      {isUpdateCustomer2 && <InputCompanyAdd props={props} onSubmitChange={handleOnCancel} updateFormData = {{id: formData.id, name: formData.name, email: formData.email,
+      {isUpdateCustomer2 && <InputCompanyAdd props={props} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, name: formData.name, email: formData.email,
         address1: formData.address1, address2: formData.address2, city: formData.city, state: formData.state, zipcode: formData.zipcode,
         ref_department: formData.ref_department, notes: formData.notes}} isAddMode = {false} />}
     </div>

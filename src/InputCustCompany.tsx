@@ -151,7 +151,7 @@ export default function InputCustCompany(props) {
 	 onChange={handleChange} 
 	/>
 	<div class="button-container">
-  	  <button type="submit" style={{ margin: '8px 0', padding: '10px' }}>Update</button>
+  	  <button type="submit" style={{ margin: '8px 0', padding: '5px' }}>Update</button>
 	  <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>
 	</div>
       </form>

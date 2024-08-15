@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { useState, useEffect, CSSProperties} from "react";
-import BeatLoader from 'react-spinners/BeatLoader';
+import { useState, useEffect} from "react";
+import { ProgressBar } from 'react-loader-spinner';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { generateClient } from 'aws-amplify/data';
@@ -37,11 +37,6 @@ export default function InputDivision(props) {
   const filtered = division.filter(div => div.company_id.includes(props.companyId));
 
   var numberRows = 0;
-  const override: CSSProperties = {
-    display: "block",
-    margin: "0 auto",
-    borderColor: "red",
-  };
 
   function toggleDivision() {
     if (!isUpdateDivision && !isUpdateDivision2) {
@@ -76,13 +71,18 @@ export default function InputDivision(props) {
     props.onSubmitChange(false);
   };
 
+  const handleUpdateOnCancel = (e) => {
+    setIsUpdateDivision(false);
+    setIsUpdateDivision2(false);
+  };
+
   const handleTheChange = (e) => {
     setIsUpdateCustomer(false);
   }
 
   function setRowChange () {
     if (rowCount < 1) {
-      setRowCount(division.length);
+      setRowCount(filtered.length);
       setLoading(false);
     }
   }
@@ -108,13 +108,14 @@ export default function InputDivision(props) {
       <h1 align="center">Division Maintenance - {props.companyName}</h1>
       <p className="rowCountText">{rowCount} rows  <i className="fa fa-download" style={{fontSize:24}}  onClick={exportToExcel} /></p>
       <div className="showCustomerData">
-      {((filtered.length > 0) && <BeatLoader
+      {((filtered.length > 0) && <ProgressBar
+	visible={loading}
         color={color}
-        loading={loading}
-        cssOverride={override}
-        size={50}
+        height="50"
+	width="50"
         aria-label="Loading Spinner"
-        data-testid="loader"
+  wrapperStyle={{}}
+  wrapperClass=""
       />)}
 	<table>
 	  <thead>
@@ -131,8 +132,8 @@ export default function InputDivision(props) {
 	  <tbody>
 	  {filtered.map(comp => <tr
 	    key={comp.id}>
-	    <td><a href="#" onClick={() => setCurrent(comp)}>{comp.id}{setRowChange ()}</a></td>
-	    <td>{comp.company_id}</td>
+	    <td><a href="#" onClick={() => setCurrent(comp)}>{comp.id.substr(0,14) + '...'}{setRowChange ()}</a></td>
+	    <td>{props.companyName}</td>
 	    <td>{comp.name}</td>
 	    <td>{comp.email}</td>
 	    <td>{comp.address1}</td>
@@ -144,10 +145,10 @@ export default function InputDivision(props) {
 	</table>
       </div>
       <InputDivisionAdd props={props} onSubmitChange={handleOnCancel} onChange={handleTheChange} updateFormData = {formData} isAddMode = {true}/>
-      {isUpdateDivision && <InputDivisionAdd props={props} onSubmitChange={handleOnCancel} updateFormData = {{id: formData.id, name: formData.name, company_id: formData.company_id, 
+      {isUpdateDivision && <InputDivisionAdd props={props} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, name: formData.name, company_id: formData.company_id, 
 	email: formData.email, address1: formData.address1, address2: formData.address2, city: formData.city, state: formData.state, zipcode: formData.zipcode,
         ref_department: formData.ref_department, notes: formData.notes}} isAddMode = {false} />}
-      {isUpdateDivision2 && <InputDivisionAdd props={props} onSubmitChange={handleOnCancel} updateFormData = {{id: formData.id, name: formData.name, company_id: formData.company_id,
+      {isUpdateDivision2 && <InputDivisionAdd props={props} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, name: formData.name, company_id: formData.company_id,
 	email: formData.email, address1: formData.address1, address2: formData.address2, city: formData.city, state: formData.state, zipcode: formData.zipcode,
         ref_department: formData.ref_department, notes: formData.notes}} isAddMode = {false} />}
     </div>

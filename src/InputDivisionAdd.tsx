@@ -178,9 +178,7 @@ export default function InputDivisionAdd(props) {
 	 onChange={handleChange} 
 	/>
 	<div class="button-container">
-  	  <button type="submit" style={{ margin: '8px 0', padding: '10px' }}>{props.isAddMode || isGoAdd ? "Add" : "Update"}</button>
-	  {!props.isAddMode && !isGoAdd ?  
-	    <button type="button" onClick={resetForm} style={{ margin: '8px 0', padding: '10px' }}>New</button> : null}
+  	  <button type="submit" style={{ margin: '8px 0', padding: '5px' }}>{props.isAddMode || isGoAdd ? "Add" : "Update"}</button>
 	  <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>
 	</div>
       </form>

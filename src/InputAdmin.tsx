@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { useState, useEffect, CSSProperties} from "react";
-import BeatLoader from 'react-spinners/BeatLoader';
+import { useState, useEffect} from "react";
+import { ProgressBar } from 'react-loader-spinner';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { generateClient } from 'aws-amplify/data';
@@ -32,17 +32,6 @@ export default function InputAdmin(props) {
   }, []);
 
   var numberRows = 0;
-  const override: CSSProperties = {
-    display: "block",
-    margin: "0 auto",
-    borderColor: "red",
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    createAdmin();
-    props.onSubmitChange(false);
-  };
 
   function toggleAdmin() {
     if (!isUpdateAdmin && !isUpdateAdmin2) {
@@ -68,7 +57,8 @@ export default function InputAdmin(props) {
 
   const filter = admin.filter(comp => comp.email_address.includes(filtered) || 
     comp.first_name.includes(filtered) ||
-    comp.last_name.includes(filtered));
+    comp.last_name.includes(filtered) ||
+    (comp.company_name != null && comp.company_name.includes(filtered)));
 
   const handleOnDelete = async(id, deactiveDate) => {
     const now = new Date();
@@ -84,6 +74,11 @@ export default function InputAdmin(props) {
     props.onSubmitChange(false);
   };
 
+  const handleUpdateOnCancel = (e) => {
+    setIsUpdateAdmin(false);
+    setIsUpdateAdmin2(false);
+  };
+
   const handleTheChange = (e) => {
     setIsUpdateAdmin(false);
   }
@@ -91,7 +86,7 @@ export default function InputAdmin(props) {
   function setRowChange () {
     if (rowCount < 1) {
       setRowCount(admin.length);
-      setLoading(false);
+      setVisible(false);
     }
   }
 
@@ -103,7 +98,7 @@ export default function InputAdmin(props) {
     setFiltered('');
   }
   
-  let [loading, setLoading] = useState(true);
+  let [visible, setVisible] = useState(true);
   let [color, setColor] = useState("#0E4D92");
 
   const exportToExcel = () => {
@@ -125,18 +120,19 @@ export default function InputAdmin(props) {
 	<input
           type="text"
 	  name="filter"
-	  placeholder="Filter Email or Name Results"
+	  placeholder="Filter Email, Name, Company Results"
 	  size="30"
           value={filtered}
 	  onChange={handleChange}/><button onClick={handleReset}>Reset</button></p>
       <div className="showCustomerData">
-      {(admin.length > 0 && <BeatLoader
+      {(props.numAdmin > 0 && <ProgressBar
+	visible={visible}
         color={color}
-        loading={loading}
-        cssOverride={override}
-        size={50}
+        height="50"
+	width="50"
         aria-label="Loading Spinner"
-        data-testid="loader"
+  wrapperStyle={{}}
+  wrapperClass=""
       />)}
 	<table>
 	  <thead>
@@ -164,9 +160,9 @@ export default function InputAdmin(props) {
 	</table>
       </div>
       <InputAdminAdd props={props} onSubmitChange={handleOnCancel} onChange={handleTheChange} updateFormData = {formData} isAddMode = {true}/>
-      {isUpdateAdmin && <InputAdminAdd props={props} onSubmitChange={handleOnCancel} updateFormData = {{id: formData.id, email: formData.email,
+      {isUpdateAdmin && <InputAdminAdd props={props} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, email: formData.email,
         companyId: formData.companyId, companyName: formData.companyName, firstName: formData.firstName, lastName: formData.lastName, middleName: formData.middleName, activeDate: formData.activeDate}} isAddMode = {false} />}
-      {isUpdateAdmin2 && <InputAdminAdd props={props} onSubmitChange={handleOnCancel} updateFormData = {{id: formData.id, email: formData.email,
+      {isUpdateAdmin2 && <InputAdminAdd props={props} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, email: formData.email,
         companyId: formData.companyId, companyName: formData.companyName, firstName: formData.firstName, lastName: formData.lastName, middleName: formData.middleName, activeDate: formData.activeDate}} isAddMode = {false} />}
     </div>
   );
