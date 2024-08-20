@@ -24,12 +24,12 @@ export default function SelectCustomer(props) {
 
   return (
     <div>
-      <label for="companyToUse"><b>Company:</b></label>
+      <label htmlFor="companyToUse"><b>Company:</b></label>
 	<select name="companyToUse" id="companyToUse" onChange={handleSelectChange}> 
-	  {props.selected != "All" ? <option value="{props.selected}" selected>{props.selected}</option> : null}
-	  <option value="All">All</option>
+	  {props.selected != "All" ? <option key="{props.selected}" value="{props.selected}" selected>{props.selected}</option> : null}
+	  <option key="All" value="All">All</option>
 	  {company.map(comp => (!comp.deactive_date) ? 
-	    (<option value={comp.name + "|" + comp.id}>{comp.name}</option>) : null)}
+	    (<option key={comp.name + "|" + comp.id} value={comp.name + "|" + comp.id}>{comp.name}</option>) : null)}
 	</select>
     </div>
   );

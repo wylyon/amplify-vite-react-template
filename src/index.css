@@ -42,8 +42,8 @@
     }
     .grid-container {
       display: grid;
-      grid-template-columns: auto auto auto auto auto;
-      grid-gap: 20px;
+      grid-template-columns: auto auto auto auto;
+      grid-gap: 40px;
     }
     .inputData {
       background-color: lightblue;
@@ -169,11 +169,12 @@ tbody {
       list-style-type: none;
       margin: 0px;
       padding: 0px;
-      width: 100%;
+      width: 75%;
       background-color: rgb(51, 74, 148);
     }
     li {
       position: relative;
+      z-index: 99;
     }
     li a {
       font-family: Calibri;
@@ -203,7 +204,7 @@ tbody {
 }
 
     li:hover > ul {
-  left:100%;
+  left:75%;
   visibility:visible;
   opacity:1;
   transform: translateX(0px);

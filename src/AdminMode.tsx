@@ -11,7 +11,7 @@ export default function AdminMode(props) {
       <main>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
 	<div className="topnav">
-  	  <a href="#home" class="active"><i className="fa fa-building" style={{fontSize:24}} />
+  	  <a href="#home" className="active"><i className="fa fa-building" style={{fontSize:24}} />
 	  {props.isSuperAdmin ? "Super Admin" : "Admin"}
 	    <div className="rightText">
 		({props.userId}) <i className="fa fa-sign-out" style={{fontSize:24}}  onClick={handleOnSignOut} />

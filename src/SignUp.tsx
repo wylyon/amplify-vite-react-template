@@ -41,7 +41,7 @@ export default function SignUp(props) {
         <label htmlFor="email">Email:</label>
         <input type="text" id="email" name="email" value={props.email}/>
         <label htmlFor="password">Password:</label>
-        <input type="password" id="password" name="password" />
+        <input type="password" id="password" required name="password" />
 	<div class="button-container">
           <button type="submit" style={{ margin: '8px 0', padding: '5px' }}>SignUp</button>
 	  <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>

@@ -100,46 +100,49 @@ export default function InputAdminAdd(props) {
       <label>  Email:  </label>
         <input
           type="text"
-	  name="email"
-	  placeholder="Login Email Address"
-	  size="40"
+	        name="email"
+          required
+	        placeholder="Login Email Address"
+	        size="40"
           value={isNew ? '' : formData.email}
           onChange={handleChange}
         /><br />
         <br />
         <SelectCustomer props={props} selected={selectedCompany} onSelectCompany={handleSelectChange} />
         <br /><label>Company {selectedCompany}</label><br />
-	<label>Name: </label>
+	      <label>Name: </label>
         <input
           type="text"
-	  name="firstName"
-	  placeholder="First"
-	  size="20"
+	        name="firstName"
+          required
+	        placeholder="First"
+	        size="20"
           value={isNew ? '' : formData.firstName}
           onChange={handleChange}
         />
         <input
           type="text"
-	  name="middleName"
-	  placeholder="Middle"
-	  size="20"
+	        name="middleName"
+	        placeholder="Middle"
+	        size="20"
           value={isNew ? '' : formData.middleName}
           onChange={handleChange}
         />
         <input
           type="text"
-	  name="lastName"
-	  placeholder="Last"
-	  size="20"
+	        name="lastName"
+          required
+	        placeholder="Last"
+	        size="20"
           value={isNew ? '' : formData.lastName}
           onChange={handleChange}
         /><br />
-	<label>Active: </label>
+	      <label>Active: </label>
         <input
           type="date"
-	  name="activeDate"
-	  placeholder="Active Date"
-	  size="20"
+	        name="activeDate"
+	        placeholder="Active Date"
+	        size="20"
           value={isNew ? '' : formData.activeDate}
           onChange={handleChange}
         />

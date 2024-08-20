@@ -1,6 +1,6 @@
 
 // @ts-nocheck
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 export default function InputCustCompany(props) {
@@ -18,16 +18,8 @@ export default function InputCustCompany(props) {
   });
 
   const client = generateClient<Schema>();
-  const [company, setCompany] = useState<Schema["company"]["type"][]>([]);
   const [isNew, setIsNew] = useState(false);
   const [isGoAdd, setIsGoAdd] = useState(false);
-
-  useEffect(() => {
-    const sub = client.models.company.observeQuery().subscribe({
-      next: (data) => setCompany([...data.items]),
-    });
-    return () => sub.unsubscribe();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -136,10 +128,10 @@ export default function InputCustCompany(props) {
 	<label>Dept: </label>
         <input
           type="text"
-	  name="department"
+	  name="ref_department"
 	  placeholder="Reference Department"
 	  size="40"
-          value={formData.refdepartment}
+          value={formData.ref_department}
           onChange={handleChange}
         />
       <label>. Notes: </label>

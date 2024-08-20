@@ -23,45 +23,45 @@ function App() {
   const [mode, setMode] = useState(0);
 
   const getUser = async (userId) => {
-    const { data: items, errors } = await client.models.user.list();
+    const { data: items, errors } = await client.queries.listUserByEmail ({
+      email: userId
+    })
     if (items == null || items.length < 1) {
       return false;
     }
-    const filterItems = items.filter(comp => comp.email_address.includes(userId));
-    return (filterItems.length < 1) ? false : true;
+    return true;
+  }
+  const allAdmins = async () => {
+    const { data: items, errors } = await client.models.admin.list();
+    setAdmin(items);
   }
 
-  const fetchAdmins = async (email) => {
-    if (admin.length < 1) {
+  const fetchAdmins = async (emailId) => {
+    if (admin.length < 1 || isSuperAdmin || mode > 0) {
       return false;
     }
-    const filterItems = admin.filter(comp => comp.email_address.includes(email));
-    if (filterItems.length < 1 || !filterItems[0].active_date) {
-      if (filterItems.length < 1) {
+    const filterAdmin = admin.filter(comp => comp.email_address.includes(emailId));
+    if (filterAdmin == null || filterAdmin.length < 1 || !filterAdmin[0].active_date) {
+      if (filterAdmin == null || filterAdmin.length < 1) {
 	// check if user is valid for input
-	if (getUser(email)) {
-	  setMode(1);
-	  setIsSuperAdmin(false);
-	  return false;
-	}
+	      if (getUser(emailId)) {
+	        setMode(1);
+	        setIsSuperAdmin(false);
+	        return false;
+	      }
       }
       disableMsg = "User is not Authorized for Access.";
       setIsDisabledUser(true);
       return true
     }
-    if (!filterItems[0].company_id) {
+    if (!filterAdmin[0].company_id) {
       setIsSuperAdmin(true);
     }
     return false;
   };
 
-  const getAdmins = async () => {
-    const { data: items, errors } = await client.models.admin.list();
-    setAdmin(items);
-  }
-
   useEffect(() => {
-    getAdmins();
+    allAdmins();
     const sub = client.models.Settings.observeQuery().subscribe({
       next: (data) => setSettings([...data.items]),
     });
@@ -89,8 +89,8 @@ function App() {
     <Authenticator  hideSignUp socialProviders={['google']}>
       {({ signOut, user }) => (
         setDisabledFlag((user.signInDetails.loginId)) && isDisabledUser ? 
-	(<DisableMode userId={user?.signInDetails?.loginId} onSubmitChange={signOut} message={disableMsg} />) :
-        (mode < 1 ? <AdminMode userId={user?.signInDetails?.loginId} onSubmitChange={signOut} 
+	        (<DisableMode userId={user?.signInDetails?.loginId} onSubmitChange={signOut} message={disableMsg} />) :
+          (mode < 1 ? <AdminMode userId={user?.signInDetails?.loginId} onSubmitChange={signOut} 
 	companyId={filtered.length> 0 ? filtered[0].company_id : null} isSuperAdmin={isSuperAdmin} adminLength={admin.length}/> :
 	<UserMode userId={user?.signInDetails?.loginId} onSubmitChange={signOut} />)
       )}

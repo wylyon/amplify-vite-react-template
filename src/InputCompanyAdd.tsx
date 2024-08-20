@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import { v4 as uuidv4 } from 'uuid';
@@ -18,16 +18,9 @@ export default function InputCompanyAdd(props) {
   });
 
   const client = generateClient<Schema>();
-  const [company, setCompany] = useState<Schema["company"]["type"][]>([]);
   const [isNew, setIsNew] = useState(false);
   const [isGoAdd, setIsGoAdd] = useState(false);
-
-  useEffect(() => {
-    const sub = client.models.company.observeQuery().subscribe({
-      next: (data) => setCompany([...data.items]),
-    });
-    return () => sub.unsubscribe();
-  }, []);
+  const [value, setValue] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,6 +29,10 @@ export default function InputCompanyAdd(props) {
       [name]: value,
     }));
   };
+
+  function handleTheChange (e) {
+    setValue(e.target.value);
+  }
 
   const createCompany = async() => {
     const now = new Date();
@@ -93,17 +90,19 @@ export default function InputCompanyAdd(props) {
         Name: </label>
         <input
           type="text"
-	  name="name"
-	  placeholder="Company Name"
-	  size="40"
+	        name="name"
+	        placeholder="Company Name"
+          required
+	        size="40"
           value={isNew ? '' : formData.name}
           onChange={handleChange} />
       <label>  Email:  </label>
         <input
           type="text"
-	  name="email"
-	  placeholder="Finance/Billing Email Address"
-	  size="40"
+	        name="email"
+          required
+	        placeholder="Finance/Billing Email Address"
+	        size="40"
           value={isNew ? '' : formData.email}
           onChange={handleChange}
         /><br />
@@ -111,63 +110,66 @@ export default function InputCompanyAdd(props) {
         Address:</label><br />
         <input
           type="text"
-	  name="address1"
-	  placeholder="Physical mailing address"
-	  size="45"
+	        name="address1"
+          required
+	        placeholder="Physical mailing address"
+	        size="45"
           value={isNew ? '' : formData.address1}
           onChange={handleChange}
         /><br />
         <input
           type="text"
-	  name="address2"
-	  placeholder="Additional address"
-	  size="45"
+	        name="address2"
+	        placeholder="Additional address"
+	        size="45"
           value={isNew ? '' : formData.address2}
           onChange={handleChange}
         /><br />
-	<label>City: </label>
+	      <label>City: </label>
         <input
           type="text"
-	  name="city"
-	  placeholder="City"
-	  size="20"
+	        name="city"
+          required
+	        placeholder="City"
+	        size="20"
           value={isNew ? '' : formData.city}
           onChange={handleChange}
         />
-	<label>State: </label>
+	      <label>State: </label>
         <input
           type="text"
-	  name="state"
-	  placeholder="ST"
-	  size="2"
+	        name="state"
+	        placeholder="ST"
+	        size="2"
+          required
           value={isNew ? '' : formData.state}
           onChange={handleChange}
         />
-	<label>Zip: </label>
+	      <label>Zip: </label>
         <input
           type="text"
-	  name="zipcode"
-	  placeholder="Zipcode"
-	  size="10"
+	        name="zipcode"
+	        placeholder="Zipcode"
+          required
+	        size="10"
           value={isNew ? '' : formData.zipcode}
           onChange={handleChange}
         /><br />
-	<label>Dept: </label>
-        <input
-          type="text"
-	  name="department"
-	  placeholder="Reference Department"
-	  size="40"
-          value={isNew ? '' : formData.refdepartment}
-          onChange={handleChange}
+	    <label>Dept: </label>
+      <input type="text" 
+	      name="ref_department" 
+	      placeholder="Reference Department" 
+	      size="40"
+	      value={isNew ? '' : formData.ref_department} 
+	       onChange={handleChange} 
         />
-      <label>. Notes: </label>
-	<input type="text" 
-	 name="notes" 
-	 placeholder="Notes for this entry" 
-	 size="80"
-	 value={isNew ? '' : formData.notes} 
-	 onChange={handleChange} 
+      <label> Notes: </label>
+	      <input type="text" 
+	      name="notes" 
+	      placeholder="Notes for this entry" 
+	      size="80"
+	      value={isNew ? '' : formData.notes} 
+	       onChange={handleChange} 
 	/>
 	<div class="button-container">
   	  <button type="submit" style={{ margin: '8px 0', padding: '5px' }}>{props.isAddMode || isGoAdd ? "Add" : "Update"}</button>

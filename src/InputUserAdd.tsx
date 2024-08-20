@@ -111,56 +111,59 @@ export default function InputAdminAdd(props) {
       <label>  Email:  </label>
         <input
           type="text"
-	  name="email"
-	  placeholder="Login Email Address"
-	  size="40"
+	        name="email"
+          required
+	        placeholder="Login Email Address"
+	        size="40"
           value={isNew ? '' : formData.email}
           onChange={handleChange}
         /><br />
         <br />
-	<label>Name: </label>
+	    <label>Name: </label>
         <input
           type="text"
-	  name="firstName"
-	  placeholder="First"
-	  size="20"
+	         name="firstName"
+	        placeholder="First"
+          required
+	       size="20"
           value={isNew ? '' : formData.firstName}
           onChange={handleChange}
         />
         <input
           type="text"
-	  name="middleName"
-	  placeholder="Middle"
-	  size="20"
+	        name="middleName"
+	        placeholder="Middle"
+	        size="20"
           value={isNew ? '' : formData.middleName}
           onChange={handleChange}
         />
         <input
           type="text"
-	  name="lastName"
-	  placeholder="Last"
-	  size="20"
+	        name="lastName"
+          required
+	        placeholder="Last"
+	        size="20"
           value={isNew ? '' : formData.lastName}
           onChange={handleChange}
         /><br />
-	<label>Active: </label>
+	    <label>Active: </label>
         <input
           type="date"
-	  name="activeDate"
-	  placeholder="Active Date"
-	  size="20"
+	        name="activeDate"
+	        placeholder="Active Date"
+	        size="20"
           value={isNew ? '' : formData.activeDate}
           onChange={handleChange}
         />
-	<br />
-	<label>Notes: </label>
-	<input type="text"
-	  name="notes"
-	  placeholder="Notes for this User"
-	  size="100"
-	  value={isNew ? '' : formData.notes}
-	  onChange={handleChange}
-	/>
+	      <br />
+	      <label>Notes: </label>
+	        <input type="text"
+	          name="notes"
+	           placeholder="Notes for this User"
+	          size="100"
+	          value={isNew ? '' : formData.notes}
+	          onChange={handleChange}
+	      />
 	<div class="button-container">
   	  <button type="submit" style={{ margin: '8px 0', padding: '5px' }}>{props.isAddMode || isGoAdd ? "Add" : "Update"}</button>
 	  <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>

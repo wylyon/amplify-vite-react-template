@@ -101,17 +101,19 @@ export default function InputDivisionAdd(props) {
         Name: </label>
         <input
           type="text"
-	  name="name"
-	  placeholder="Division Name"
-	  size="40"
+	        name="name"
+          required
+	        placeholder="Division Name"
+	        size="40"
           value={isNew ? '' : formData.name}
           onChange={handleChange} />
       <label>  Email:  </label>
         <input
           type="text"
-	  name="email"
-	  placeholder="Finance/Billing Email Address"
-	  size="40"
+	        name="email"
+          required
+	        placeholder="Finance/Billing Email Address"
+	        size="40"
           value={isNew ? '' : formData.email}
           onChange={handleChange}
         /><br />
@@ -119,63 +121,67 @@ export default function InputDivisionAdd(props) {
         Address:</label><br />
         <input
           type="text"
-	  name="address1"
-	  placeholder="Physical mailing address"
-	  size="45"
+	        name="address1"
+          required
+	        placeholder="Physical mailing address"
+	        size="45"
           value={isNew ? '' : formData.address1}
           onChange={handleChange}
         /><br />
         <input
           type="text"
-	  name="address2"
-	  placeholder="Additional address"
-	  size="45"
+	        name="address2"
+	        placeholder="Additional address"
+	        size="45"
           value={isNew ? '' : formData.address2}
           onChange={handleChange}
         /><br />
-	<label>City: </label>
+	    <label>City: </label>
         <input
           type="text"
-	  name="city"
-	  placeholder="City"
-	  size="20"
+	        name="city"
+          required
+	        placeholder="City"
+	        size="20"
           value={isNew ? '' : formData.city}
           onChange={handleChange}
         />
-	<label>State: </label>
+	      <label>State: </label>
         <input
           type="text"
-	  name="state"
-	  placeholder="ST"
-	  size="2"
+	        name="state"
+          required
+	        placeholder="ST"
+	        size="2"
           value={isNew ? '' : formData.state}
           onChange={handleChange}
         />
-	<label>Zip: </label>
+	    <label>Zip: </label>
         <input
           type="text"
-	  name="zipcode"
-	  placeholder="Zipcode"
-	  size="10"
+	        name="zipcode"
+          required
+	        placeholder="Zipcode"
+	        size="10"
           value={isNew ? '' : formData.zipcode}
           onChange={handleChange}
         /><br />
-	<label>Dept: </label>
+	    <label>Dept: </label>
         <input
           type="text"
-	  name="department"
-	  placeholder="Reference Department"
-	  size="40"
-          value={isNew ? '' : formData.refdepartment}
+	        name="ref_department"
+	        placeholder="Reference Department"
+	        size="40"
+          value={isNew ? '' : formData.ref_department}
           onChange={handleChange}
         />
       <label>. Notes: </label>
-	<input type="text" 
-	 name="notes" 
-	 placeholder="Notes for this entry" 
-	 size="80"
-	 value={isNew ? '' : formData.notes} 
-	 onChange={handleChange} 
+	      <input type="text" 
+	        name="notes" 
+	        placeholder="Notes for this entry" 
+	        size="80"
+	        value={isNew ? '' : formData.notes} 
+	        onChange={handleChange} 
 	/>
 	<div class="button-container">
   	  <button type="submit" style={{ margin: '8px 0', padding: '5px' }}>{props.isAddMode || isGoAdd ? "Add" : "Update"}</button>
