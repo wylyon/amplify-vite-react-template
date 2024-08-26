@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import { v4 as uuidv4 } from 'uuid';
@@ -27,13 +27,6 @@ export default function InputAdminAdd(props) {
   const [selectedCompanyId, setSelectedCompanyId] = useState(props.updateFormData.companyId);
   const [isSignUpTime, setIsSignUpTime] = useState(false);
   const [signUpEmail, setSignUpEmail] = useState('');
-
-  useEffect(() => {
-    const sub = client.models.admin.observeQuery().subscribe({
-      next: (data) => setAdmin([...data.items]),
-    });
-    return () => sub.unsubscribe();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

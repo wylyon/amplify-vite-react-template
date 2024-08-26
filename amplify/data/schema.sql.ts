@@ -111,14 +111,15 @@ export const schema = configure({
         "id"
     ]),
     "template": a.model({
-        id: a.integer().required(),
-        division_id: a.integer().required(),
+        id: a.string().required(),
+        division_id: a.string().required(),
         title: a.string().required(),
         description: a.string(),
         pre_load_page_attributes: a.string(),
         post_load_page_attributes: a.string(),
-        live_date: a.datetime(),
-        prod_date: a.datetime(),
+        live_date: a.date(),
+        prod_date: a.date(),
+        deactive_date: a.datetime(),
         notes: a.string(),
         created: a.datetime().required(),
         created_by: a.integer().required()
@@ -126,9 +127,9 @@ export const schema = configure({
         "id"
     ]),
     "template_permissions": a.model({
-        id: a.integer().required(),
-        template_id: a.integer().required(),
-        user_id: a.integer().required(),
+        id: a.string().required(),
+        template_id: a.string().required(),
+        user_id: a.string().required(),
         enabled_date: a.datetime(),
         verified_date: a.datetime(),
         created: a.datetime().required(),

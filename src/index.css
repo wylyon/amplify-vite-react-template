@@ -40,6 +40,11 @@
       width: 50px;
       height: 40px;
     }
+    .grid-template {
+      display: grid;
+      grid-template-columns: auto auto auto auto;
+    }
+
     .grid-container {
       display: grid;
       grid-template-columns: auto auto auto auto;
@@ -65,6 +70,22 @@
       left: 690px;
       Border: 3px solid #73AD21;
     }
+    .addTemplateUserData {
+      background-color: ocean;
+      position: absolute;
+      width: 500px;
+      top: 0px;
+      left: 690px;
+      Border: 3px solid #73AD21;
+    }
+    .addTemplateData {
+      background-color: dodgerblue;
+      position: absolute;
+      width: 1183px;
+      height:300px;
+      top: 350px;
+      Border: 3px solid #73AD21;
+    }
     .addCustomerData {
       background-color: dodgerblue;
       position: absolute;
@@ -87,7 +108,16 @@
       width: 1183px;
       height: 300px;
       top: 100px;
-  display: table-header-group;
+      display: table-header-group;
+      Border: 3px solid #73AD21;
+    }
+    .showTemplateData {
+      background-color: sky;
+      position: absolute;
+      width: 1183px;
+      height: 250px;
+      top: 100px;
+      display: table-header-group;
       Border: 3px solid #73AD21;
     }
     .cancelUserButton {background-color: #f44336;
@@ -98,11 +128,9 @@
       top: 0px;
     } /* Red */ 
     .cancelButton {background-color: #f44336;
-      margin: 8px 0;
       Padding: 5px;
     } /* Red */ 
     .activateButton {background-color: #008000;
-      margin: 8px 0;
       Padding: 5px;
     } /* Red */ 
     .showCustomerData ul {
@@ -118,6 +146,7 @@
     }
 table {
   font-family: arial, sans-serif;
+  font-size: small;
   border-collapse: collapse;
   width: 100%;
   table-layout: fixed;
@@ -147,7 +176,7 @@ tr:nth-child(even) {
 }
 
 thead>tr {
-background-color: #dddddd;
+  background-color: #dddddd;
   display: block;
   position: relative;
 }

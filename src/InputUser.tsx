@@ -162,7 +162,7 @@ export default function InputUser(props) {
   return (
     <div className="inputCustomerData">
       <h1 align="center">User Maintenance</h1>
-      <p className="rowUserCountText">{rowCount} rows  <i className="fa fa-download" style={{fontSize:24}}  onClick={exportToExcel} />
+      <p className="rowUserCountText">{rowCount} rows <i className="fa fa-download" style={{fontSize:24}}  onClick={exportToExcel} />
 	<SelectDivision props={props} companyId = {props.companyId} onSelectDivision={handleSelectChange} />
 	<input
           type="text"
@@ -213,7 +213,7 @@ export default function InputUser(props) {
       </div>
       {selectedDivisionId != '' && <InputUserAdd props={props} onSubmitChange={handleOnCancel} onChange={handleTheChange} updateFormData = {{id: formData.id, email: formData.email,
         companyId: props.companyId, divisionId: selectedDivisionId, firstName: formData.firstName, lastName: formData.lastName, middleName: formData.middleName, 
-	activeDate: formData.activeDate4}} isAddMode = {true}/> }
+	activeDate: formData.activeDate}} isAddMode = {true}/> }
       {isUpdateUser && <InputUserAdd props={props} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, email: formData.email,
         companyId: props.companyId, divisionId: selectedDivisionId, firstName: formData.firstName, lastName: formData.lastName, middleName: formData.middleName, 
 	activeDate: formData.activeDate, notes: formData.notes}} isAddMode = {false} />}

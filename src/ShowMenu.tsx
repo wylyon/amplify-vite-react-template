@@ -9,6 +9,7 @@ import InputCustCompany from '../src/InputCustCompany';
 import SelectCustomer from '../src/SelectCustomer';
 import InputDivision from '../src/InputDivision';
 import InputUser from '../src/InputUser';
+import InputTemplate from '../src/InputTemplate';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 
@@ -52,6 +53,7 @@ export default function ShowMenu(props) {
   const [isDivisionOpen, setIsDivisionOpen] = useState(false);
   const [isCompanyOpen, setIsCompanyOpen] = useState(false);
   const [isCompanySelected, setIsCompanySelected] = useState(false);
+  const [isTemplateOpen, setIsTemplateOpen] = useState(false);
 
   const handleSelectChange = (e) => {
     setLoading(false);
@@ -71,6 +73,7 @@ export default function ShowMenu(props) {
     if (props.isSuperAdmin) {
       if (isCompanyOpen || isCompanySelected) { toggleCompany() };
       if (isUserOpen) { toggleUser() };
+      if (isTemplateOpen) { toggleTemplate() };
       if (isSettingsOpen) { toggleSettings() } ;
       setIsAdminOpen((isAdminOpen) => ! isAdminOpen);
     }
@@ -79,9 +82,20 @@ export default function ShowMenu(props) {
   function toggleUser() {
     if (isCompanyOpen || isCompanySelected) { toggleCompany() };
     if (isAdminOpen) { toggleAdmin() };
+    if (isTemplateOpen) { toggleTemplate() };
     if (isSettingsOpen) { toggleSettings() } ;
     if (selectedCompany != "All" && selectedCompany != "") {
       setIsUserOpen((isUserOpen) => ! isUserOpen);
+    }
+  }
+
+  function toggleTemplate() {
+    if (isCompanyOpen || isCompanySelected) { toggleCompany() };
+    if (isAdminOpen) { toggleAdmin() };
+    if (isUserOpen) { toggleUser() };
+    if (isSettingsOpen) { toggleSettings() } ;
+    if (selectedCompany != "All" && selectedCompany != "") {
+      setIsTemplateOpen((isTemplateOpen) => ! isTemplateOpen);
     }
   }
 
@@ -89,6 +103,7 @@ export default function ShowMenu(props) {
     if (isCompanyOpen || isCompanySelected) { toggleCompany() };
     if (isSettingsOpen) { toggleSettings() } ;
     if (isAdminOpen) { toggleAdmin() };
+    if (isTemplateOpen) { toggleTemplate() };
     if (isUserOpen) { toggleUser() };
     if (selectedCompany != "All" && selectedCompany != "") {
       setIsDivisionOpen((isDivisionOpen) => ! isDivisionOpen);
@@ -99,6 +114,7 @@ export default function ShowMenu(props) {
     if (isSettingsOpen) { toggleSettings() } ;
     if (isAdminOpen) { toggleAdmin() };
     if (isUserOpen) { toggleUser() };
+    if (isTemplateOpen) { toggleTemplate() };
     if (selectedCompany != "All" && selectedCompany != "") {
       if (isCompanyOpen) { setIsCompanyOpen((isCompanyOpen) => ! isCompanyOpen) };
       for (let i = 0; i < company.length; i++) {
@@ -145,7 +161,7 @@ export default function ShowMenu(props) {
 		<i>Divisional</i>}</a></li>
 		    </ul>
 	    </li>
-	    <li><a href="#">
+	    <li onClick={toggleTemplate}><a href="#">
 		{(selectedCompany != "All" && selectedCompany != "") ? "Template" : 
 		<i>Template</i>}</a></li>
 	    {(props.isSuperAdmin) ?
@@ -159,7 +175,11 @@ export default function ShowMenu(props) {
 	<div>
 	  {isSettingsOpen && <InputSettings onSubmitChange={toggleSettings}/>}
 	  {isAdminOpen && <InputAdmin onSubmitChange={toggleAdmin} props={props} numAdmin={props.numAdmin}/>}
-	  {isUserOpen && <InputUser onSubmitChange={toggleUser} props={props} companyId={selectedCompanyId != null ? selectedCompanyId : props.selectedCompanyId} />}
+	  {isUserOpen && <InputUser onSubmitChange={toggleUser} props={props} 
+      companyId={selectedCompanyId != null ? selectedCompanyId : props.selectedCompanyId} />}
+    {isTemplateOpen && <InputTemplate onSubmitChange={toggleTemplate} props={props} 
+      companyId={selectedCompanyId != null ? selectedCompanyId : props.selectedCompanyId} 
+      companyName = {selectedCompany} />}
 	  {isCompanyOpen && <InputCompany onSubmitChange={toggleCompany} numCompanies = {company.length} />}
 	  {isDivisionOpen && <InputDivision onSubmitChange={toggleDivision} props={props} 
 		companyId = {selectedCompanyId != null ? selectedCompanyId : props.selectedCompanyId}
