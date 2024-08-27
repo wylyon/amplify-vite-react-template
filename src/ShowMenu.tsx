@@ -1,7 +1,6 @@
 
 // @ts-nocheck
 import { useState, useEffect } from "react";
-import { ProgressBar } from 'react-loader-spinner';
 import InputSettings from '../src/InputSettings';
 import InputAdmin from '../src/InputAdmin';
 import InputCompany from '../src/InputCompany';
@@ -36,14 +35,12 @@ export default function ShowMenu(props) {
     const { data: item, errors } = await client.models.company.get({
 	    id: companyId });
     setSelectedCompany(item.name);
-    setLoading(false);
   };
 
   useEffect(() => {
     const sub = client.models.company.observeQuery().subscribe({
       next: (data) => setCompany([...data.items]),
     });
-    setLoading(false);
     return () => sub.unsubscribe();
   }, []);
 
@@ -56,7 +53,6 @@ export default function ShowMenu(props) {
   const [isTemplateOpen, setIsTemplateOpen] = useState(false);
 
   const handleSelectChange = (e) => {
-    setLoading(false);
     setSelectedCompany(e.split("|")[0]);
     setSelectedCompanyId(e.split("|")[1]);
     if (isUserOpen) {  setIsUserOpen((isUserOpen) => ! isUserOpen) };
@@ -65,7 +61,6 @@ export default function ShowMenu(props) {
     if (isUserOpen) { toggleUser() };
     if (isTemplateOpen) { toggleTemplate() };
     if (isSettingsOpen) { toggleSettings() } ;
-    if (isCompanySelected) { setIsCompanySelected((isCompanySelected) => ! isCompanySelected) };
   };
 
   function toggleSettings() {
@@ -139,9 +134,6 @@ export default function ShowMenu(props) {
     return true;
   }
 
-  let [loading, setLoading] = useState(true);
-  let [color, setColor] = useState("#0E4D92");
-
   return (
     <div>
       {!props.isSuperAdmin && getCompanyName() ? <div>
@@ -196,15 +188,6 @@ export default function ShowMenu(props) {
 		state: formData.state, zipcode: formData.zipcode, ref_department: formData.ref_department, 
 		notes: formData.notes}} isAddMode = {false} />}
     </div>
-      <ProgressBar
-	visible={loading}
-        color={color}
-        height="50"
-	width="50"
-        aria-label="Loading Spinner"
-  	wrapperStyle={{}}
-  	wrapperClass=""
-      />
   </div>
   );
 }
