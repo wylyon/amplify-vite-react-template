@@ -61,6 +61,10 @@ export default function ShowMenu(props) {
     setSelectedCompanyId(e.split("|")[1]);
     if (isUserOpen) {  setIsUserOpen((isUserOpen) => ! isUserOpen) };
     if (isDivisionOpen) { setIsDivisionOpen((isDivisionOpen) => ! isDivisionOpen) };
+    if (isCompanyOpen || isCompanySelected) { toggleCompany() };
+    if (isUserOpen) { toggleUser() };
+    if (isTemplateOpen) { toggleTemplate() };
+    if (isSettingsOpen) { toggleSettings() } ;
     if (isCompanySelected) { setIsCompanySelected((isCompanySelected) => ! isCompanySelected) };
   };
 
@@ -115,6 +119,7 @@ export default function ShowMenu(props) {
     if (isAdminOpen) { toggleAdmin() };
     if (isUserOpen) { toggleUser() };
     if (isTemplateOpen) { toggleTemplate() };
+    if (isDivisionOpen) { setIsDivisionOpen((isDivisionOpen) => ! isDivisionOpen) };
     if (selectedCompany != "All" && selectedCompany != "") {
       if (isCompanyOpen) { setIsCompanyOpen((isCompanyOpen) => ! isCompanyOpen) };
       for (let i = 0; i < company.length; i++) {

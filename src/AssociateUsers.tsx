@@ -13,6 +13,7 @@ export default function AssociateUsers(props) {
     templateUserId: props.id,
     enabledDate: '',
     verifiedDate: '',
+    emailAddress: '',
   }]);
 
   const [userDataArr, setUserDataArr] = useState([]);
@@ -22,7 +23,29 @@ export default function AssociateUsers(props) {
 
   function translateUserPermission (item) {
     const data = [{id: item.id, firstName: item.first_name, lastName: item.last_name, templateUserId: item.template_user_id,
-      enabledDate: item.enabled_date, verifiedDate: item.verified_date}];
+      enabledDate: item.enabled_date, verifiedDate: item.verified_date, emailAddress: item.email_address}];
+    return data;
+  }
+
+  function translateUserPermissions (items) {
+    var data = [{id: item[0].id, 
+      firstName: item[0].first_name, 
+      lastName: item[0].last_name, 
+      templateUserId: item[0].template_user_id,
+      enabledDate: item[0].enabled_date, 
+      verifiedDate: item[0].verified_date, 
+      emailAddress: item[0].email_address}];
+    for (i=1; i < items.length; i++) {
+      data.push(
+        {id: item[i].id, 
+          firstName: item[i].first_name, 
+          lastName: item[i].last_name, 
+          templateUserId: item[i].template_user_id,
+          enabledDate: item[i].enabled_date, 
+          verifiedDate: item[i].verified_date, 
+          emailAddress: item[i].email_address}
+      );
+    }
     return data;
   }
 
@@ -36,7 +59,7 @@ export default function AssociateUsers(props) {
       if (items.length < 2) {
         setUserData(translateUserPermission (userItems))
       } else {
-        setUserData(userItems);
+        setUserData(translateUserPermissions (userItems));
       }
     }
   };
@@ -106,7 +129,7 @@ export default function AssociateUsers(props) {
 	    </thead>
 	    <tbody>
 	      {filter.map(comp => <tr key={comp.id}>
-	        <td>{comp.id.substr(0,14) + '...'}</td>
+	        <td>{comp.emailAddress}</td>
 	        <td>{comp.firstName + " " + comp.lastName}</td>
 	        <td ><button className={(!comp.templateUserId) ? "activateButton" : "cancelButton"}
 		        onClick={() => handleAddUser(comp.id, comp.templateUserId)}>{(!comp.templateUserId) ? "Add User To Template" : 
