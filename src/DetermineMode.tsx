@@ -8,14 +8,12 @@ import type { Schema } from '../amplify/data/resource'; // Path to your backend 
 import AdminMode from '../src/AdminMode';
 import UserMode from '../src/UserMode';
 import DisableMode from '../src/DisableMode';
-import DetermineMode from '../src/DetermineMode';
 
 const client = generateClient<Schema>();
 
-function App() {
+export default function DetermineMode(props) {
 
   var companyId = '';
-  const [settings, setSettings] = useState<Schema["Settings"]["type"][]>([]);
   const [admin, setAdmin] = useState<Schema["admin"]["type"][]>([]);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isDisabledUser, setIsDisabledUser] = useState(false);
@@ -33,16 +31,11 @@ function App() {
     }
     return true;
   }
-  const allAdmins = async () => {
-    const { data: items, errors } = await client.models.admin.list();
-    setAdmin(items);
-  }
-
-  const fetchAdmins = async (emailId) => {
-    if (admin.length < 1 || isSuperAdmin || mode > 0) {
+  const fetchAdmins = async (emailId, items) => {
+    if (items.length < 1 || isSuperAdmin || mode > 0) {
       return false;
     }
-    const filterAdmin = admin.filter(comp => comp.email_address.includes(emailId));
+    const filterAdmin = items.filter(comp => comp.email_address.includes(emailId));
     if (filterAdmin == null || filterAdmin.length < 1 || !filterAdmin[0].active_date) {
       if (filterAdmin == null || filterAdmin.length < 1) {
 	// check if user is valid for input
@@ -62,39 +55,29 @@ function App() {
     return false;
   };
 
-  const fetchSettings = async () => {
-    const { data: items, errors } = await client.models.Settings.list();
-    if (items.length > 0) {
-      setDisableMsg(items[0].content);
-      setIsAccessDisabled (items[0].isDisabled);
-    }
-  };
+  const allAdmins = async () => {
+    const { data: items, errors } = await client.models.admin.list();
+    setAdmin(items);
+    fetchAdmins (props.userId, items);
+  }
 
   useEffect(() => {
+    setUserEmail(props.userId);
     allAdmins();
-    fetchSettings();
   }, []);
 
-  function setDisabledFlag (userId) {
-    setUserEmail(userId);
-    return fetchAdmins(userId);
-  }
-
-  function nothingToDo() {
-  }
+  const handleOnCancel = (e) => {
+    props.onSubmitChange(false);
+  };
 
   const filtered = admin.filter(comp => comp.email_address.includes(userEmail));
 
   return (
     <>
-    {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
-    {!isAccessDisabled && <Authenticator  hideSignUp socialProviders={['google']}>
-      {({ signOut, user }) => (
-        <DetermineMode userId={user.signInDetails.loginId} onSubmitChange={signOut}/>
-      )}
-    </Authenticator> }
+    {isDisabledUser && <DisableMode userId={props.userId} onSubmitChange={handleOnCancel} message={disableMsg} /> }
+    {!isDisabledUser && mode < 1 && <AdminMode userId={props.userId} onSubmitChange={handleOnCancel} 
+	          companyId={filtered.length> 0 ? filtered[0].company_id : null} isSuperAdmin={isSuperAdmin} adminLength={admin.length}/>}
+    {!isDisabledUser && mode == 1 && <UserMode userId={props.userId} onSubmitChange={handleOnCancel} />}        
     </>
   );
 }
-
-export default App;

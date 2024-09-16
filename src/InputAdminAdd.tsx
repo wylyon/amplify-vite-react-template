@@ -139,7 +139,7 @@ export default function InputAdminAdd(props) {
           value={isNew ? '' : formData.activeDate}
           onChange={handleChange}
         />
-	<div class="button-container">
+	<div className="button-container">
   	  <button type="submit" style={{ margin: '8px 0', padding: '5px' }}>{props.isAddMode || isGoAdd ? "Add" : "Update"}</button>
 	  <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>
 	</div>

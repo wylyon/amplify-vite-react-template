@@ -74,6 +74,7 @@ export default function ShowMenu(props) {
       if (isUserOpen) { toggleUser() };
       if (isTemplateOpen) { toggleTemplate() };
       if (isSettingsOpen) { toggleSettings() } ;
+      if (isDivisionOpen) { setIsDivisionOpen((isDivisionOpen) => ! isDivisionOpen) };
       setIsAdminOpen((isAdminOpen) => ! isAdminOpen);
     }
   }
@@ -83,6 +84,7 @@ export default function ShowMenu(props) {
     if (isAdminOpen) { toggleAdmin() };
     if (isTemplateOpen) { toggleTemplate() };
     if (isSettingsOpen) { toggleSettings() } ;
+    if (isDivisionOpen) { setIsDivisionOpen((isDivisionOpen) => ! isDivisionOpen) };
     if (selectedCompany != "All" && selectedCompany != "") {
       setIsUserOpen((isUserOpen) => ! isUserOpen);
     }
@@ -93,6 +95,7 @@ export default function ShowMenu(props) {
     if (isAdminOpen) { toggleAdmin() };
     if (isUserOpen) { toggleUser() };
     if (isSettingsOpen) { toggleSettings() } ;
+    if (isDivisionOpen) { setIsDivisionOpen((isDivisionOpen) => ! isDivisionOpen) };
     if (selectedCompany != "All" && selectedCompany != "") {
       setIsTemplateOpen((isTemplateOpen) => ! isTemplateOpen);
     }
