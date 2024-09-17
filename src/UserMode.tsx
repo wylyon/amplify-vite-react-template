@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { generateClient } from 'aws-amplify/data';
 import DisplayUser from '../src/DisplayUser';
+import SelectTemplate from "../src/SelectTemplate";
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 
 export default function UserMode(props) {
@@ -21,6 +22,7 @@ export default function UserMode(props) {
 	const client = generateClient<Schema>();
 	const [filtered, setFiltered] = useState('');
 	const [isDefaultPage, setIsDefaultPage] = useState(true);
+	const [isMultiTemplates, setIsMultiTemplates] = useState(false);
 	const [prePostLoadPage, setPrePostLoadPage] = useState('');
 	
 	const handleVerifiedDate = async(id) => {
@@ -38,6 +40,8 @@ export default function UserMode(props) {
 	function translateUserTemplate (item) {
 		const data = [{id: item.id, 
 		  templateUserId: item.template_user_id,
+		  templateId: item.template_id,
+		  title: item.title,
 		  preLoadPageAttributes: item.pre_load_page_attributes, 
 		  postLoadPageAttributes: item.post_load_page_attributes,
 		  enabledDate: item.enabled_date, 
@@ -49,6 +53,8 @@ export default function UserMode(props) {
 	function translateUserTemplates (items) {
 		var data = [{id: item[0].id, 
 			templateUserId: item[0].template_user_id,
+			templateId: item[0].template_id,
+			title: item[0].title,
 			preLoadPageAttributes: item[0].pre_load_page_attributes, 
 			postLoadPageAttributes: item[0].post_load_page_attributes,
 			enabledDate: item[0].enabled_date, 
@@ -58,6 +64,8 @@ export default function UserMode(props) {
 		  data.push(
 			{id: item[i].id, 
 				templateUserId: item[i].template_user_id,
+				templateId: item[i].template_id,
+				title: item[i].title,
 				preLoadPageAttributes: item[i].pre_load_page_attributes, 
 				postLoadPageAttributes: item[i].post_load_page_attributes,
 				enabledDate: item[i].enabled_date, 
@@ -80,7 +88,8 @@ export default function UserMode(props) {
 			alert(errors[0].message);
 		} else {
 			if (Array.isArray(items) && items.length > 0) {
-				const userItems = JSON.parse(items);
+				const db = JSON.stringify(items);
+				const userItems = JSON.parse(db);
 				if (items.length < 2) {
 				// first update verified date if necessary..also this path is only one template
 				  if (!userItems.verified_date) {
@@ -93,14 +102,8 @@ export default function UserMode(props) {
 				  setUserData(translateUserTemplate (userItems))
 				} else {
 				// here we have multiple templates...need to show list of templates to choose.
-				  if (!userItems[0].verified_date) {
-					handleVerifiedDate(userItems[0].template_user_id);
-				  }
-				  if (!(userItems[0].pre_load_page_attributes == "" && userItems[0].post_load_page_attributes == "")) {
-					setPrePostLoadPage(renderTemplatePage(userItems[0].pre_load_page_attributes, userItems[0].post_load_page_attributes));
-				  }
-				  setIsDefaultPage(userItems[0].pre_load_page_attributes == "" && userItems[0].post_load_page_attributes == "")
-				  setUserData(translateUserTemplates(userItems));
+				  setUserData(translateUserTemplate (userItems))
+				  setIsMultiTemplates(true);
 				}
 			}
 		}
@@ -114,6 +117,10 @@ export default function UserMode(props) {
     props.onSubmitChange(false);
   };
 
+  const handleOnTemplate = (e) => {
+	alert(e);
+  }
+
   return (
     <main>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
@@ -126,7 +133,7 @@ export default function UserMode(props) {
 	   			</div>
 	  		</a>
 		</div>
-	  {isDefaultPage && <p className="gwd-p-1l8f">Log/Report Capture Tool</p> }
+	  {isMultiTemplates && <SelectTemplate userItems={userData} onSelectTemplate={handleOnTemplate}/> }
 	  {!isDefaultPage && <DisplayUser userId={props.userId} renderContent={prePostLoadPage} />}
     </main> 
   );
