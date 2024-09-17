@@ -82,7 +82,7 @@ export default function UserMode(props) {
 			if (Array.isArray(items) && items.length > 0) {
 				const userItems = JSON.parse(items);
 				if (items.length < 2) {
-				// first update verified date if necessary
+				// first update verified date if necessary..also this path is only one template
 				  if (!userItems.verified_date) {
 					handleVerifiedDate(userItems.template_user_id);
 				  }
@@ -92,7 +92,7 @@ export default function UserMode(props) {
 				  setIsDefaultPage(userItems.pre_load_page_attributes == "" && userItems.post_load_page_attributes == "")
 				  setUserData(translateUserTemplate (userItems))
 				} else {
-				// first update verified date if necessary
+				// here we have multiple templates...need to show list of templates to choose.
 				  if (!userItems[0].verified_date) {
 					handleVerifiedDate(userItems[0].template_user_id);
 				  }
@@ -115,17 +115,19 @@ export default function UserMode(props) {
   };
 
   return (
-      <main>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
-	<div className="topnav">
-  	  <a href="#home" className="active"><i className="fa fa-building" style={{fontSize:24}} />User
-	    <div className="rightText">
-		({props.userId}) <i className="fa fa-sign-out" style={{fontSize:24}}  onClick={handleOnSignOut} /><span className="fa-solid fa-bars" style={{fontSize:20}}  onClick={handleOnSignOut} />
-	    </div>
-	  </a>
-	</div>
+    <main>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+		<div className="topnav">
+  	  		<a href="#home" className="active"><i className="fa fa-building" style={{fontSize:24}} />User
+	    		<div className="rightText">({props.userId}) 
+				<i className="fa fa-sign-out" style={{fontSize:24}}  onClick={handleOnSignOut} />
+				<span className="fa-solid fa-bars" style={{fontSize:20}}  onClick={handleOnSignOut} >
+				</span>
+	   			</div>
+	  		</a>
+		</div>
 	  {isDefaultPage && <p className="gwd-p-1l8f">Log/Report Capture Tool</p> }
 	  {!isDefaultPage && <DisplayUser userId={props.userId} renderContent={prePostLoadPage} />}
-      </main> 
+    </main> 
   );
 }
