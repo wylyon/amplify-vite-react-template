@@ -97,12 +97,18 @@ export default function InputAdminAdd(props) {
   const handleSubmit = (e) => {
     e.preventDefault();
     // validation here
-    if (doesUserExistAdmin(formData.email)) {
-      (props.isAddMode || isGoAdd) ? createAdmin() : updateAdmin();
+    if (props.isAddMode || isGoAdd) {
+      if (doesUserExistAdmin(formData.email)) {
+        createAdmin();
+        props.onSubmitChange(false);
+        return true;
+      }
+      return false;
+    } else {
+      updateAdmin();
       props.onSubmitChange(false);
-      return true;
+      return true;      
     }
-    return false;
   };
 
   const handleOnCancel = (e) => {

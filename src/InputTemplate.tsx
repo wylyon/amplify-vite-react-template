@@ -38,20 +38,30 @@ export default function InputTemplate(props) {
   const [template, setTemplate] = useState<Schema["template"]["type"][]>([]);
   const [division, setDivision] = useState<Schema["division"]["type"][]>([]);
 
-  const getTemplateByDivisionId = async (divisionId) => {
-    const { data: items, errors } = await client.models.template.list();
-    const filteredItems = items.filter(comp => comp.division_id.includes(divisionId));
-    setTemplate(filteredItems);
+  const getTemplateByDivisionId = async (divId) => {
+    const { data: items, errors } = await client.queries.listTemplateByDivisionId({
+      divisionId: divId
+    });
+    if (errors) {
+      alert(errors[0].message);
+      return;
+    }
+    setTemplate(items);
   };
 
-  const getDivisionByCompanyId = async (companyId) => {
-    const { data: items, errors } = await client.models.division.list();
-    const filteredItems = items.filter(comp => comp.company_id.includes(companyId));
-    setDivision(filteredItems);
-    if (filteredItems.length == 1) {
-      setSelectedDivision(filteredItems[0].name);
-      setSelectedDivisionId(filteredItems[0].id);
-      getTemplateByDivisionId(filteredItems[0].id);
+  const getDivisionByCompanyId = async (compId) => {
+    const { data: items, errors } = await client.queries.listDivisionByCompanyId({
+      companyId: compId
+    });
+    if (errors) {
+      alert(errors[0].message);
+      return;
+    }
+    setDivision(items);
+    if (items.length == 1) {
+      setSelectedDivision(items[0].name);
+      setSelectedDivisionId(items[0].id);
+      getTemplateByDivisionId(items[0].id);
     }
   };
 

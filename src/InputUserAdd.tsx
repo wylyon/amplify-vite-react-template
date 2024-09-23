@@ -122,18 +122,19 @@ export default function InputAdminAdd(props) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (doesUserExist (formData.email)) {
-      if (props.isAddMode || isGoAdd) {
+    if (props.isAddMode || isGoAdd) {
+      if (doesUserExist (formData.email)) {
         createUser();
         setSignUpEmail(e.target.email.value);
         setIsSignUpTime(true);
-      } else {
-        updateUser();
-        props.onSubmitChange(false);
+        return true;
       }
-      return true;
+      return false;
+    } else {
+      updateUser();
+      props.onSubmitChange(false);
     }
-    return false;
+    return true;
   };
 
   const handleOnCancel = (e) => {

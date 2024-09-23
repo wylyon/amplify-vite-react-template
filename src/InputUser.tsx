@@ -35,20 +35,30 @@ export default function InputUser(props) {
   const client = generateClient<Schema>();
   const [user, setUser] = useState<Schema["user"]["type"][]>([]);
 
-  const getUserByDivisionId = async (divisionId) => {
-    const { data: items, errors } = await client.models.user.list();
-    const filteredItems = items.filter(comp => comp.division_id.includes(divisionId));
-    setUser(filteredItems);
+  const getUserByDivisionId = async (divId) => {
+    const { data: items, errors } = await client.queries.listUserByDivisionId({
+      divisionId: divId
+    });
+    if (errors) {
+      alert(errors[0].message);
+      return;
+    }
+    setUser(items);
   };
 
-  const getDivisionByCompanyId = async (companyId) => {
-    const { data: items, errors } = await client.models.division.list();
-    const filteredItems = items.filter(comp => comp.company_id.includes(companyId));
-    setDivision(filteredItems);
-    if (filteredItems.length == 1) {
-      setSelectedDivision(filteredItems[0].name);
-      setSelectedDivisionId(filteredItems[0].id);
-      getUserByDivisionId(filteredItems[0].id);
+  const getDivisionByCompanyId = async (compId) => {
+    const { data: items, errors } = await client.queries.listDivisionByCompanyId({
+      companyId: compId
+    });
+    if (errors) {
+      alert(errors[0].message);
+      return;
+    }
+    setDivision(items);
+    if (items.length == 1) {
+      setSelectedDivision(items[0].name);
+      setSelectedDivisionId(items[0].id);
+      getUserByDivisionId(items[0].id);
     }
   };
 

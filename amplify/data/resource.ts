@@ -51,6 +51,22 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "on b.user_id = a.id and t.id = b.template_id WHERE " +
       "a.email_address = :email and t.prod_date <= current_date();"
     )).authorization(allow => allow.publicApiKey()),
+    listDivisionByCompanyId: a.query()
+    .arguments({
+      companyId: a.string().required(),
+    })
+    .returns(a.ref("division").array())
+    .handler(a.handler.inlineSql(
+      "SELECT id, company_id, name, email, address1, address2, city, state, zipcode, ref_department, notes, deactive_date, created, created_by FROM logistics.division WHERE company_id = :companyId;"
+    )).authorization(allow => allow.publicApiKey()),
+    listUserByDivisionId: a.query()
+    .arguments({
+      divisionId: a.string().required(),
+    })
+    .returns(a.ref("user").array())
+    .handler(a.handler.inlineSql(
+      "SELECT id, division_id, email_address, first_name, last_name, middle_name, active_date, deactive_date, notes, created, created_by FROM logistics.user WHERE division_id = :divisionId;"
+    )).authorization(allow => allow.publicApiKey()),
   })
 
 const schema = a.schema({

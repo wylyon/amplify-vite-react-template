@@ -27,14 +27,20 @@ export default function InputDivision(props) {
   const client = generateClient<Schema>();
   const [division, setDivision] = useState<Schema["division"]["type"][]>([]);
 
-  useEffect(() => {
-    const sub = client.models.division.observeQuery().subscribe({
-      next: (data) => setDivision([...data.items]),
+  const getDivisionByCompanyId = async (compId) => {
+    const { data: items, errors } = await client.queries.listDivisionByCompanyId({
+      companyId: compId
     });
-    return () => sub.unsubscribe();
-  }, []);
+    if (errors) {
+      alert(errors[0].message);
+      return;
+    }
+    setDivision(items);
+  };
 
-  const filtered = division.filter(div => div.company_id.includes(props.companyId));
+  useEffect(() => {
+    getDivisionByCompanyId(props.companyId);
+  }, []);
 
   var numberRows = 0;
 
@@ -72,6 +78,7 @@ export default function InputDivision(props) {
   };
 
   const handleUpdateOnCancel = (e) => {
+    getDivisionByCompanyId(props.companyId);
     setIsUpdateDivision(false);
     setIsUpdateDivision2(false);
   };
@@ -82,7 +89,7 @@ export default function InputDivision(props) {
 
   function setRowChange () {
     if (rowCount < 1) {
-      setRowCount(filtered.length);
+      setRowCount(division.length);
       setLoading(false);
     }
   }
@@ -108,7 +115,7 @@ export default function InputDivision(props) {
       <h1 align="center">Division Maintenance - {props.companyName}</h1>
       <p className="rowCountText">{rowCount} rows  <i className="fa fa-download" style={{fontSize:24}}  onClick={exportToExcel} /></p>
       <div className="showCustomerData">
-      {((filtered.length > 0) && <ProgressBar
+      {((division.length > 0) && <ProgressBar
 	visible={loading}
         color={color}
         height="50"
@@ -130,7 +137,7 @@ export default function InputDivision(props) {
 	    </tr>
 	  </thead>
 	  <tbody>
-	  {filtered.map(comp => <tr
+	  {division.map(comp => <tr
 	    key={comp.id}>
 	    <td><a href="#" onClick={() => setCurrent(comp)}>{comp.id.substr(0,14) + '...'}{setRowChange ()}</a></td>
 	    <td>{props.companyName}</td>

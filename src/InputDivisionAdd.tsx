@@ -20,15 +20,10 @@ export default function InputDivisionAdd(props) {
   });
 
   const client = generateClient<Schema>();
-  const [division, setDivision] = useState<Schema["division"]["type"][]>([]);
   const [isNew, setIsNew] = useState(false);
   const [isGoAdd, setIsGoAdd] = useState(false);
 
   useEffect(() => {
-    const sub = client.models.division.observeQuery().subscribe({
-      next: (data) => setDivision([...data.items]),
-    });
-    return () => sub.unsubscribe();
   }, []);
 
   const handleChange = (e) => {
@@ -44,19 +39,19 @@ export default function InputDivisionAdd(props) {
     const currentDateTime = now.toLocaleString();
 
     await client.models.division.create({ 
-	id: uuidv4(),
-	name: formData.name, 
-	company_id: formData.company_id,
-	email: formData.email,
-	address1: formData.address1,
-	address2: formData.address2,
-	city: formData.city,
-	state: formData.state,
-	zipcode: formData.zipcode,
-	ref_department: formData.ref_department,
-	notes: formData.notes,
-	created: now,
-	created_by: 0});
+      id: uuidv4(),
+      name: formData.name, 
+      company_id: formData.company_id,
+      email: formData.email,
+      address1: formData.address1,
+      address2: formData.address2,
+      city: formData.city,
+      state: formData.state,
+      zipcode: formData.zipcode,
+      ref_department: formData.ref_department,
+      notes: formData.notes,
+      created: now,
+      created_by: 0});
   }
 
   const updateDivision = async() => {
@@ -64,19 +59,19 @@ export default function InputDivisionAdd(props) {
     const currentDateTime = now.toLocaleString();
 
     await client.models.division.update({ 
-	id: props.updateFormData.id,
-	name: formData.name, 
-	company_id: formData.company_id,
-	email: formData.email,
-	address1: formData.address1,
-	address2: formData.address2,
-	city: formData.city,
-	state: formData.state,
-	zipcode: formData.zipcode,
-	ref_department: formData.ref_department,
-	notes: formData.notes,
-	created: now,
-	created_by: 0});
+      id: props.updateFormData.id,
+      name: formData.name, 
+      company_id: formData.company_id,
+      email: formData.email,
+      address1: formData.address1,
+      address2: formData.address2,
+      city: formData.city,
+      state: formData.state,
+      zipcode: formData.zipcode,
+      ref_department: formData.ref_department,
+      notes: formData.notes,
+      created: now,
+      created_by: 0});
   }
 
   const handleSubmit = (e) => {

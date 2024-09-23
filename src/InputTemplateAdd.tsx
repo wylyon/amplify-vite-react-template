@@ -54,7 +54,7 @@ export default function InputTemplateAdd(props) {
 
   const updateTemplate = async() => {
     const now = new Date();
-    await client.models.template.update({ 
+    const { errors, data: updateData } = await client.models.template.update({ 
 	    id: props.updateFormData.id,
       title: formData.title,
       description: formData.description,
@@ -63,6 +63,9 @@ export default function InputTemplateAdd(props) {
       live_date: formData.liveDate,
       prod_date: formData.prodDate,
       notes: formData.notes});
+    if (errors) {
+      alert(errors[0].message);
+    }
   }
 
   const handleSubmit = (e) => {
