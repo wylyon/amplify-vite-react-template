@@ -35,7 +35,14 @@ function App() {
   }
   const allAdmins = async () => {
     const { data: items, errors } = await client.models.admin.list();
-    setAdmin(items);
+    if (errors) {
+      alert(errors[0].message);
+      setDisableMsg("Access is currently disabled.");
+      setIsDisabledUser(true);
+      setIsAccessDisabled(true);
+    } else {
+      setAdmin(items);
+    }
   }
 
   const fetchAdmins = async (emailId) => {
@@ -64,9 +71,16 @@ function App() {
 
   const fetchSettings = async () => {
     const { data: items, errors } = await client.models.Settings.list();
-    if (items.length > 0) {
-      setDisableMsg(items[0].content);
-      setIsAccessDisabled (items[0].isDisabled);
+    if (errors) {
+      alert(errors[0].message);
+      setDisableMsg("Access is currently disabled.");
+      setIsDisabledUser(true);
+      setIsAccessDisabled(true);
+    } else {
+      if (items.length > 0) {
+        setDisableMsg(items[0].content);
+        setIsAccessDisabled (items[0].isDisabled);
+      }
     }
   };
 

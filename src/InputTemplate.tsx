@@ -8,6 +8,7 @@ import type { Schema } from '../amplify/data/resource'; // Path to your backend 
 import InputTemplateAdd from '../src/InputTemplateAdd';
 import SelectDivision from '../src/SelectDivision';
 import AssociateUsers from "../src/AssociateUsers";
+import SetupTemplate from "../src/SetupTemplate";
 
 export default function InputTemplate(props) {
   const [formData, setFormData] = useState({
@@ -31,9 +32,11 @@ export default function InputTemplate(props) {
   const [templateName, setTemplateName] = useState('');
   const [templateId, setTemplateId] = useState('');
   const [isAssociateUser, setIsAssociateUser] = useState(false);
+  const [isSetupTemplate, setIsSetupTemplate] = useState(false);
 
   const client = generateClient<Schema>();
   const [template, setTemplate] = useState<Schema["template"]["type"][]>([]);
+  const [division, setDivision] = useState<Schema["division"]["type"][]>([]);
 
   const getTemplateByDivisionId = async (divisionId) => {
     const { data: items, errors } = await client.models.template.list();
@@ -41,7 +44,19 @@ export default function InputTemplate(props) {
     setTemplate(filteredItems);
   };
 
+  const getDivisionByCompanyId = async (companyId) => {
+    const { data: items, errors } = await client.models.division.list();
+    const filteredItems = items.filter(comp => comp.company_id.includes(companyId));
+    setDivision(filteredItems);
+    if (filteredItems.length == 1) {
+      setSelectedDivision(filteredItems[0].name);
+      setSelectedDivisionId(filteredItems[0].id);
+      getTemplateByDivisionId(filteredItems[0].id);
+    }
+  };
+
   useEffect(() => {
+    getDivisionByCompanyId(props.companyId);
   }, []);
 
   var numberRows = 0;
@@ -105,6 +120,7 @@ export default function InputTemplate(props) {
     setIsUpdateTemplate(false);
     setIsUpdateTemplate2(false);
     setIsAssociateUser(false);
+    setIsSetupTemplate(false);
     getTemplateByDivisionId(selectedDivisionId);
   };
 
@@ -134,11 +150,21 @@ export default function InputTemplate(props) {
   function handleUsers (title, id) {
     setIsUpdateTemplate(false);
     setIsUpdateTemplate2(false);
+    setIsSetupTemplate(false);
     setTemplateName(title);
     setTemplateId(id);
     setIsAssociateUser(true);
   }
   
+  function handleBuildOut (title, id) {
+    setIsUpdateTemplate(false);
+    setIsUpdateTemplate2(false);
+    setIsAssociateUser(false);
+    setTemplateName(title);
+    setTemplateId(id);
+    setIsSetupTemplate(true);
+  }
+
   let [visible, setVisible] = useState(true);
   let [color, setColor] = useState("#0E4D92");
 
@@ -186,6 +212,7 @@ export default function InputTemplate(props) {
 	      <th>Live</th>
         <th>Prod</th>
         <th>Users</th>
+        <th>Build</th>
 	      <th className="colD">DeActivate</th>
 	    </tr>
 	  </thead>
@@ -198,14 +225,16 @@ export default function InputTemplate(props) {
 	    <td>{comp.live_date}</td>
       <td>{comp.prod_date}</td>
       <td><button className="activateButton" onClick={() => handleUsers(comp.title, comp.id)}>Maintain Users</button></td>
+      <td><button className="activateButton" onClick={() => handleBuildOut(comp.title, comp.id)}>Build Template</button></td>
 	    <td className="colD"><button className={(!comp.deactive_date) ? "cancelButton" : "activateButton"}
 		onClick={() => handleOnDelete(comp.id, comp.deactive_date)}>{(!comp.deactive_date) ? "DeActivate" : "Activate"}</button></td>
 	  </tr>)}
 	  </tbody>
 	</table>
       </div>
-      {isAssociateUser && <AssociateUsers onSubmitChange={handleUpdateOnCancel} name={templateName} id={templateId} divisionId={selectedDivisionId}/>}
-      {!isAssociateUser && selectedDivisionId != '' && <InputTemplateAdd props={props} onSubmitChange={handleOnCancel} onChange={handleTheChange} updateFormData = {{id: formData.id, 
+      {isAssociateUser && <AssociateUsers onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} name={templateName} id={templateId} divisionId={selectedDivisionId}/>}
+      {isSetupTemplate && <SetupTemplate onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} name={templateName} id={templateId} divisionId={selectedDivisionId}/>}
+      {!isAssociateUser && selectedDivisionId != '' && !isSetupTemplate && <InputTemplateAdd props={props} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleOnCancel} onChange={handleTheChange} updateFormData = {{id: formData.id, 
         divisionId: selectedDivisionId, 
         title: formData.title,
         description: formData.description,
@@ -214,7 +243,7 @@ export default function InputTemplate(props) {
         liveDate: formData.liveDate,
         prodDate: formData.prodDate,
         notes: formData.notes}} isAddMode = {true}/> }
-      {isUpdateTemplate && <InputTemplateAdd props={props} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, 
+      {isUpdateTemplate && <InputTemplateAdd props={props} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, 
         divisionId: selectedDivisionId, 
         title: formData.title,
         description: formData.description,
@@ -223,7 +252,7 @@ export default function InputTemplate(props) {
         liveDate: formData.liveDate,
         prodDate: formData.prodDate,
         notes: formData.notes}} isAddMode = {false} />}
-      {isUpdateTemplate2 && <InputTemplateAdd props={props} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, 
+      {isUpdateTemplate2 && <InputTemplateAdd props={props} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, 
         divisionId: selectedDivisionId, 
         title: formData.title,
         description: formData.description,

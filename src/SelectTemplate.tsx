@@ -1,24 +1,30 @@
 // @ts-nocheck
-import { useState } from "react";
+import { useState, useEffect  } from "react";
 
 export default function SelectTemplate(props) {
 
   const [selectTemplate, setSelectTemplate] = useState('');
+  const [arrayTemplates, setArrayTemplates] = useState([]);
 
   const handleSelectChange = (e) => {
-    setSelectedTemplate(e.target.value);
+    setSelectTemplate(e.target.value);
     props.onSelectTemplate(e.target.value);
   };
 
+  useEffect(() => {
+	  const arrTemplates = props.theTemplates.split("|");
+    setArrayTemplates(arrTemplates);
+	}, []);
+
   return (
-    <div>
-      <p className="gwd-p-1l8f">Log/Report Capture Tool</p> 
-      <label htmlFor="templateToUse"><b>Program:</b></label>
-	    <select name="templateToUse" id="templateToUse" onChange={handleSelectChange}> 
-	      <option key="0" value=''></option>
-        {props.userItems.map(comp => (comp.enabledDate) ? 
-	    (<option key={comp.templateId} value={comp.templateId}>{comp.title}</option>) : null) }
-	    </select>
-    </div>
+      <div className="inputProgram">
+        <label htmlFor="templateToUse"><b>Program:</b></label>
+        <select name="templateToUse" id="templateToUse" onChange={handleSelectChange}> 
+          <option key="0" value=''></option>
+          { arrayTemplates.map(comp => 
+            <option key={comp.split("!")[0]} value={comp.split("!")[0]}>{comp.split("!")[1]}</option>
+          )}
+        </select>
+      </div>
   );
 }

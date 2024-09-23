@@ -30,6 +30,7 @@ export default function InputUser(props) {
   const [selectedDivisionId, setSelectedDivisionId] = useState('');
   const [isSignUpTime, setIsSignUpTime] = useState(false);
   const [signUpEmail, setSignUpEmail] = useState('');
+  const [division, setDivision] = useState<Schema["division"]["type"][]>([]);
 
   const client = generateClient<Schema>();
   const [user, setUser] = useState<Schema["user"]["type"][]>([]);
@@ -40,7 +41,19 @@ export default function InputUser(props) {
     setUser(filteredItems);
   };
 
+  const getDivisionByCompanyId = async (companyId) => {
+    const { data: items, errors } = await client.models.division.list();
+    const filteredItems = items.filter(comp => comp.company_id.includes(companyId));
+    setDivision(filteredItems);
+    if (filteredItems.length == 1) {
+      setSelectedDivision(filteredItems[0].name);
+      setSelectedDivisionId(filteredItems[0].id);
+      getUserByDivisionId(filteredItems[0].id);
+    }
+  };
+
   useEffect(() => {
+    getDivisionByCompanyId(props.companyId);
   }, []);
 
   var numberRows = 0;
@@ -71,9 +84,15 @@ export default function InputUser(props) {
   }
 
   function setCurrent(updateFormData) {
-    const data = {id: updateFormData.id, email: updateFormData.email_address,
-        companyId: updateFormData.company_Id, companyName: updateFormData.company_name, firstName: updateFormData.first_name, lastName: updateFormData.last_name, 
-	middleName: updateFormData.middle_name, activeDate: updateFormData.active_date};
+    const data = {id: updateFormData.id, 
+      email: updateFormData.email_address,
+      companyId: updateFormData.company_Id, 
+      companyName: updateFormData.company_name, 
+      firstName: updateFormData.first_name, 
+      lastName: updateFormData.last_name, 
+	    middleName: updateFormData.middle_name, 
+      activeDate: updateFormData.active_date,
+      notes: updateFormData.notes};
     {toggleUser()};
     setFormData(data);
   }
@@ -88,8 +107,8 @@ export default function InputUser(props) {
     const isNull = (!deactiveDate);
 
     await client.models.user.update({ 
-	id: id,
-	deactive_date: (isNull) ? now : null});
+	    id: id,
+	    deactive_date: (isNull) ? now : null});
     getUserByDivisionId(selectedDivisionId);
   }
 

@@ -21,6 +21,8 @@ export default function InputTemplateAdd(props) {
   const [template, setTemplate] = useState<Schema["template"]["type"][]>([]);
   const [isNew, setIsNew] = useState(false);
   const [isGoAdd, setIsGoAdd] = useState(false);
+  const [isPreview, setIsPreview] = useState(false);
+  const [html, setHtml] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,7 +48,7 @@ export default function InputTemplateAdd(props) {
 	    created: now,
 	    created_by: 0});
     if (errors) {
-      alert(errors[0]);
+      alert(errors[0].message);
     }
   }
 
@@ -67,6 +69,7 @@ export default function InputTemplateAdd(props) {
     e.preventDefault();
     if (props.isAddMode || isGoAdd) {
       createTemplate();
+      props.onSubmitAdd(false);
     } else {
       updateTemplate();
       props.onSubmitChange(false);
@@ -75,6 +78,10 @@ export default function InputTemplateAdd(props) {
 
   const handleOnCancel = (e) => {
     props.onSubmitChange(false);
+  };
+
+  const handlePreview = (e) => {
+    alert("Preview Page Here.");
   };
 
   return (
@@ -137,6 +144,7 @@ export default function InputTemplateAdd(props) {
 	        <div className="button-container">
   	        <button type="submit" style={{ margin: '8px 5px', padding: '5px' }}>{props.isAddMode || isGoAdd ? "Add" : "Update"}</button>
 	          <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>
+            <button className="activateButton" onClick={handlePreview}>Preview</button>
 	        </div>         
         </div>
       </div>

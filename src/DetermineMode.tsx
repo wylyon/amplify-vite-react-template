@@ -18,7 +18,7 @@ export default function DetermineMode(props) {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isDisabledUser, setIsDisabledUser] = useState(false);
   const [userEmail, setUserEmail] = useState('');
-  const [mode, setMode] = useState(0);
+  const [mode, setMode] = useState(9);
   const [isAccessDisabled, setIsAccessDisabled] = useState(false);
   const [disableMsg, setDisableMsg] = useState('');
 
@@ -26,13 +26,19 @@ export default function DetermineMode(props) {
     const { data: items, errors } = await client.queries.listUserByEmail ({
       email: userId
     })
-    if (items == null || items.length < 1) {
-      return false;
+    if (errors) {
+      alert(errors[0].message);
+      setDisableMsg("Cannot access Users By Email.");
+      setIsDisabledUser(true);
+    } else {
+      if (items == null || items.length < 1) {
+        return false;
+      }
+      return true;
     }
-    return true;
   }
   const fetchAdmins = async (emailId, items) => {
-    if (items.length < 1 || isSuperAdmin || mode > 0) {
+    if (items.length < 1 || isSuperAdmin || mode != 9) {
       return false;
     }
     const filterAdmin = items.filter(comp => comp.email_address.includes(emailId));
@@ -52,13 +58,20 @@ export default function DetermineMode(props) {
     if (!filterAdmin[0].company_id) {
       setIsSuperAdmin(true);
     }
+    setMode(0);
     return false;
   };
 
   const allAdmins = async () => {
     const { data: items, errors } = await client.models.admin.list();
-    setAdmin(items);
-    fetchAdmins (props.userId, items);
+    if (errors) {
+      alert(errors[0].message);
+      setDisableMsg("Cannot access Admins.");
+      setIsDisabledUser(true);
+    } else {
+      setAdmin(items);
+      fetchAdmins (props.userId, items);
+    }
   }
 
   useEffect(() => {
@@ -75,7 +88,7 @@ export default function DetermineMode(props) {
   return (
     <>
     {isDisabledUser && <DisableMode userId={props.userId} onSubmitChange={handleOnCancel} message={disableMsg} /> }
-    {!isDisabledUser && mode < 1 && <AdminMode userId={props.userId} onSubmitChange={handleOnCancel} 
+    {!isDisabledUser && mode == 0 && <AdminMode userId={props.userId} onSubmitChange={handleOnCancel} 
 	          companyId={filtered.length> 0 ? filtered[0].company_id : null} isSuperAdmin={isSuperAdmin} adminLength={admin.length}/>}
     {!isDisabledUser && mode == 1 && <UserMode userId={props.userId} onSubmitChange={handleOnCancel} />}        
     </>

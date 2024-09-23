@@ -18,6 +18,20 @@
       font-size: 30px;
       position: relative;
     }
+    .setupTemplateTitle {
+      text-align: center;
+      font-weight: bold;
+      font-size: 14px;
+      position:absolute;
+      top: 0px;
+    }
+    .setupQuestionTitle {
+      text-align: center;
+      font-weight: bold;
+      font-size: 20px;
+      position:absolute;
+      top: 0px;
+    }
     .rowUserCountText {
       float: left;
       font-size: 17px;
@@ -62,6 +76,11 @@
       height: 650px;
       padding: 10px;
     }
+    .inputProgram {
+      position:absolute;
+      top: 30px;
+    }
+
     .addSignUpData {
       background-color: ocean;
       position: absolute;
@@ -85,6 +104,14 @@
       height:300px;
       top: 350px;
       Border: 3px solid #73AD21;
+    }
+    .addTemplateSetup {
+      background-color: transparent;
+      position: absolute;
+      width: 1183px;
+      height:300px;
+      top: 350px;
+
     }
     .addCustomerData {
       background-color: dodgerblue;

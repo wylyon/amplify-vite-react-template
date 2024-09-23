@@ -1,9 +1,11 @@
 // @ts-nocheck
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import { v4 as uuidv4 } from 'uuid';
 import SelectCustomer from '../src/SelectCustomer';
+import Alert from '@mui/material/Alert';
+
 export default function InputAdminAdd(props) {
   const [formData, setFormData] = useState({
     id: props.updateFormData.id,  
@@ -22,6 +24,8 @@ export default function InputAdminAdd(props) {
   const [isGoAdd, setIsGoAdd] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(props.updateFormData.companyName);
   const [selectedCompanyId, setSelectedCompanyId] = useState(props.updateFormData.companyId);
+  const [isAlert, setIsAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,34 +35,52 @@ export default function InputAdminAdd(props) {
     }));
   };
 
+  function doesUserExistAdmin (emailAddress) {
+    const filtered = admin.filter(comp => comp.email_address.includes(emailAddress) );
+    if (filtered == null || filtered.length < 1) {
+      return true;
+    }
+    setAlertMessage(emailAddress + " Already Exists.");
+    setIsAlert(true);
+    return false;
+  }
+
   const createAdmin = async() => {
     const now = new Date();
     const currentDateTime = now.toLocaleString();
 
-    await client.models.admin.create({ 
-	id: uuidv4(),
-	email_address: formData.email,
-	company_id: selectedCompanyId,
- 	company_name: selectedCompany,
-	first_name: formData.firstName,
-	last_name: formData.lastName,
-	middle_name: formData.middleName,
-	active_date: formData.activeDate = '' ? now : formData.activeDate,
-	created: now,
-	created_by: 0});
+    const { errors, data: newAdmin } = await client.models.admin.create({ 
+        id: uuidv4(),
+        email_address: formData.email,
+        company_id: selectedCompanyId,
+        company_name: selectedCompany,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        middle_name: formData.middleName,
+        active_date: formData.activeDate = '' ? now : formData.activeDate,
+        created: now,
+        created_by: 0});
+    if (errors) {
+      setAlertMessage(errors[0].message);
+      setIsAlert(true);
+    }
   }
 
   const updateAdmin = async() => {
     const now = new Date();
-    await client.models.admin.update({ 
-	id: props.updateFormData.id,
-	email_address: formData.email,
-	company_id: selectedCompanyId,
-	company_name: selectedCompany,
-	first_name: formData.firstName,
-	last_name: formData.lastName,
-	middle_name: formData.middleName,
-	active_date: formData.activeDate = '' ? now : formData.activeDate});
+    const { errors, data: updatedAdmin } =await client.models.admin.update({ 
+      id: props.updateFormData.id,
+      email_address: formData.email,
+      company_id: selectedCompanyId,
+      company_name: selectedCompany,
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      middle_name: formData.middleName,
+      active_date: formData.activeDate = '' ? now : formData.activeDate});
+    if (errors) {
+      setAlertMessage(errors[0].message);
+      setIsAlert(true);
+    }
   }
 
   const handleSelectChange = (e) => {
@@ -74,8 +96,13 @@ export default function InputAdminAdd(props) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    (props.isAddMode || isGoAdd) ? createAdmin() : updateAdmin();
-    props.onSubmitChange(false);
+    // validation here
+    if (doesUserExistAdmin(formData.email)) {
+      (props.isAddMode || isGoAdd) ? createAdmin() : updateAdmin();
+      props.onSubmitChange(false);
+      return true;
+    }
+    return false;
   };
 
   const handleOnCancel = (e) => {
@@ -87,8 +114,23 @@ export default function InputAdminAdd(props) {
     setIsGoAdd((isGoAdd) => ! isGoAdd);
   }
 
+  const handleOnAlert = (e) => {
+    setIsAlert(false);
+    setAlertMessage('');
+  }
+
+  useEffect(() => {
+    const sub = client.models.admin.observeQuery().subscribe({
+      next: (data) => setAdmin([...data.items]),
+    });
+    return () => sub.unsubscribe();
+  }, []);
+
   return (
     <div className="addCustomerData">
+      {isAlert &&  <Alert severity="error" onClose={handleOnAlert}>
+      {alertMessage}
+      </Alert>}
       <form onSubmit={handleSubmit}>
       <label>  Email:  </label>
         <input

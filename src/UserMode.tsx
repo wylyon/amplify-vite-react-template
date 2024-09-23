@@ -24,6 +24,7 @@ export default function UserMode(props) {
 	const [isDefaultPage, setIsDefaultPage] = useState(true);
 	const [isMultiTemplates, setIsMultiTemplates] = useState(false);
 	const [prePostLoadPage, setPrePostLoadPage] = useState('');
+	const [templates, setTemplates] = useState('');
 	
 	const handleVerifiedDate = async(id) => {
 		const now = new Date();
@@ -51,28 +52,33 @@ export default function UserMode(props) {
 	}
 	
 	function translateUserTemplates (items) {
-		var data = [{id: item[0].id, 
-			templateUserId: item[0].template_user_id,
-			templateId: item[0].template_id,
-			title: item[0].title,
-			preLoadPageAttributes: item[0].pre_load_page_attributes, 
-			postLoadPageAttributes: item[0].post_load_page_attributes,
-			enabledDate: item[0].enabled_date, 
-			verifiedDate: item[0].verified_date, 
+		const item = JSON.parse(items[0]);
+		var templateIdAndTitle = item.template_id + "!" + item.title;
+		var data = [{id: item.id, 
+			templateUserId: item.template_user_id,
+			templateId: item.template_id,
+			title: item.title,
+			preLoadPageAttributes: item.pre_load_page_attributes, 
+			postLoadPageAttributes: item.post_load_page_attributes,
+			enabledDate: item.enabled_date, 
+			verifiedDate: item.verified_date, 
 			emailAddress: props.userId}];
-		for (i=1; i < items.length; i++) {
+		for (var i=1; i < items.length; i++) {
+			const nextItem = JSON.parse(items[i]);
+			templateIdAndTitle = templateIdAndTitle + "|" + nextItem.template_id + "!" + nextItem.title;
 		  data.push(
-			{id: item[i].id, 
-				templateUserId: item[i].template_user_id,
-				templateId: item[i].template_id,
-				title: item[i].title,
-				preLoadPageAttributes: item[i].pre_load_page_attributes, 
-				postLoadPageAttributes: item[i].post_load_page_attributes,
-				enabledDate: item[i].enabled_date, 
-				verifiedDate: item[i].verified_date, 
+			{id: nextItem.id, 
+				templateUserId: nextItem.template_user_id,
+				templateId: nextItem.template_id,
+				title: nextItem.title,
+				preLoadPageAttributes: nextItem.pre_load_page_attributes, 
+				postLoadPageAttributes: nextItem.post_load_page_attributes,
+				enabledDate: nextItem.enabled_date, 
+				verifiedDate: nextItem.verified_date, 
 				emailAddress: props.userId}
 		  );
 		}
+		setTemplates(templateIdAndTitle);
 		return data;
 	  }
 
@@ -102,13 +108,58 @@ export default function UserMode(props) {
 				  setUserData(translateUserTemplate (userItems))
 				} else {
 				// here we have multiple templates...need to show list of templates to choose.
-				  setUserData(translateUserTemplate (userItems))
+				//  setUserData(translateUserTemplate (userItems))
+				  setUserDataArr(translateUserTemplates(userItems));
 				  setIsMultiTemplates(true);
 				}
 			}
 		}
 	};
 	
+	const getUserPageDetailsByTemplate = async (emailAddress, templateId) => {
+		const { data: items, errors } = await client.queries.listUserTemplates({
+		  email: emailAddress,
+		})
+		if (errors) {
+			alert(errors[0].message);
+		} else {
+			if (Array.isArray(items) && items.length > 0) {
+				const db = JSON.stringify(items);
+				const userItems = JSON.parse(db);
+				if (items.length < 2) {
+				// first update verified date if necessary..also this path is only one template
+				  if (userItems.template_id == templateId) {
+					if (!userItems.verified_date) {
+						handleVerifiedDate(userItems.template_user_id);
+					  }
+					  if (!(userItems.pre_load_page_attributes == "" && userItems.post_load_page_attributes == "")) {
+						setPrePostLoadPage(renderTemplatePage(userItems.pre_load_page_attributes, userItems.post_load_page_attributes));
+					  }
+					  setIsDefaultPage(userItems.pre_load_page_attributes == "" && userItems.post_load_page_attributes == "")
+					  setUserData(translateUserTemplate (userItems))
+				  }
+				} else {
+					for (var i=0; i < items.length; i++) {
+						const item = JSON.parse(items[i]);
+						if (item.template_id == templateId) {
+							if (!item.verified_date) {
+								handleVerifiedDate(item.template_user_id);
+							  }
+							if (!(item.pre_load_page_attributes == "" && item.post_load_page_attributes == "")) {
+								setPrePostLoadPage(renderTemplatePage(item.pre_load_page_attributes, item.post_load_page_attributes));
+							} else {
+								setPrePostLoadPage("");
+							}
+							setIsDefaultPage(false);
+							setUserData(translateUserTemplate (item))	
+							return;						
+						}
+					}
+				}
+			}
+		}
+	};
+
 	useEffect(() => {
 	  getUserPageDetails(props.userId);
 	}, []);
@@ -118,7 +169,7 @@ export default function UserMode(props) {
   };
 
   const handleOnTemplate = (e) => {
-	alert(e);
+	getUserPageDetailsByTemplate(props.userId, e);
   }
 
   return (
@@ -133,7 +184,7 @@ export default function UserMode(props) {
 	   			</div>
 	  		</a>
 		</div>
-	  {isMultiTemplates && <SelectTemplate userItems={userData} onSelectTemplate={handleOnTemplate}/> }
+	  {isMultiTemplates && <SelectTemplate theTemplates={templates} onSelectTemplate={handleOnTemplate}/> }
 	  {!isDefaultPage && <DisplayUser userId={props.userId} renderContent={prePostLoadPage} />}
     </main> 
   );

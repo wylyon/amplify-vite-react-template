@@ -29,7 +29,7 @@ export default function SelectDivision(props) {
     <div>
       <label htmlFor="divisionToUse"><b>Division:</b></label>
 	<select name="divisionToUse" id="divisionToUse" onChange={handleSelectChange}> 
-	  {division != null ? <option key="0" value=''></option> : null}
+	  {division != null && division.length > 1 ? <option key="0" value=''></option> : null}
 	  {division != null && division.map(comp => (!comp.deactive_date) ? 
 	    (<option key={comp.name + "|" + comp.id} value={comp.name + "|" + comp.id}>{comp.name}</option>) : null)}
 	</select>
