@@ -17,6 +17,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Container from '@mui/material/Container';
 import Checkbox from '@mui/material/Checkbox';
+import Alert from '@mui/material/Alert';
 
 export default function SetupTemplate(props) {
   const [formData, setFormData] = useState({
@@ -26,10 +27,10 @@ export default function SetupTemplate(props) {
     preLoadAttributes: '',
     title: '',
     description: '',
-    questionType: '',
+    questionType: 'photo',
     questionValues: '',
     postLoadAttributes: '',
-    optionalFlag: true,
+    optionalFlag: false,
     actionsFlag: false,
     notes: '',
   });
@@ -39,6 +40,8 @@ export default function SetupTemplate(props) {
   const [filtered, setFiltered] = useState('');
   const [isValuesDisabled, setIsValuesDisabled] = useState(true);
   const [templatePermissions, setTemplatePermissions] = useState<Schema["template_permissions"]["type"][]>([]);
+  const [isAlert, setIsAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,6 +50,11 @@ export default function SetupTemplate(props) {
       [name]: value,
     }));
   };
+
+  const handleOnAlert = (e) => {
+    setIsAlert(false);
+    setAlertMessage('');
+  }
 
   const handleControls = (e) => {
     const { name, value } = e.target;
@@ -62,7 +70,7 @@ export default function SetupTemplate(props) {
 
     const { errors, data: newQuestions } = await client.models.template_question.create({
       id: uuidv4(),
-      template_id: formData.templateId,
+      template_id: props.templateId,
       question_order: formData.questionOrder,
       pre_load_attributes: formData.preLoadAttributes,
       title: formData.title,
@@ -75,7 +83,8 @@ export default function SetupTemplate(props) {
       created: now,
       created_by: 0});
     if (errors) {
-      alert(errors[0].message);
+      setAlertMessage(errors[0].message);
+      setIsAlert(true);
       return;
     }
   }
@@ -90,7 +99,12 @@ export default function SetupTemplate(props) {
   }
 
   const handleOnSave = () => {
-
+    if (formData.title == "") {
+      setAlertMessage("Please provide a title for this question.");
+      setIsAlert(true);
+      return;
+    }
+    createQuestions();
   }
 
   const handlePhotoClick = () => {
@@ -125,6 +139,9 @@ export default function SetupTemplate(props) {
       <CssBaseline />
       <Container fixed>
         <div>
+          {isAlert &&  <Alert severity="error" onClose={handleOnAlert}>
+            {alertMessage}
+          </Alert>}
           <Box sx={{ bgcolor: '#C6DEFF', width: '600px', height: '500px', float: 'left', 
               borderStyle: 'solid', borderWidth: '2px' }} >
             <h3>Add Questions: <Button variant="contained" color="success" onClick={handleOnSave} 

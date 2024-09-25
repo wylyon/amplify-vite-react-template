@@ -67,6 +67,14 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .handler(a.handler.inlineSql(
       "SELECT id, division_id, email_address, first_name, last_name, middle_name, active_date, deactive_date, notes, created, created_by FROM logistics.user WHERE division_id = :divisionId;"
     )).authorization(allow => allow.publicApiKey()),
+    listQuestionsByTemplateId: a.query()
+    .arguments({
+      templateId: a.string().required(),
+    })
+    .returns(a.ref("template_question").array())
+    .handler(a.handler.inlineSql(
+      "SELECT id, template_id, question_order, pre_load_attributes, title, description, question_type, question_values, post_load_attributes, optional_flag, actions_flag, notes, created, created_by FROM logistics.template_question WHERE template_id = :templateId;"
+    )).authorization(allow => allow.publicApiKey()),
   })
 
 const schema = a.schema({

@@ -243,7 +243,7 @@ export default function InputTemplate(props) {
 	</table>
       </div>
       {isAssociateUser && <AssociateUsers onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} name={templateName} id={templateId} divisionId={selectedDivisionId}/>}
-      {isSetupTemplate && <SetupTemplate onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} name={templateName} id={templateId} divisionId={selectedDivisionId}/>}
+      {isSetupTemplate && <SetupTemplate onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} name={templateName} templateId={templateId} divisionId={selectedDivisionId}/>}
       {!isAssociateUser && selectedDivisionId != '' && !isSetupTemplate && <InputTemplateAdd props={props} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleOnCancel} onChange={handleTheChange} updateFormData = {{id: formData.id, 
         divisionId: selectedDivisionId, 
         title: formData.title,
