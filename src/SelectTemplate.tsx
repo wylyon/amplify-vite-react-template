@@ -20,7 +20,6 @@ export default function SelectTemplate(props) {
       <div className="inputProgram">
         <label htmlFor="templateToUse"><b>Program:</b></label>
         <select name="templateToUse" id="templateToUse" onChange={handleSelectChange}> 
-          <option key="0" value=''></option>
           { arrayTemplates.map(comp => 
             <option key={comp.split("!")[0]} value={comp.split("!")[0]}>{comp.split("!")[1]}</option>
           )}

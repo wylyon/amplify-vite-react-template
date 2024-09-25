@@ -109,8 +109,10 @@ export default function UserMode(props) {
 				} else {
 				// here we have multiple templates...need to show list of templates to choose.
 				//  setUserData(translateUserTemplate (userItems))
+				  const firstItem = JSON.parse(userItems[0]);
 				  setUserDataArr(translateUserTemplates(userItems));
 				  setIsMultiTemplates(true);
+				  getUserPageDetailsByTemplate(props.userId, firstItem.template_id);
 				}
 			}
 		}

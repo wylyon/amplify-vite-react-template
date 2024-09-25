@@ -1,7 +1,7 @@
 
 // @ts-nocheck
 
-export default function DisableMode(props) {
+export default function DisplayUser(props) {
   const handleOnSignOut = (e) => {
     props.onSubmitChange(false);
   };
@@ -11,6 +11,6 @@ export default function DisableMode(props) {
   }
 
   return (
-      <div dangerouslySetInnerHTML={createMarkup(props.renderContent)} />
+      <div className="startProgram" dangerouslySetInnerHTML={createMarkup(props.renderContent)} />
   );
 }
