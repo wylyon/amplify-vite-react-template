@@ -78,7 +78,7 @@ export default function SetupTemplate(props) {
       question_type: formData.questionType,
       question_values: formData.questionValues,
       post_load_attributes: formData.postLoadAttributes,
-      optional_flag: formData.optionalFlag,
+      optional_flag: (!formData.optionalFlag ? 0 : 1),
       notes: '',
       created: now,
       created_by: 0});

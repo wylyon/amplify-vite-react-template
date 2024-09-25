@@ -98,7 +98,7 @@ export const schema = configure({
     ]),
     "question_result": a.model({
         id: a.string().required(),
-        template_question_id: a.integer().required(),
+        template_question_id: a.string().required(),
         result_photo_value: a.string(),
         result_option_value: a.string(),
         result_date_value: a.datetime(),
@@ -139,7 +139,7 @@ export const schema = configure({
     ]),
     "template_question": a.model({
         id: a.string().required(),
-        template_id: a.integer().required(),
+        template_id: a.string().required(),
         question_order: a.integer(),
         pre_load_attributes: a.string(),
         title: a.string().required(),
