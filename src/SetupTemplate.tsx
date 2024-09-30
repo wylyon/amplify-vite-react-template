@@ -27,6 +27,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import DisplayQuestion from "../src/DisplayQuestion";
+import { AuthType } from "aws-cdk-lib/aws-stepfunctions-tasks";
 
 export default function SetupTemplate(props) {
   const [formData, setFormData] = useState({
@@ -147,9 +148,10 @@ export default function SetupTemplate(props) {
   }
 
   const deleteQuestions = async(questionId) => {
-    const { errors, data: deletedQuestions } = await client.models.template_question.delete({
-      id: questionId
-    });
+    const { errors, data: deletedQuestions } = await client.models.template_question.delete(      
+      {
+        id: questionId
+      });
     if (errors) {
       setAlertMessage(errors[0].message);
       setIsAlert(true);

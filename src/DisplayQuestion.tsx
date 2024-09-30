@@ -56,7 +56,7 @@ export default function DisplayQuestion(props) {
       case TYPE_INPUT:
         return "<input type=\"text\" id=\"" + questionSeq + "\" name=\"" + questionSeq + "\">";
       case TYPE_TEXT:
-        return "<textarea name=\"" + questionSeq + "\" rows=\"10\" cols=\"30\">" + questionValues +
+        return "<textarea name=\"" + questionSeq + "\" rows=\"5\" cols=\"20\">" + questionValues +
           "</textarea>";
       case TYPE_DATE:
         return "<input type=\"date\" id=\"" + questionSeq + "\" name=\"" + questionSeq + "\">";
