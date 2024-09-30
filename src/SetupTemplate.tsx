@@ -149,11 +149,14 @@ export default function SetupTemplate(props) {
     setWhichControl('');
   }
 
-  const deleteQuestions = async(questionId) => {
-    const { errors, data: deletedQuestions } = await client.models.template_question.delete(      
-      {
-        id: questionId
-      });
+  const deleteQuestions = async(id) => {
+    const { data: items, errors } = await client.mutations.deleteQuestionById({
+      questionId: id
+    });
+ //   const { errors, data: deletedQuestions } = await client.models.template_question.delete(      
+ //     {
+ //       id: questionId
+ //     });
     if (errors) {
       setAlertMessage(errors[0].message);
       setIsAlert(true);
