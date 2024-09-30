@@ -46,7 +46,9 @@ export default function SetupTemplate(props) {
   });
 
   const [theSeverity, setTheSeverity] = useState('error');
-  const client = generateClient<Schema>();
+  const client = generateClient<Schema>({
+    authMode: 'apiKey',
+  });
   const [filtered, setFiltered] = useState('');
   const [isValuesDisabled, setIsValuesDisabled] = useState(true);
   const [templateQuestion, setTemplateQuestion] = useState<Schema["template_question"]["type"][]>([]);
