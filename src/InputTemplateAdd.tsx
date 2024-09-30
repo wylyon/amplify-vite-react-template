@@ -1,8 +1,15 @@
 // @ts-nocheck
 import { useState } from "react";
+import React from "react";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import { v4 as uuidv4 } from 'uuid';
+import Button from "@mui/material/Button";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 export default function InputTemplateAdd(props) {
   const [formData, setFormData] = useState({
@@ -23,6 +30,7 @@ export default function InputTemplateAdd(props) {
   const [isGoAdd, setIsGoAdd] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const [html, setHtml] = useState('');
+  const [preview, setPreview] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,6 +39,20 @@ export default function InputTemplateAdd(props) {
       [name]: value,
     }));
   };
+
+  const handleClickOpenPreview = (e) => {
+    e.preventDefault();
+    setPreview(true);
+    return false;
+  }
+
+  const handlePreviewClose = () => {
+    setPreview(false);
+  }
+
+  function createMarkup(dirty) {
+    return { __html: dirty };
+    }
 
   const createTemplate = async() => {
     const now = new Date();
@@ -83,11 +105,28 @@ export default function InputTemplateAdd(props) {
     props.onSubmitChange(false);
   };
 
-  const handlePreview = (e) => {
-    alert("Preview Page Here.");
-  };
-
   return (
+    <React.Fragment>
+    <Dialog
+    open={preview}
+    onClose={handlePreviewClose}
+    aria-labelledby="alert-dialog-title"
+    aria-describedby="alert-dialog-description"
+  >
+    <DialogTitle id="alert-dialog-title">
+      {"Preview of Template and Questions"}
+    </DialogTitle>
+    <DialogContent>
+      <DialogContentText id="alert-dialog-description">
+        <div dangerouslySetInnerHTML={createMarkup(formData.preLoadPage + formData.postLoadPage)} />
+      </DialogContentText>
+    </DialogContent>
+    <DialogActions>
+      <Button onClick={handlePreviewClose} autoFocus>
+        Close
+      </Button>
+    </DialogActions>
+  </Dialog>
     <div className="addTemplateData">
       <form onSubmit={handleSubmit}>
       <label>Title:  </label>
@@ -147,7 +186,7 @@ export default function InputTemplateAdd(props) {
 	        <div className="button-container">
   	        <button type="submit" style={{ margin: '8px 5px', padding: '5px' }}>{props.isAddMode || isGoAdd ? "Add" : "Update"}</button>
 	          <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>
-            <button className="activateButton" onClick={handlePreview}>Preview</button>
+            <button className="activateButton" onClick={handleClickOpenPreview}>Preview</button>
 	        </div>         
         </div>
       </div>
@@ -162,5 +201,6 @@ export default function InputTemplateAdd(props) {
 	      />
       </form>
      </div>
+     </React.Fragment>
   );
 }

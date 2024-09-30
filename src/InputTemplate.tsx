@@ -33,6 +33,8 @@ export default function InputTemplate(props) {
   const [templateId, setTemplateId] = useState('');
   const [isAssociateUser, setIsAssociateUser] = useState(false);
   const [isSetupTemplate, setIsSetupTemplate] = useState(false);
+  const [preLoad, setPreLoad] = useState('');
+  const [postLoad, setPostLoad] = useState('');
 
   const client = generateClient<Schema>();
   const [template, setTemplate] = useState<Schema["template"]["type"][]>([]);
@@ -166,12 +168,14 @@ export default function InputTemplate(props) {
     setIsAssociateUser(true);
   }
   
-  function handleBuildOut (title, id) {
+  function handleBuildOut (title, id, preLoadAttributes, postLoadAttributes) {
     setIsUpdateTemplate(false);
     setIsUpdateTemplate2(false);
     setIsAssociateUser(false);
     setTemplateName(title);
     setTemplateId(id);
+    setPreLoad(preLoadAttributes);
+    setPostLoad(postLoadAttributes);
     setIsSetupTemplate(true);
   }
 
@@ -235,7 +239,7 @@ export default function InputTemplate(props) {
 	    <td>{comp.live_date}</td>
       <td>{comp.prod_date}</td>
       <td><button className="activateButton" onClick={() => handleUsers(comp.title, comp.id)}>Maintain Users</button></td>
-      <td><button className="activateButton" onClick={() => handleBuildOut(comp.title, comp.id)}>Build Template</button></td>
+      <td><button className="activateButton" onClick={() => handleBuildOut(comp.title, comp.id, comp.pre_load_page_attributes, comp.post_load_page_attributes)}>Build Template</button></td>
 	    <td className="colD"><button className={(!comp.deactive_date) ? "cancelButton" : "activateButton"}
 		onClick={() => handleOnDelete(comp.id, comp.deactive_date)}>{(!comp.deactive_date) ? "DeActivate" : "Activate"}</button></td>
 	  </tr>)}
@@ -243,7 +247,7 @@ export default function InputTemplate(props) {
 	</table>
       </div>
       {isAssociateUser && <AssociateUsers onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} name={templateName} id={templateId} divisionId={selectedDivisionId}/>}
-      {isSetupTemplate && <SetupTemplate onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} name={templateName} templateId={templateId} divisionId={selectedDivisionId}/>}
+      {isSetupTemplate && <SetupTemplate onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} name={templateName} templateId={templateId} divisionId={selectedDivisionId} preLoadAttributes={preLoad} postLoadAttributes={postLoad} />}
       {!isAssociateUser && selectedDivisionId != '' && !isSetupTemplate && <InputTemplateAdd props={props} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleOnCancel} onChange={handleTheChange} updateFormData = {{id: formData.id, 
         divisionId: selectedDivisionId, 
         title: formData.title,

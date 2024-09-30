@@ -85,6 +85,10 @@
       top: 50px;
       width: 1000px;
     }
+    .startPreview {
+      position: absolute;
+      top: 0px;
+    }
     .addSignUpData {
       background-color: ocean;
       position: absolute;
@@ -143,6 +147,15 @@
       Border: 3px solid #73AD21;
     }
     .showTemplateData {
+      background-color: sky;
+      position: absolute;
+      width: 1183px;
+      height: 250px;
+      top: 100px;
+      display: table-header-group;
+      Border: 3px solid #73AD21;
+    }
+    .showQuestionData {
       background-color: sky;
       position: absolute;
       width: 1183px;
