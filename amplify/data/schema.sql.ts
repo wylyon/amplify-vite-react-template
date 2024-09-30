@@ -162,7 +162,7 @@ export const schema = configure({
         created_by: a.integer().required()
     }).identifier([
         "id"
-    ]),
+    ]).authorization((allow) => [allow.publicApiKey()]),
     "user": a.model({
         id: a.string().required(),
         division_id: a.string().required(),
