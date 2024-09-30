@@ -152,16 +152,10 @@ export default function SetupTemplate(props) {
   // For now, lets "mark" as deleted until we can officially delete
   const deleteQuestions = async(questionId) => {
     const now = new Date();
-    const { errors, data: deletedQuestions } = await client.models.template_question.update(      
-      {
-        id: questionId,
-        deactive_date: now
-      });
-    if (errors) {
-      setAlertMessage(errors[0].message);
-      setIsAlert(true);
-      return;
-    }  
+    const qId = questionId.id;
+    const { errors, data } = await client.mutations.deleteQuestionById({
+      questionId: qId
+    });
   }
 
   const updateQuestions = async() => {
