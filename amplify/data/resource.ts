@@ -74,7 +74,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .returns(a.ref("template_question").array())
     .handler(a.handler.inlineSql(
       "SELECT id, template_id, question_order, pre_load_attributes, title, description, question_type, question_values, post_load_attributes, optional_flag, actions_flag, notes, created, created_by FROM " +
-      "logistics.template_question WHERE template_id = :templateId order by question_order;"
+      "logistics.template_question WHERE template_id = :templateId and deactive_date is null order by question_order;"
     )).authorization(allow => allow.publicApiKey()),
   }).addToSchema({
     deleteQuestionById: a.mutation().arguments({
