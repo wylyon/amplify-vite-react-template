@@ -102,7 +102,7 @@ function App() {
   return (
     <>
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
-    {!isAccessDisabled && <Authenticator  hideSignUp socialProviders={['google']}>
+    {!isAccessDisabled && <Authenticator  hideSignUp >
       {({ signOut, user }) => (
         <DetermineMode userId={user.signInDetails.loginId} onSubmitChange={signOut}/>
       )}

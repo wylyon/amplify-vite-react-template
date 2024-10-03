@@ -27,7 +27,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import DisplayQuestion from "../src/DisplayQuestion";
+import SetupQuestion from "../src/SetupQuestion";
 import { AuthType } from "aws-cdk-lib/aws-stepfunctions-tasks";
+import Typography from "@mui/material/Typography";
+import Slider from "@mui/material/Slider";
 
 export default function SetupTemplate(props) {
   const [formData, setFormData] = useState({
@@ -56,6 +59,7 @@ export default function SetupTemplate(props) {
   const [alertMessage, setAlertMessage] = useState('');
   const [isUpdate, setIsUpdate] = useState(false);
   const [open, setOpen] = useState(false);
+  const [openPreAttributes, setOpenPreAttributes] = useState(false);
   const [whichControl, setWhichControl] = useState('');
   const [dialogResult, setDialogResult] = useState('');
   const [dialogPrompt, setDialogPrompt] = useState('');
@@ -63,6 +67,8 @@ export default function SetupTemplate(props) {
   const [isPreviewActive, setIsPreviewActive] = useState(false);
   const [isDeleteActive, setIsDeleteActive] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [dialogControls, setDialogControls] = useState({});
+  const [isWizard, setIsWizard] = useState(false);
 
   const handleClickOpen = () => {
     if (formData.questionValues == '') {
@@ -86,6 +92,138 @@ export default function SetupTemplate(props) {
 
   const handleClickOpenPreview = () => {
     setPreview(true);
+  }
+
+  const handlePreClose = () => {
+    setOpenPreAttributes(false);
+  };
+
+  function countNumOfTabs(text) {
+    if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
+      if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
+        if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
+          if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
+            if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
+              if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
+                if (text.indexOf("&emsp;&emsp;&emsp;&emsp;") < 0) {
+                  if (text.indexOf("&emsp;&emsp;&emsp;") < 0) {
+                    if (text.indexOf("&emsp;&emsp;") < 0) {
+                      if (text.indexOf("&emsp;") < 0) {
+                        return 0;
+                      } else {
+                        return 1;
+                      }
+                    } else {
+                      return 2;
+                    }
+                  } else {
+                    return 3;
+                  }
+                } else {
+                  return 4;
+                }
+              } else {
+                return 5;
+              }
+            } else {
+              return 6;
+            }
+          } else {
+            return 7;
+          }
+        } else {
+          return 8;
+        }
+      } else {
+        return 9;
+      }
+    } else {
+      return 10;
+    }
+  }
+
+  const handleClickOpenPre = () => {
+    if (formData.preLoadAttributes == '') {
+      setDialogPrompt('');
+      setDialogControls({
+        lines: 0,
+        tabs: 0,
+        tabsAfter: 0
+      });
+    } else {
+      const preLoadText = formData.preLoadAttributes;
+      var nlines = 0;
+      if (preLoadText.indexOf("<br><br><br><br><br><br><br><br><br><br>") < 0) {
+        if (preLoadText.indexOf("<br><br><br><br><br><br><br><br><br>") < 0) {
+          if (preLoadText.indexOf("<br><br><br><br><br><br><br><br>") < 0) {
+            if (preLoadText.indexOf("<br><br><br><br><br><br><br>") < 0) {
+              if (preLoadText.indexOf("<br><br><br><br><br><br>") < 0) {
+                if (preLoadText.indexOf("<br><br><br><br><br>") < 0) {
+                  if (preLoadText.indexOf("<br><br><br><br>") < 0) {
+                    if (preLoadText.indexOf("<br><br><br>") < 0) {
+                      if (preLoadText.indexOf("<br><br>") < 0) {
+                        if (preLoadText.indexOf("<br>") < 0) {
+                          nlines = 0;
+                        } else {
+                          nlines = 1;
+                        }
+                      } else {
+                        nlines = 2;
+                      }
+                    } else {
+                      nlines = 3;
+                    }
+                  } else {
+                    nlines = 4;
+                  }
+                } else {
+                  nlines = 5;
+                }
+              } else {
+                nlines = 6;
+              }
+            } else {
+              nlines = 7;
+            }
+          } else {
+            nlines = 8;
+          }
+        } else {
+          nlines = 9;
+        }
+      } else {
+        nlines = 10;
+      }
+      const preLoadTextNoLines = preLoadText.replace(/<br>/g, "");
+      const ntabs  = countNumOfTabs(preLoadTextNoLines);
+      if (preLoadTextNoLines.indexOf("&emsp;") == 0) {
+        const preLoadTextNoLinesNoTabs = preLoadTextNoLines.replace(/&emsp;/g, "");
+        setDialogPrompt(preLoadTextNoLinesNoTabs);
+        setDialogControls({
+          lines: nlines,
+          tabs: ntabs,
+          tabsAfter: 0
+        });
+      } else {
+        if (preLoadTextNoLines.indexOf("&emsp;") > 0) {
+          const preLoadTextNoLinesNoTabs = preLoadTextNoLines.replace(/&emsp;/g, "");
+          setDialogPrompt(preLoadTextNoLinesNoTabs);
+          setDialogControls({
+            lines: nlines,
+            tabs: 0,
+            tabsAfter: ntabs
+          });        
+        } else {
+          setDialogPrompt(preLoadTextNoLines);
+          setDialogControls({
+            lines: nlines,
+            tabs: 0,
+            tabsAfter: ntabs
+          });              
+        }
+      }
+    }
+    setOpenPreAttributes(true);
   }
 
   const handlePreviewClose = () => {
@@ -245,6 +383,10 @@ export default function SetupTemplate(props) {
     }
   }
 
+  function handleOnNew() {
+    setIsWizard(true);
+  }
+
   const handlePhotoClick = () => {
     setIsValuesDisabled(true);
     setWhichControl('');
@@ -369,15 +511,65 @@ export default function SetupTemplate(props) {
     });
   }
 
+  function setPreAttributes (textValue) {
+    setFormData({
+      id: formData.id,
+      templateId: props.template_id,
+      questionOrder: formData.questionOrder,
+      preLoadAttributes: textValue,
+      title: formData.title,
+      description: formData.description,
+      questionType: formData.questionType,
+      questionValues: formData.questionValues,
+      postLoadAttributes: formData.postLoadAttributes,
+      optionalFlag: formData.optionalFlag,
+      actionsFlag: false,
+      notes: '',
+    });
+  }
+
+  function newQuestionSubmit (e) {
+    setIsWizard(false);
+    setFormData({
+      id: e.id,
+      templateId: props.template_id,
+      questionOrder: e.questionOrder,
+      preLoadAttributes: e.preLoadAttributes,
+      title: e.title,
+      description: e.description,
+      questionType: e.questionType,
+      questionValues: e.questionValues,
+      postLoadAttributes: e.postLoadAttributes,
+      optionalFlag: e.optionalFlag,
+      actionsFlag: false,
+      notes: '',
+    });
+    if (e.questionType != 'photo' && e.questionType != 'datepicker') {
+      setIsValuesDisabled(false);
+    }
+  }
+
   function createMarkup(dirty) {
     return { __html: dirty };
     }
 
   const paginationModel = { page: 0, pageSize: 5 };
+  const marks = [
+    { value: 0, label: '0'},
+    { value: 1, label: '1'},
+    { value: 2, label: '2'},
+    { value: 3, label: '3'},
+    { value: 10, label: '10'}
+  ];
+
+  function valuetext(value: number) {
+    return `${value}°C`;
+  }
 
   return (
     <React.Fragment>
       <CssBaseline />
+      {isWizard && <SetupQuestion props={props} onSubmitChange={newQuestionSubmit} />}
       <Dialog
         open={preview}
         onClose={handlePreviewClose}
@@ -391,7 +583,7 @@ export default function SetupTemplate(props) {
           <DialogContentText id="alert-dialog-description"
           sx={{height: '500px', width: '350px'}}>
             <div className="startPreview" dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes)} />
-              {templateQuestion.map(comp => <DisplayQuestion props={props} question = {comp} />)}
+              {templateQuestion.map(comp => <DisplayQuestion props={props} question = {comp} isPreview = {true}/>)}
             <div dangerouslySetInnerHTML={createMarkup(props.postLoadAttributes)} />
           </DialogContentText>
         </DialogContent>
@@ -399,6 +591,101 @@ export default function SetupTemplate(props) {
           <Button onClick={handlePreviewClose} autoFocus>
             Close
           </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openPreAttributes}
+        onClose={handlePreClose}
+        PaperProps={{
+          component: 'form',
+          onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            const formJson = Object.fromEntries((formData as any).entries());
+            const label = formJson.labelValue;
+            const lines = formJson.linesValue;
+            const tabs = formJson.tabValue;
+            const tabsAfter = formJson.tabValueAfter;
+            if (label == "" && lines == "0" && tabs == "0") {
+              // case where nothing was entered.
+              setPreAttributes("");
+            } else {
+              // we have something to render here
+              var preAttributes = "";
+              const numLines = Number(lines);
+              const numTabs = Number(tabs);
+              const numTabsAfter = Number(tabsAfter);
+              // lets do lines first
+              for (var i = 0; i < numLines; i++) {
+                preAttributes = preAttributes + "<br>";
+              }
+              // lets do tabs next
+              for (var i = 0; i < numTabs; i++) {
+                preAttributes = preAttributes + "&emsp;";
+              }    
+              if (label != "") {
+                preAttributes = preAttributes + label;
+                for (var i = 0; i < numTabsAfter; i++) {
+                  preAttributes = preAttributes + "&emsp;";
+                }   
+              }       
+              setPreAttributes(preAttributes);  
+            }
+            handlePreClose();
+          },
+        }}
+      >
+        <DialogTitle>Enter any control attributes</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Please select any relevant characteristics you want:
+          </DialogContentText>
+          <TextField
+            autoFocus
+            id="control_label"
+            name="labelValue"
+            label="Any label before the control"
+            defaultValue={dialogPrompt}
+            variant="outlined"
+            fullWidth
+          />
+          <Typography variant="caption" gutterBottom>Number Lines From Prior Control</Typography>
+          <Slider aria-label="Always visible"
+            defaultValue={dialogControls.lines}
+            getAriaValueText={valuetext}
+            name="linesValue"
+            step={1}
+            marks={marks}
+            valueLabelDisplay="auto"
+            min={0}
+            max={10}
+          />
+          <Typography variant="caption" gutterBottom>Number Tabs before label or control</Typography>
+          <Slider aria-label="Always visible"
+            defaultValue={dialogControls.tabs}
+            getAriaValueText={valuetext}
+            name="tabValue"
+            step={1}
+            marks={marks}
+            valueLabelDisplay="auto"
+            min={0}
+            max={10}
+          />
+          <Typography variant="caption" gutterBottom>Number Tabs after label</Typography>
+          <Slider aria-label="Always visible"
+            defaultValue={dialogControls.tabsAfter}
+            getAriaValueText={valuetext}
+            name="tabValueAfter"
+            step={1}
+            marks={marks}
+            valueLabelDisplay="auto"
+            min={0}
+            max={10}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handlePreClose}>Cancel</Button>
+          <Button type="submit">Save</Button>
         </DialogActions>
       </Dialog>
       <Dialog
@@ -464,7 +751,7 @@ export default function SetupTemplate(props) {
             <h3>Add Questions: 
               <ButtonGroup variant="contained" aria-label="Question Input group" 
                 sx={{ float: 'right'}}>
-                <Button variant="contained" color="success" onClick={resetQuestions}>New</Button>
+                <Button variant="contained" color="success" onClick={handleOnNew}>New</Button>
                 <Button variant="contained" color="success" onClick={handleOnSave}>Save</Button>
                 <Button variant="contained" color="error" onClick={handleOnCancel}>Cancel</Button>
               </ButtonGroup>
@@ -521,7 +808,7 @@ export default function SetupTemplate(props) {
                 <FormLabel id="filler1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FormLabel>
                 <Tooltip title="Enter here the order of this question relative to others." placement="right">
                 <TextField id="question_order" name="questionOrder" value={formData.questionOrder} 
-                  label="Order#" variant="outlined" size="small" 
+                  label="Order" variant="outlined" size="small" 
                   sx={{ width: '80px' }} required="true" onChange={handleChange}/></Tooltip>
                 <br />
                 <Tooltip title="Enter here a fuller description of what this question is for and about." placement="right">
@@ -532,7 +819,8 @@ export default function SetupTemplate(props) {
                 <Tooltip title="Enter here any special HTML formatting, or text you want processed BEFORE control is rendered." placement="right">
                 <TextField id="question_pre" name="preLoadAttributes" value={formData.preLoadAttributes} 
                   label="control pre-attributes i.e. label" variant="outlined" size="small" multiline
-                  maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip>
+                  maxRows={4} sx={{ width: "350px"}} 
+                  onClick={handleClickOpenPre} onChange={handleChange}/></Tooltip>
                 <br />  
                 <Tooltip title="Enter here any special HTML formatting, or text you want processed AFTER control is rendered." placement="right">    
                 <TextField id="question_post" name="postLoadAttributes" value={formData.postLoadAttributes} 
@@ -540,8 +828,8 @@ export default function SetupTemplate(props) {
                   maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip> 
                 <br /><br />
                 <Tooltip title="Enter here control values (ie. dropdown or radio values)." placement="right">
-                <TextField id="question_values" name="questionValues" value={dialogResult} 
-                  label="dropdown/input/text/radio values" 
+                <TextField id="question_values" name="questionValues" value={formData.questionValues} 
+                  label="dropdown/radio values" 
                   disabled={isValuesDisabled} variant="outlined" size="small" multiline
                   maxRows={4} sx={{ width: "350px"}} onClick={handleClickOpen} onChange={handleChange}/></Tooltip>   
                 <br />

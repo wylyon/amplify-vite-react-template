@@ -36,13 +36,14 @@ export default function DisplayQuestion(props) {
     return htmlSelect;
   }
 
-  function getHTMLforType (questionType, questionSeq, questionValues) {
+  function getHTMLforType (questionType, questionSeq, questionValues, isPreview) {
     const questionValueFiltered = (questionValues == null || questionValues == '') ? '' : questionValues;
     const questionValueArr = questionValueFiltered.split("|");
     switch (questionType) {
       case TYPE_PHOTO:
-        return "<img src=\"https://images.unsplash.com/photo-1533827432537-70133748f5c8\" " +
-          "alt=\"My Picture.\" style=\"width:100px;height:100px;\">";
+        return (isPreview) ? "<img src=\"https://images.unsplash.com/photo-1533827432537-70133748f5c8\" " +
+          "alt=\"My Picture.\" style=\"width:100px;height:100px;\">" :
+          "<input type=\"file\" id=\"photo" + questionSeq + "\" capture=\"environment\" accept=\"image/*,video/*\">";
       case TYPE_DROPDOWN:
         return "<select id=\"dd" + questionSeq + "\" >" +
         returnDropDownRadioValues(questionValueArr, true, "") +
@@ -65,24 +66,26 @@ export default function DisplayQuestion(props) {
     }
   }
 
-  function determineHTML(theQuestion) {
+  function determineHTML(theQuestion, isPreview) {
     var html;
     if (theQuestion.pre_load_attributes != null && theQuestion.pre_load_attributes != '') {
       // we want to add any pre attributes for HTML
-      html = theQuestion.pre_load_attributes + getHTMLforType(theQuestion.question_type, 
-        theQuestion.question_order, theQuestion.question_values) + theQuestion.post_load_attributes;
+      html = ((isPreview) ? theQuestion.pre_load_attributes : 
+        ("<label for=\"photo" + theQuestion.question_order + "\">" + theQuestion.pre_load_attributes + "</label>")) +
+        getHTMLforType(theQuestion.question_type, theQuestion.question_order, theQuestion.question_values, isPreview) + 
+        theQuestion.post_load_attributes;
     } else {
-      html = getHTMLforType(theQuestion.question_type, 
-        theQuestion.question_order, theQuestion.question_values) + theQuestion.post_load_attributes;
+      html = getHTMLforType(theQuestion.question_type, theQuestion.question_order, theQuestion.question_values, isPreview) + 
+        theQuestion.post_load_attributes;
     }
     return html;
   }
 
   function createMarkup(dirty) {
-	return { __html: determineHTML(dirty) };
+	return { __html: determineHTML(dirty,  props.isPreview) };
   }
 
   return (
-      <div dangerouslySetInnerHTML={createMarkup(props.question)} />
+      <div key="props.question.title" dangerouslySetInnerHTML={createMarkup(props.question)} />
   );
 }

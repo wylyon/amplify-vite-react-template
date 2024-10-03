@@ -1,9 +1,14 @@
 
 // @ts-nocheck
+import React from "react";
 import { useState, useEffect } from "react";
 import { generateClient } from 'aws-amplify/data';
 import DisplayUser from '../src/DisplayUser';
-import SelectTemplate from "../src/SelectTemplate";
+import PopupTemplate from "../src/PopupTemplate";
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import LogoutIcon from '@mui/icons-material/Logout';
+import IconButton from '@mui/material/IconButton';
+import LogoDevIcon from '@mui/icons-material/LogoDev';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 
 export default function UserMode(props) {
@@ -18,13 +23,17 @@ export default function UserMode(props) {
 		emailAddress: props.userId,
 	}]);
 	
+	const [reload, setReload] = useState(false);
 	const [userDataArr, setUserDataArr] = useState([]);
 	const client = generateClient<Schema>();
 	const [filtered, setFiltered] = useState('');
 	const [isDefaultPage, setIsDefaultPage] = useState(true);
 	const [isMultiTemplates, setIsMultiTemplates] = useState(false);
-	const [prePostLoadPage, setPrePostLoadPage] = useState('');
+	const [preLoadPage, setPreLoadPage] = useState('');
+	const [postLoadPage, setPostLoadPage] = useState('');
 	const [templates, setTemplates] = useState('');
+	const [tempId, setTempId] = useState('');
+	const [isMulti, setIsMulti] = useState(false);
 	
 	const handleVerifiedDate = async(id) => {
 		const now = new Date();
@@ -82,10 +91,6 @@ export default function UserMode(props) {
 		return data;
 	  }
 
-	function renderTemplatePage (preLoadPageAttributes, postLoadPageAttributes) {
-		return preLoadPageAttributes + postLoadPageAttributes;
-	}
-
 	const getUserPageDetails = async (emailAddress) => {
 		const { data: items, errors } = await client.queries.listUserTemplates({
 		  email: emailAddress,
@@ -101,10 +106,11 @@ export default function UserMode(props) {
 				  if (!userItems.verified_date) {
 					handleVerifiedDate(userItems.template_user_id);
 				  }
-				  if (!(userItems.pre_load_page_attributes == "" && userItems.post_load_page_attributes == "")) {
-					setPrePostLoadPage(renderTemplatePage(userItems.pre_load_page_attributes, userItems.post_load_page_attributes));
-				  }
-				  setIsDefaultPage(userItems.pre_load_page_attributes == "" && userItems.post_load_page_attributes == "")
+				  setPreLoadPage(userItems.pre_load_page_attributes);
+				  setPostLoadPage(userItems.post_load_page_attributes);
+				  setTempId(userItems.template_id);
+				  // note:  change view listuserTemplates to return live_date and use that field
+				  setIsDefaultPage(false);
 				  setUserData(translateUserTemplate (userItems))
 				} else {
 				// here we have multiple templates...need to show list of templates to choose.
@@ -112,12 +118,13 @@ export default function UserMode(props) {
 				  const firstItem = JSON.parse(userItems[0]);
 				  setUserDataArr(translateUserTemplates(userItems));
 				  setIsMultiTemplates(true);
+				  setIsMulti(true);
 				  getUserPageDetailsByTemplate(props.userId, firstItem.template_id);
 				}
 			}
 		}
 	};
-	
+
 	const getUserPageDetailsByTemplate = async (emailAddress, templateId) => {
 		const { data: items, errors } = await client.queries.listUserTemplates({
 		  email: emailAddress,
@@ -133,12 +140,13 @@ export default function UserMode(props) {
 				  if (userItems.template_id == templateId) {
 					if (!userItems.verified_date) {
 						handleVerifiedDate(userItems.template_user_id);
-					  }
-					  if (!(userItems.pre_load_page_attributes == "" && userItems.post_load_page_attributes == "")) {
-						setPrePostLoadPage(renderTemplatePage(userItems.pre_load_page_attributes, userItems.post_load_page_attributes));
-					  }
-					  setIsDefaultPage(userItems.pre_load_page_attributes == "" && userItems.post_load_page_attributes == "")
-					  setUserData(translateUserTemplate (userItems))
+					}
+					setPreLoadPage(userItems.pre_load_page_attributes);
+					setPostLoadPage(userItems.post_load_page_attributes);
+					setTempId(templateId);
+					// note:  change view listuserTemplates to return live_date and use that field
+					setIsDefaultPage(false);
+					setUserData(translateUserTemplate (userItems))
 				  }
 				} else {
 					for (var i=0; i < items.length; i++) {
@@ -146,12 +154,11 @@ export default function UserMode(props) {
 						if (item.template_id == templateId) {
 							if (!item.verified_date) {
 								handleVerifiedDate(item.template_user_id);
-							  }
-							if (!(item.pre_load_page_attributes == "" && item.post_load_page_attributes == "")) {
-								setPrePostLoadPage(renderTemplatePage(item.pre_load_page_attributes, item.post_load_page_attributes));
-							} else {
-								setPrePostLoadPage("");
 							}
+							setPreLoadPage(item.pre_load_page_attributes);
+							setPostLoadPage(item.post_load_page_attributes);
+							setTempId(templateId);
+							// note:  change view listuserTemplates to return live_date and use that field
 							setIsDefaultPage(false);
 							setUserData(translateUserTemplate (item))	
 							return;						
@@ -164,30 +171,50 @@ export default function UserMode(props) {
 
 	useEffect(() => {
 	  getUserPageDetails(props.userId);
-	}, []);
+	  if (reload) {
+		window.location.reload();
+	  }
+	}, [reload]);
 
   const handleOnSignOut = (e) => {
     props.onSubmitChange(false);
   };
 
+  const handleReload = () => {
+	setReload(true);
+  }
+  
   const handleOnTemplate = (e) => {
+	setIsMultiTemplates(false);
 	getUserPageDetailsByTemplate(props.userId, e);
+  }
+
+  const handleSubmit = (e) => {
+
+  }
+  
+  const handleSwitchProgram = (e) => {
+	if (isMulti) {
+		setIsMultiTemplates(true);
+	}
   }
 
   return (
     <main>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
 		<div className="topnav">
-  	  		<a href="#home" className="active"><i className="fa fa-building" style={{fontSize:24}} />User
-	    		<div className="rightText">({props.userId}) 
-				<i className="fa fa-sign-out" style={{fontSize:24}}  onClick={handleOnSignOut} />
-				<span className="fa-solid fa-bars" style={{fontSize:20}}  onClick={handleOnSignOut} >
-				</span>
+  	  		<a href="#home" className="active">
+				<IconButton aria-label="home" onClick={handleReload}><LogoDevIcon /></IconButton>
+				{isMulti && <IconButton aria-label="programs" onClick={handleSwitchProgram}><ListAltIcon /></IconButton>}User
+	    		<div className="rightText">
+				({props.userId}) 
+				<IconButton aria-label="logout" onClick={handleOnSignOut}><LogoutIcon /></IconButton>
 	   			</div>
 	  		</a>
 		</div>
-	  {isMultiTemplates && <SelectTemplate theTemplates={templates} onSelectTemplate={handleOnTemplate}/> }
-	  {!isDefaultPage && <DisplayUser userId={props.userId} renderContent={prePostLoadPage} />}
+		{isMultiTemplates && <PopupTemplate theTemplates={templates} onSelectTemplate={handleOnTemplate}/> }
+	  {!isDefaultPage && <DisplayUser userId={props.userId} templateId={tempId} 
+	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
     </main> 
   );
 }
