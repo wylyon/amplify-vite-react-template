@@ -43,7 +43,7 @@ export default function DisplayQuestion(props) {
       case TYPE_PHOTO:
         return (isPreview) ? "<img src=\"https://images.unsplash.com/photo-1533827432537-70133748f5c8\" " +
           "alt=\"My Picture.\" style=\"width:100px;height:100px;\">" :
-          "<input type=\"file\" id=\"photo" + questionSeq + "\" capture=\"environment\" accept=\"image/*,video/*\">";
+          "<input type=\"file\" id=\"photo" + questionSeq + "\" capture=\"camera\" >";
       case TYPE_DROPDOWN:
         return "<select id=\"dd" + questionSeq + "\" >" +
         returnDropDownRadioValues(questionValueArr, true, "") +
