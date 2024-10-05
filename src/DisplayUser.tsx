@@ -7,10 +7,14 @@ import DisplayQuestion from '../src/DisplayQuestion';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
 
 export default function DisplayUser(props) {
   const client = generateClient<Schema>();
 	const [templateQuestion, setTemplateQuestion] = useState<Schema["template_question"]["type"][]>([]);
+  const [isAlert, setIsAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [theSeverity, setTheSeverity] = useState('error');
 
   const getQuestionsByTemplate = async (tempId) => {
 		const { data: items, errors } = await client.queries.listQuestionsByTemplateId({
@@ -24,11 +28,26 @@ export default function DisplayUser(props) {
 	};
   
   const handleCancel = (e) => {
+  
     props.onSubmitChange(false);
   }
 
+  const handleOnAlert = (e) => {
+    setIsAlert(false);
+    setAlertMessage('');
+    setTheSeverity("error");
+  }
+
   const handleSubmit = (e) => {
+    setIsAlertMessage("Saved Data");
+    setTheSeverity("success");
+   // setIsAlert(true);
     e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const formJson = Object.fromEntries((formData as any).entries());
+    // get all name/value pairs
+    const nameValuePairs = Object.entries(formJson);
+
     props.onSubmitChange(false);
   };
 
@@ -43,6 +62,9 @@ export default function DisplayUser(props) {
   return (
     <React.Fragment>
       <div key="preLoadAttributes" className="startProgram" dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes)} />
+      {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
+            {alertMessage}
+          </Alert>}
       <form onSubmit={handleSubmit}>
         {templateQuestion.map(comp => <DisplayQuestion props={props} question = {comp} isPreview={false} />)}
         <Stack spacing={2} direction="row">

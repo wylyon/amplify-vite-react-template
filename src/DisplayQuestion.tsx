@@ -43,24 +43,24 @@ export default function DisplayQuestion(props) {
       case TYPE_PHOTO:
         return (isPreview) ? "<img src=\"https://images.unsplash.com/photo-1533827432537-70133748f5c8\" " +
           "alt=\"My Picture.\" style=\"width:100px;height:100px;\">" :
-          "<input type=\"file\" id=\"photo" + questionSeq + "\" capture=\"camera\" >";
+          "<input type=\"file\" id=\"photo" + questionSeq + "\" name=\"photo" + questionSeq + "\" capture=\"camera\" >";
       case TYPE_DROPDOWN:
-        return "<select id=\"dd" + questionSeq + "\" >" +
+        return "<select id=\"dd" + questionSeq + "\" name=\"dd" + questionSeq + "\">" +
         returnDropDownRadioValues(questionValueArr, true, "") +
           "</select>";
       case TYPE_MULTIPLE_DROPDOWN:
-        return "<select id=\"dd" + questionSeq + "\" size=\"4\" multiple>" +
+        return "<select id=\"md" + questionSeq + "\" size=\"4\" multiple name=\"md" + questionSeq + "\">" +
         returnDropDownRadioValues(questionValueArr, true, "") +
           "</select>";
       case TYPE_RADIO:
         return returnDropDownRadioValues(questionValueArr, false, questionSeq);
       case TYPE_INPUT:
-        return "<input type=\"text\" id=\"" + questionSeq + "\" name=\"" + questionSeq + "\">";
+        return "<input type=\"text\" id=\"input" + questionSeq + "\" name=\"input" + questionSeq + "\">";
       case TYPE_TEXT:
-        return "<textarea name=\"" + questionSeq + "\" rows=\"5\" cols=\"20\">" + questionValues +
+        return "<textarea name=\"text" + questionSeq + "\" rows=\"5\" cols=\"20\">" + questionValues +
           "</textarea>";
       case TYPE_DATE:
-        return "<input type=\"date\" id=\"" + questionSeq + "\" name=\"" + questionSeq + "\">";
+        return "<input type=\"date\" id=\"date" + questionSeq + "\" name=\"date" + questionSeq + "\">";
       default:
         return ;
     }

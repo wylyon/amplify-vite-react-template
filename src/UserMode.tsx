@@ -9,6 +9,7 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import LogoutIcon from '@mui/icons-material/Logout';
 import IconButton from '@mui/material/IconButton';
 import LogoDevIcon from '@mui/icons-material/LogoDev';
+import Tooltip from '@mui/material/Tooltip';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 
 export default function UserMode(props) {
@@ -34,6 +35,7 @@ export default function UserMode(props) {
 	const [templates, setTemplates] = useState('');
 	const [tempId, setTempId] = useState('');
 	const [isMulti, setIsMulti] = useState(false);
+	const [isDefaultPage2, setIsDefaultPage2] = useState(true);
 	
 	const handleVerifiedDate = async(id) => {
 		const now = new Date();
@@ -190,9 +192,19 @@ export default function UserMode(props) {
   }
 
   const handleSubmit = (e) => {
-
+	if (isDefaultPage && isDefaultPage2) {
+		props.onSubmitChange(false);
+		return;
+	}
+	if (!isDefaultPage) {
+		setIsDefaultPage(true);
+		setIsDefaultPage2(false);
+	} else {
+		setIsDefaultPage2(true);
+		setIsDefaultPage(false);
+	}
   }
-  
+
   const handleSwitchProgram = (e) => {
 	if (isMulti) {
 		setIsMultiTemplates(true);
@@ -205,15 +217,20 @@ export default function UserMode(props) {
 		<div className="topnav">
   	  		<a href="#home" className="active">
 				<IconButton aria-label="home" onClick={handleReload}><LogoDevIcon /></IconButton>
-				{isMulti && <IconButton aria-label="programs" onClick={handleSwitchProgram}><ListAltIcon /></IconButton>}User
+				{isMulti &&
+				<Tooltip title="Pop up program selection dialog to change view." placement="bottom">
+					<IconButton aria-label="programs" onClick={handleSwitchProgram}><ListAltIcon /></IconButton>
+				</Tooltip>}User
 	    		<div className="rightText">
 				({props.userId}) 
-				<IconButton aria-label="logout" onClick={handleOnSignOut}><LogoutIcon /></IconButton>
+				<Tooltip title="Log out of the program." placement="bottom"><IconButton aria-label="logout" onClick={handleOnSignOut}><LogoutIcon /></IconButton></Tooltip>
 	   			</div>
 	  		</a>
 		</div>
 		{isMultiTemplates && <PopupTemplate theTemplates={templates} onSelectTemplate={handleOnTemplate}/> }
-	  {!isDefaultPage && <DisplayUser userId={props.userId} templateId={tempId} 
+	  {	!isDefaultPage && <DisplayUser userId={props.userId} templateId={tempId} 
+	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
+		{!isDefaultPage2 && <DisplayUser userId={props.userId} templateId={tempId} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
     </main> 
   );
