@@ -417,6 +417,11 @@ export default function SetupTemplate(props) {
     setWhichControl('');
   }
 
+  const handleButtonClick = () => {
+    setIsValuesDisabled(false);
+    setWhichControl('Button label');
+  }
+
   function handleDelete () {
     for (var i = 0; i < selectedRows.length; i++) {
       deleteQuestions(selectedRows[i]);
@@ -746,9 +751,9 @@ export default function SetupTemplate(props) {
           {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
           </Alert>}
-          <Box sx={{ bgcolor: '#C6DEFF', width: '600px', height: '500px', float: 'left', 
+          <Box sx={{ bgcolor: '#C6DEFF', width: '600px', height: '520px', float: 'left', 
               borderStyle: 'solid', borderWidth: '2px' }} >
-            <h3>Add Questions: 
+            <h3>Add Questions/Controls: 
               <ButtonGroup variant="contained" aria-label="Question Input group" 
                 sx={{ float: 'right'}}>
                 <Button variant="contained" color="success" onClick={handleOnNew}>New</Button>
@@ -759,45 +764,68 @@ export default function SetupTemplate(props) {
             <FormControl>
               <div>
               <div style={{ float: 'left'}}>
-                <Tooltip title="These are UI controls for your Template" placement="top">
-                <FormLabel id="question-group-label">Controls</FormLabel></Tooltip>
                 <RadioGroup
                   aria-labelledby="question-group-label"
                   name="questionType" >
                     <Tooltip title="Select this to input a photo" placement="top">
-                    <FormControlLabel value="photo" 
-                      control={(formData.questionType=="" || formData.questionType=="photo") ? <Radio checked="true"/> : <Radio />} 
+                    <FormControlLabel value="photo"
+                      control={(formData.questionType=="" || formData.questionType=="photo") ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                       label="Photo" 
                       onClick={handlePhotoClick} onChange={handleChange}/></Tooltip>
                     <Tooltip title="Select this to input a dropdown for a single input" placement="right">
                     <FormControlLabel value="dropdown" 
-                      control={(formData.questionType=="dropdown") ? <Radio checked="true"/> : <Radio />} 
+                      control={(formData.questionType=="dropdown") ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                       label="Dropdown" 
                       onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
                     <Tooltip title="Select this to input a dropdown for multiple inputs" placement="right">
                     <FormControlLabel value="multiple_dropdown" 
-                      control={formData.questionType=="multiple_dropdown" ? <Radio checked="true"/> : <Radio />} 
+                      control={formData.questionType=="multiple_dropdown" ? <Radio checked="true" size="small"/> : <Radio size="small" />} 
                       label="Multiple Dropdown" onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
                     <Tooltip title="Select this to input radio boxes for different input" placement="right">
                     <FormControlLabel value="radiobox" 
-                      control={formData.questionType=="radiobox" ? <Radio checked="true" /> : <Radio />} 
+                      control={formData.questionType=="radiobox" ? <Radio checked="true"  size="small"/> : <Radio  size="small"/>} 
                       label="Radio" 
                       onClick={handleRadioClick} onChange={handleChange}/></Tooltip>
                     <Tooltip title="Select this to input an input box for data" placement="right">
                     <FormControlLabel value="input" 
-                      control={formData.questionType=="input" ? <Radio checked="true"/> : <Radio />} 
+                      control={formData.questionType=="input" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                       label="Input" 
                       onClick={handleInputClick} onChange={handleChange}/></Tooltip>
                     <Tooltip title="Select this to input text input for data" placement="right">
                     <FormControlLabel value="text" 
-                      control={formData.questionType=="text" ? <Radio checked="true"/> : <Radio />} 
+                      control={formData.questionType=="text" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                       label="Text" 
                       onClick={handleTextClick} onChange={handleChange}/></Tooltip>
                     <Tooltip title="Select this to input date data" placement="right">
                     <FormControlLabel value="datepicker" 
-                      control={formData.questionType=="datepicker" ? <Radio checked="true"/> : <Radio />} 
+                      control={formData.questionType=="datepicker" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                       label="Date Picker" 
                       onClick={handleDateClick} onChange={handleChange}/></Tooltip>
+                    <Tooltip title="Select this to select by button" placement="right">
+                    <FormControlLabel value="button" 
+                      control={formData.questionType=="button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                      label="Button" 
+                      onClick={handleButtonClick} onChange={handleChange}/></Tooltip>
+                    <Tooltip title="Select this to select by color button" placement="right">
+                    <FormControlLabel value="contained_button_color" 
+                      control={formData.questionType=="contained_button_color" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                      label="Color Button" 
+                      onClick={handleButtonClick} onChange={handleChange}/></Tooltip>
+                    <Tooltip title="Select this to select a toggle button" placement="right">
+                    <FormControlLabel value="toggle_button" 
+                      control={formData.questionType=="toggle_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                      label="Toggle Button" 
+                      onClick={handleButtonClick} onChange={handleChange}/></Tooltip>
+                    <Tooltip title="Select this to input a dropdown for multiple inputs" placement="right">
+                    <FormControlLabel value="checkbox_multiple_dropdown" 
+                      control={formData.questionType=="checkbox_multiple_dropdown" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                      label="Chkbox Dropdown" 
+                      onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
+                    <Tooltip title="Select this for a switch" placement="right">
+                    <FormControlLabel value="switch" 
+                      control={formData.questionType=="switch" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                      label="Switch" 
+                      onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
                 </RadioGroup>
               </div>
               <div style={{ marginLeft: '200px'}}>

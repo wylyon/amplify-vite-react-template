@@ -166,7 +166,12 @@ export const schema = configure({
             "radiobox",
             "input",
             "text",
-            "datepicker"
+            "datepicker",
+            "button",
+            "checkbox_multiple_dropdown",
+            "contained_button_color",
+            "switch",
+            "toggle_button"
         ]),
         question_values: a.string(),
         post_load_attributes: a.string(),
