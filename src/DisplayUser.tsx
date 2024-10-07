@@ -15,17 +15,6 @@ export default function DisplayUser(props) {
   const [isAlert, setIsAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [theSeverity, setTheSeverity] = useState('error');
-
-  const getQuestionsByTemplate = async (tempId) => {
-		const { data: items, errors } = await client.queries.listQuestionsByTemplateId({
-		  templateId: tempId
-		});
-		if (errors) {
-		  alert(errors[0].message);
-		  return;
-		}
-		setTemplateQuestion(items);
-	};
   
   const handleCancel = (e) => {
   
@@ -39,9 +28,6 @@ export default function DisplayUser(props) {
   }
 
   const handleSubmit = (e) => {
-    setIsAlertMessage("Saved Data");
-    setTheSeverity("success");
-   // setIsAlert(true);
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const formJson = Object.fromEntries((formData as any).entries());
@@ -52,7 +38,6 @@ export default function DisplayUser(props) {
   };
 
   useEffect(() => {
-	  getQuestionsByTemplate(props.templateId);
 	}, []);
 
   function createMarkup(dirty) {
@@ -66,7 +51,7 @@ export default function DisplayUser(props) {
             {alertMessage}
           </Alert>}
       <form onSubmit={handleSubmit}>
-        {templateQuestion.map(comp => <DisplayQuestion props={props} question = {comp} isPreview={false} />)}
+        {props.templateQuestions.map(comp => <DisplayQuestion props={props} question = {comp} isPreview={false} />)}
         <Stack spacing={2} direction="row">
           <Button variant="contained" type="submit">Save</Button>
           <Button variant="contained" color="error" onClick={handleCancel}>Cancel</Button>

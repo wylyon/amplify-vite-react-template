@@ -1,5 +1,6 @@
-
 // @ts-nocheck
+import * as React from 'react';
+import Button from '@mui/material/Button';
 
 export default function DisplayQuestion(props) {
   const handleOnSignOut = (e) => {
@@ -12,6 +13,33 @@ export default function DisplayQuestion(props) {
   const TYPE_INPUT = 'input';
   const TYPE_TEXT = 'text';
   const TYPE_DATE = 'datepicker';
+  const TYPE_BUTTON = 'button';
+  const TYPE_CHECKBOX_MULTIPLE_DROPDOWN = 'checkbox_multiple_dropdown';
+  const TYPE_CONTAINED_BUTTON_COLOR = 'contained_button_color';
+  const TYPE_SWITCH = 'switch';
+  const TYPE_TOGGLE_BUTTON = 'toggle_button';
+
+  const ITEM_HEIGHT = 48;
+  const ITEM_PADDING_TOP = 8;
+  const MenuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+        width: 250,
+      },
+    },
+  };
+
+  function returnButtonNameColor (questionValueArr, questionSeq) {
+    if (questionValueArr.length == 1) {
+      // no color chosen
+      return "<Button id=\"btn" + questionSeq + "\" name=\"btn" + questionSeq + "\">" + questionValueArr[0] + "</Button>";
+    } else {
+      // color first, then value
+      return "<Button id=\"btn" + questionSeq + "\" name=\"btn" + questionSeq + "\" style=\"background-color:" + questionValueArr[0] + "\">" + 
+        questionValueArr[1] + "</Button>";
+    }
+  }
 
   function returnDropDownRadioValues (questionValueArr, isDropDown, name) {
     var htmlSelect = '';
@@ -61,6 +89,12 @@ export default function DisplayQuestion(props) {
           "</textarea>";
       case TYPE_DATE:
         return "<input type=\"date\" id=\"date" + questionSeq + "\" name=\"date" + questionSeq + "\">";
+      case TYPE_BUTTON:
+        return "<button type=\"button\" id=\"btn" + questionSeq + "\" name=\"btn" + questionSeq + "\">" + questionValues + "</button>";
+      case TYPE_CONTAINED_BUTTON_COLOR:
+        return returnButtonNameColor(questionValueArr, questionSeq);
+      case TYPE_SWITCH:
+        return "<label class=\"switch\"><input type=\"checkbox\"><span class=\"slider round\"></span></label>";
       default:
         return ;
     }

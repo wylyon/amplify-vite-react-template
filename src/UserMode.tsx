@@ -24,6 +24,7 @@ export default function UserMode(props) {
 		emailAddress: props.userId,
 	}]);
 	
+	const [templateQuestion, setTemplateQuestion] = useState<Schema["template_question"]["type"][]>([]);
 	const [reload, setReload] = useState(false);
 	const [userDataArr, setUserDataArr] = useState([]);
 	const client = generateClient<Schema>();
@@ -93,6 +94,17 @@ export default function UserMode(props) {
 		return data;
 	  }
 
+	const getQuestionsByTemplate = async (tempId) => {
+		const { data: items, errors } = await client.queries.listQuestionsByTemplateId({
+		  templateId: tempId
+		});
+		if (errors) {
+		  alert(errors[0].message);
+		  return;
+		}
+		setTemplateQuestion(items);
+	};
+
 	const getUserPageDetails = async (emailAddress) => {
 		const { data: items, errors } = await client.queries.listUserTemplates({
 		  email: emailAddress,
@@ -113,7 +125,9 @@ export default function UserMode(props) {
 				  setTempId(userItems.template_id);
 				  // note:  change view listuserTemplates to return live_date and use that field
 				  setIsDefaultPage(false);
+				  setIsDefaultPage2(true);
 				  setUserData(translateUserTemplate (userItems))
+				  getQuestionsByTemplate(userItems.template_id);
 				} else {
 				// here we have multiple templates...need to show list of templates to choose.
 				//  setUserData(translateUserTemplate (userItems))
@@ -148,7 +162,9 @@ export default function UserMode(props) {
 					setTempId(templateId);
 					// note:  change view listuserTemplates to return live_date and use that field
 					setIsDefaultPage(false);
+					setIsDefaultPage2(true);
 					setUserData(translateUserTemplate (userItems))
+					getQuestionsByTemplate(templateId);
 				  }
 				} else {
 					for (var i=0; i < items.length; i++) {
@@ -162,7 +178,9 @@ export default function UserMode(props) {
 							setTempId(templateId);
 							// note:  change view listuserTemplates to return live_date and use that field
 							setIsDefaultPage(false);
+							setIsDefaultPage2(true);
 							setUserData(translateUserTemplate (item))	
+							getQuestionsByTemplate(templateId);
 							return;						
 						}
 					}
@@ -197,8 +215,8 @@ export default function UserMode(props) {
 		return;
 	}
 	if (!isDefaultPage) {
-		setIsDefaultPage(true);
 		setIsDefaultPage2(false);
+		setIsDefaultPage(true);
 	} else {
 		setIsDefaultPage2(true);
 		setIsDefaultPage(false);
@@ -228,9 +246,9 @@ export default function UserMode(props) {
 	  		</a>
 		</div>
 		{isMultiTemplates && <PopupTemplate theTemplates={templates} onSelectTemplate={handleOnTemplate}/> }
-	  {	!isDefaultPage && <DisplayUser userId={props.userId} templateId={tempId} 
+	  {	!isDefaultPage && <DisplayUser userId={props.userId} templateId={tempId} templateQuestions={templateQuestion} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
-		{!isDefaultPage2 && <DisplayUser userId={props.userId} templateId={tempId} 
+		{!isDefaultPage2 && <DisplayUser userId={props.userId} templateId={tempId} templateQuestions={templateQuestion} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
     </main> 
   );

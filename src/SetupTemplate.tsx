@@ -74,13 +74,17 @@ export default function SetupTemplate(props) {
     if (formData.questionValues == '') {
       setDialogPrompt('');
     } else {
-      const textArr = formData.questionValues.split("|");
-      var newText = textArr[0];
-      for (var i = 1; i < textArr.length; i++)
-      {
-        newText = newText + "\n" + textArr[i];
+      if (whichControl.startsWith("Button") || whichControl.startsWith("Color")) {
+        setDialogPrompt(formData.questionValues);
+      } else {
+        const textArr = formData.questionValues.split("|");
+        var newText = textArr[0];
+        for (var i = 1; i < textArr.length; i++)
+        {
+          newText = newText + "\n" + textArr[i];
+        }
+        setDialogPrompt(newText);
       }
-      setDialogPrompt(newText);
     }
     
     setOpen(true);
@@ -422,6 +426,16 @@ export default function SetupTemplate(props) {
     setWhichControl('Button label');
   }
 
+  const handleColorButtonClick = () => {
+    setIsValuesDisabled(false);
+    setWhichControl('Color Button label');
+  }
+
+  const handleSwitchClick = () => {
+    setIsValuesDisabled(true);
+    setWhichControl('Switch');
+  }
+
   function handleDelete () {
     for (var i = 0; i < selectedRows.length; i++) {
       deleteQuestions(selectedRows[i]);
@@ -461,12 +475,20 @@ export default function SetupTemplate(props) {
             actionsFlag: false,
             notes: '',
           });
-          if (filtered[0].question_type == 'photo' || filtered[0].question_type == 'datepicker') {
+          if (filtered[0].question_type == 'photo' || filtered[0].question_type == 'datepicker' || filtered[0].question_type == 'switch') {
             setWhichControl('');
             setDialogResult('');
+            setIsValuesDisabled(true);
+            setIsUpdate(true);
+            return;
           } else {
-            setWhichControl(filtered[0].question_type);
-            setDialogResult(filtered[0].question_values);
+            if (filtered[0].question_type == 'button' || filtered[0].question_type == 'contained_button_color') {
+              setWhichControl(filtered[0].question_type == 'button' ? 'Button label' : 'Color Button label');
+              setDialogResult(filtered[0].question_values);              
+            } else {
+              setWhichControl(filtered[0].question_type);
+              setDialogResult(filtered[0].question_values);
+            }
           }
           setIsUpdate(true);
           setIsValuesDisabled(false);
@@ -703,21 +725,32 @@ export default function SetupTemplate(props) {
             const formData = new FormData(event.currentTarget);
             const formJson = Object.fromEntries((formData as any).entries());
             const text = formJson.textValues;
-            const textArr = text.split(/\r?\n/);
-            if (textArr.length < 1) {
-              setDialogResult(text);
-              setQuestionValues(text);
-            } else {
-              if (textArr.length == 1) {
-                setDialogResult(textArr[0]);
-                setQuestionValues(textArr[0]);
+            if (whichControl.startsWith("Button") || whichControl.startsWith("Color")) {
+              const labelText = formJson.labelValues;
+              if (text.length < 1) {
+                setDialogResult(labelText)
+                setQuestionValues(labelText);
               } else {
-                var newText = textArr[0];
-                for (var i = 1; i < textArr.length; i++) {
-                  newText = newText + "|" + textArr[i];
+                setDialogResult(text + "|" + labelText)
+                setQuestionValues(text + "|" + labelText);               
+              }
+            } else {
+              const textArr = text.split(/\r?\n/);
+              if (textArr.length < 1) {
+                setDialogResult(text);
+                setQuestionValues(text);
+              } else {
+                if (textArr.length == 1) {
+                  setDialogResult(textArr[0]);
+                  setQuestionValues(textArr[0]);
+                } else {
+                  var newText = textArr[0];
+                  for (var i = 1; i < textArr.length; i++) {
+                    newText = newText + "|" + textArr[i];
+                  }
+                  setDialogResult(newText);
+                  setQuestionValues(newText);
                 }
-                setDialogResult(newText);
-                setQuestionValues(newText);
               }
             }
             handleClose();
@@ -729,6 +762,16 @@ export default function SetupTemplate(props) {
           <DialogContentText>
             Enter each {whichControl == '' ? 'Default' : whichControl} value:
           </DialogContentText>
+          {whichControl.startsWith("Button") || whichControl.startsWith("Color") ?
+            <TextField
+              autoFocus 
+              defaultValue={dialogPrompt.split("|")[0]}
+              margin="dense"
+              id="name"
+              name="textValues"
+              label="Color"
+            />
+          :
           <TextField
             autoFocus
             defaultValue={dialogPrompt}
@@ -739,7 +782,17 @@ export default function SetupTemplate(props) {
             label="Values"
             multiline
             rows={8}
-          />
+          /> }
+          {whichControl.startsWith("Button") || whichControl.startsWith("Color") ?
+            <TextField
+            autoFocus
+            required
+            defaultValue={dialogPrompt.split("|")[1]}
+            margin="dense"
+            id="name"
+            name="labelValues"
+            label="Label"
+            /> : null}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
@@ -810,22 +863,12 @@ export default function SetupTemplate(props) {
                     <FormControlLabel value="contained_button_color" 
                       control={formData.questionType=="contained_button_color" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                       label="Color Button" 
-                      onClick={handleButtonClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this to select a toggle button" placement="right">
-                    <FormControlLabel value="toggle_button" 
-                      control={formData.questionType=="toggle_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                      label="Toggle Button" 
-                      onClick={handleButtonClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this to input a dropdown for multiple inputs" placement="right">
-                    <FormControlLabel value="checkbox_multiple_dropdown" 
-                      control={formData.questionType=="checkbox_multiple_dropdown" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                      label="Chkbox Dropdown" 
-                      onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
+                      onClick={handleColorButtonClick} onChange={handleChange}/></Tooltip>
                     <Tooltip title="Select this for a switch" placement="right">
                     <FormControlLabel value="switch" 
                       control={formData.questionType=="switch" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                       label="Switch" 
-                      onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
+                      onClick={handleSwitchClick} onChange={handleChange}/></Tooltip>
                 </RadioGroup>
               </div>
               <div style={{ marginLeft: '200px'}}>
@@ -874,7 +917,7 @@ export default function SetupTemplate(props) {
           </Box>
           <Box sx={{ bgcolor: '#52B2BF', width: '500px', height: '500px', marginLeft: '620px',
               borderStyle: 'solid', borderWidth: '2px'}} >
-            <h3>{props.name} Questions 
+            <h3>{(props.name.length > 18) ? props.name.substring(0, 18) + "... Questions" : props.name + " Questions"}
               <ButtonGroup variant="contained" aria-label="Question View group"  sx={{ float: 'right'}}>
                 <Button variant="contained" disabled={!isDeleteActive} color="error" onClick={handleDelete}>Delete</Button>
                 <Button variant="contained" disabled={!isPreviewActive} color="success" onClick={handleClickOpenPreview}>Preview</Button>
