@@ -35,10 +35,13 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .returns(a.json().array())
     .handler(a.handler.inlineSql(
       "SELECT distinct a.id, a.first_name, a.last_name, b.id as template_user_id, b.enabled_date, b.verified_date, a.email_address FROM " +
-      "logistics.user a join logistics.template t " +
-      "left join logistics.template_permissions b " +
-      "on t.division_id = a.division_id and t.id = b.template_id " +
-      "WHERE a.division_id = :divisionId and t.id = :templateId;"
+        "logistics.user a join logistics.template_permissions b on b.user_id = a.id " +
+        "join logistics.template t on t.id = b.template_id " +
+        "WHERE a.division_id = :divisionId and t.id = :templateId union all " +
+      "SELECT distinct a.id, a.first_name, a.last_name, b.id as template_user_id, b.enabled_date, b.verified_date, a.email_address FROM " + 
+	      "logistics.user a join logistics.division d on d.id = a.division_id join logistics.template t on t.division_id = d.id " +
+        "left join logistics.template_permissions b on b.user_id = a.id and b.template_id = t.id " +
+	      "WHERE a.division_id = :divisionId and t.id = :templateId and b.id is null;"
     )).authorization(allow => allow.publicApiKey()),
     listUserTemplates: a.query()
     .arguments({

@@ -28,22 +28,24 @@ export default function AssociateUsers(props) {
   }
 
   function translateUserPermissions (items) {
-    var data = [{id: item[0].id, 
-      firstName: item[0].first_name, 
-      lastName: item[0].last_name, 
-      templateUserId: item[0].template_user_id,
-      enabledDate: item[0].enabled_date, 
-      verifiedDate: item[0].verified_date, 
-      emailAddress: item[0].email_address}];
-    for (i=1; i < items.length; i++) {
+    var item = JSON.parse(items[0]);
+    var data = [{id: item.id, 
+      firstName: item.first_name, 
+      lastName: item.last_name, 
+      templateUserId: item.template_user_id,
+      enabledDate: item.enabled_date, 
+      verifiedDate: item.verified_date, 
+      emailAddress: item.email_address}];
+    for (var i=1; i < items.length; i++) {
+      const item = JSON.parse(items[i]);
       data.push(
-        {id: item[i].id, 
-          firstName: item[i].first_name, 
-          lastName: item[i].last_name, 
-          templateUserId: item[i].template_user_id,
-          enabledDate: item[i].enabled_date, 
-          verifiedDate: item[i].verified_date, 
-          emailAddress: item[i].email_address}
+        {id: item.id, 
+          firstName: item.first_name, 
+          lastName: item.last_name, 
+          templateUserId: item.template_user_id,
+          enabledDate: item.enabled_date, 
+          verifiedDate: item.verified_date, 
+          emailAddress: item.email_address}
       );
     }
     return data;
@@ -55,9 +57,10 @@ export default function AssociateUsers(props) {
       templateId: tempId,
     })
     if (Array.isArray(items) && items.length > 0) {
-      const userItems = JSON.parse(items);
+      const db = JSON.stringify(items);
+      const userItems = JSON.parse(db);
       if (items.length < 2) {
-        setUserData(translateUserPermission (userItems))
+        setUserData(translateUserPermission (userItems));
       } else {
         setUserData(translateUserPermissions (userItems));
       }
