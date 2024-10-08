@@ -62,7 +62,7 @@ export default function PopupTemplate(props) {
       <Box sx={{ minWidth: 120 }}>
       <FormControl fullWidth>
       <InputLabel variant="standard" htmlFor="uncontrolled-native">
-          Program
+      
         </InputLabel>
         <NativeSelect
           onChange={handleSelectChange}

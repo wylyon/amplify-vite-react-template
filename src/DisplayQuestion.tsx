@@ -33,11 +33,11 @@ export default function DisplayQuestion(props) {
   function returnButtonNameColor (questionValueArr, questionSeq) {
     if (questionValueArr.length == 1) {
       // no color chosen
-      return "<Button id=\"btn" + questionSeq + "\" name=\"btn" + questionSeq + "\">" + questionValueArr[0] + "</Button>";
+      return "<input type=\"button\" id=\"btn" + questionSeq + "\" name=\"btn" + questionSeq + "\" value=\"" + questionValueArr[0] + "\">";
     } else {
       // color first, then value
-      return "<Button id=\"btn" + questionSeq + "\" name=\"btn" + questionSeq + "\" style=\"background-color:" + questionValueArr[0] + "\">" + 
-        questionValueArr[1] + "</Button>";
+      return "<input type=\"button\" id=\"btn" + questionSeq + "\" name=\"btn" + questionSeq + "\" style=\"background-color:" + questionValueArr[0] + "\" value=\"" + 
+        questionValueArr[1] + "\">";
     }
   }
 
@@ -90,7 +90,7 @@ export default function DisplayQuestion(props) {
       case TYPE_DATE:
         return "<input type=\"date\" id=\"date" + questionSeq + "\" name=\"date" + questionSeq + "\">";
       case TYPE_BUTTON:
-        return "<button type=\"button\" id=\"btn" + questionSeq + "\" name=\"btn" + questionSeq + "\">" + questionValues + "</button>";
+        return "<input type=\"button\" id=\"btn" + questionSeq + "\" name=\"btn" + questionSeq + "\" value=\"" + questionValues + "\">";
       case TYPE_CONTAINED_BUTTON_COLOR:
         return returnButtonNameColor(questionValueArr, questionSeq);
       case TYPE_SWITCH:
