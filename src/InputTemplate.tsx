@@ -35,6 +35,7 @@ export default function InputTemplate(props) {
   const [isSetupTemplate, setIsSetupTemplate] = useState(false);
   const [preLoad, setPreLoad] = useState('');
   const [postLoad, setPostLoad] = useState('');
+  const [filter, setFilter] = useState<Schema["template"]["type"][]>([]);
 
   const client = generateClient<Schema>();
   const [template, setTemplate] = useState<Schema["template"]["type"][]>([]);
@@ -49,6 +50,8 @@ export default function InputTemplate(props) {
       return;
     }
     setTemplate(items);
+    setFilter(items.filter(comp => comp.title.includes(filtered) || 
+      comp.description.includes(filtered)));
   };
 
   const getDivisionByCompanyId = async (compId) => {
@@ -112,10 +115,7 @@ export default function InputTemplate(props) {
     };
     {toggleTemplate()};
     setFormData(data);
-  }
-
-  const filter = template.filter(comp => comp.title.includes(filtered) || 
-    comp.description.includes(filtered));
+  };
 
   const handleOnDelete = async(id, deactiveDate) => {
     const now = new Date();
@@ -129,7 +129,7 @@ export default function InputTemplate(props) {
   }
 
   const handleUpdateOnCancel = (e) => {
-    setIsUpdateTemplate(false);
+    setIsUpdateTemplate(true);
     setIsUpdateTemplate2(false);
     setIsAssociateUser(false);
     setIsSetupTemplate(false);

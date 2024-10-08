@@ -10,6 +10,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import Alert from '@mui/material/Alert';
 
 export default function InputTemplateAdd(props) {
   const [formData, setFormData] = useState({
@@ -31,6 +32,9 @@ export default function InputTemplateAdd(props) {
   const [isPreview, setIsPreview] = useState(false);
   const [html, setHtml] = useState('');
   const [preview, setPreview] = useState(false);
+  const [isAlert, setIsAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [severity, setSeverity] = useState('error');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -57,6 +61,9 @@ export default function InputTemplateAdd(props) {
   const createTemplate = async() => {
     const now = new Date();
     const uuid = uuidv4();
+    setAlertMessage("created new template.");
+    setSeverity('success');
+    setIsAlert(true);  
     const { errors, data: newTemplate } = await client.models.template.create({ 
 	    id: uuid,
 	    division_id: formData.divisionId,
@@ -70,7 +77,9 @@ export default function InputTemplateAdd(props) {
 	    created: now,
 	    created_by: 0});
     if (errors) {
-      alert(errors[0].message);
+      setAlertMessage(errors[0].message);
+      setSeverity('error');
+      setIsAlert(true);     
     }
   }
 
@@ -86,7 +95,13 @@ export default function InputTemplateAdd(props) {
       prod_date: formData.prodDate,
       notes: formData.notes});
     if (errors) {
-      alert(errors[0].message);
+      setAlertMessage(errors[0].message);
+      setSeverity('error');
+      setIsAlert(true);     
+    } else {
+      setAlertMessage("updated template.");
+      setSeverity('success');
+      setIsAlert(true);     
     }
   }
 
@@ -104,6 +119,12 @@ export default function InputTemplateAdd(props) {
   const handleOnCancel = (e) => {
     props.onSubmitChange(false);
   };
+
+  const handleOnAlert = (e) => {
+    setIsAlert(false);
+    setSeverity('error');
+    setAlertMessage('');
+  }
 
   return (
     <React.Fragment>
@@ -128,6 +149,9 @@ export default function InputTemplateAdd(props) {
     </DialogActions>
   </Dialog>
     <div className="addTemplateData">
+    {isAlert &&  <Alert severity={severity} onClose={handleOnAlert}>
+      {alertMessage}
+      </Alert>}
       <form onSubmit={handleSubmit}>
       <label>Title:  </label>
         <input
