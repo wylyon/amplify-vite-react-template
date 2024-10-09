@@ -64,14 +64,18 @@ export default function DisplayQuestion(props) {
     return htmlSelect;
   }
 
+  function getRenderedPhoto (questionSeq) {
+    return "<button style=\"display:block;width:120px; height:30px;\" onclick=\"document.getElementById('photo" + questionSeq + 
+      "').click()\">Get Photo</button><input type=\"file\" id=\"photo" + questionSeq + "\" name=\"photo" + questionSeq + "\" capture=\"camera\" style=\"display:none\">";
+  }
+
   function getHTMLforType (questionType, questionSeq, questionValues, isPreview) {
     const questionValueFiltered = (questionValues == null || questionValues == '') ? '' : questionValues;
     const questionValueArr = questionValueFiltered.split("|");
     switch (questionType) {
       case TYPE_PHOTO:
         return (isPreview) ? "<img src=\"https://images.unsplash.com/photo-1533827432537-70133748f5c8\" " +
-          "alt=\"My Picture.\" style=\"width:100px;height:100px;\">" :
-          "<input type=\"file\" id=\"photo" + questionSeq + "\" name=\"photo" + questionSeq + "\" capture=\"camera\" >";
+          "alt=\"My Picture.\" style=\"width:100px;height:100px;\">" : getRenderedPhoto(questionSeq);
       case TYPE_DROPDOWN:
         return "<select id=\"dd" + questionSeq + "\" name=\"dd" + questionSeq + "\">" +
         returnDropDownRadioValues(questionValueArr, true, "") +
