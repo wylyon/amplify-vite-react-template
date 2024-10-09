@@ -66,7 +66,10 @@ export default function DisplayQuestion(props) {
 
   function getRenderedPhoto (questionSeq) {
     return "<button style=\"display:block;width:120px; height:30px;\" onclick=\"document.getElementById('photo" + questionSeq + 
-      "').click()\">Get Photo</button><input type=\"file\" id=\"photo" + questionSeq + "\" name=\"photo" + questionSeq + "\" capture=\"camera\" style=\"display:none\">";
+      "').click()\">Get Photo</button><input type=\"file\" id=\"photo" + questionSeq + "\" name=\"photo" + questionSeq + 
+      "\" capture=\"camera\" style=\"display:none\" onchange=\"document.getElementById('img" + questionSeq +
+      "').src=document.getElementById('photo" + questionSeq + "').files[0].name\"><img src=\"\" alt=\"photo\" width=\"500\" height=\"333\" id=\"img" + questionSeq +
+      "\">";
   }
 
   function getHTMLforType (questionType, questionSeq, questionValues, isPreview) {
@@ -75,7 +78,7 @@ export default function DisplayQuestion(props) {
     switch (questionType) {
       case TYPE_PHOTO:
         return (isPreview) ? "<img src=\"https://images.unsplash.com/photo-1533827432537-70133748f5c8\" " +
-          "alt=\"My Picture.\" style=\"width:100px;height:100px;\">" : getRenderedPhoto(questionSeq);
+          "alt=\"My Picture.\" style=\"width:100px;height:100px;\">" : null;
       case TYPE_DROPDOWN:
         return "<select id=\"dd" + questionSeq + "\" name=\"dd" + questionSeq + "\">" +
         returnDropDownRadioValues(questionValueArr, true, "") +
