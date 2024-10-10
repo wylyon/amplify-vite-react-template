@@ -73,7 +73,7 @@
     .inputCustomerData {
       background-color: lightblue;
       width: 1200px;
-      height: 700px;
+      height: 750px;
       padding: 10px;
     }
     .inputProgram {
@@ -108,8 +108,8 @@
       background-color: dodgerblue;
       position: absolute;
       width: 1183px;
-      height:350px;
-      top: 350px;
+      height:400px;
+      top: 340px;
       Border: 3px solid #73AD21;
     }
     .addTemplateSetup {

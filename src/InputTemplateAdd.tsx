@@ -78,8 +78,8 @@ export default function InputTemplateAdd(props) {
       prod_date: formData.prodDate == '' ? null : formData.prodDate,
       notes: formData.notes,
       use_pagination: (formData.usePagination ? 1 : 0),
-      auto_space: (!formData.useAutoSpace ? 0 : 1),
-      box_controls: (!formData.useBoxControls ? 0 : 1) ,    
+      auto_space: (formData.useAutoSpace ? 1 : 0),
+      box_controls: (formData.useBoxControls ? 1 : 0),  
 	    created: now,
 	    created_by: 0});
     if (errors) {
@@ -101,8 +101,8 @@ export default function InputTemplateAdd(props) {
       prod_date: formData.prodDate,
       notes: formData.notes,
       use_pagination: (formData.usePagination ? 1 : 0),
-      auto_space: (!formData.useAutoSpace ? 0 : 1),
-      box_controls: (!formData.useBoxControls ? 0 : 1)
+      auto_space: (formData.useAutoSpace ? 1 : 0),
+      box_controls: (formData.useBoxControls ? 1 : 0)
       });
     if (errors) {
       setAlertMessage(errors[0].message);
@@ -238,6 +238,7 @@ export default function InputTemplateAdd(props) {
             name="usePagination"
             placeholder="Select if you want paging"
             value={isNew ? false : formData.usePagination}
+            checked={isNew ? false : formData.usePagination}
             onChange={handleChange}
           />&emsp;&emsp;
         <label>Use Auto Spacing on Controls</label>
@@ -245,13 +246,15 @@ export default function InputTemplateAdd(props) {
             name="useAutoSpace"
             placeholder="Select if you want auto spacing controls"
             value={isNew ? false : formData.useAutoSpace}
+            checked={isNew ? false : formData.useAutoSpace}
             onChange={handleChange}
           />&emsp;&emsp;
         <label>Use Boxing around Controls</label>
           <input type="checkbox"
-            name="useAutoSpace"
+            name="useBoxControls"
             placeholder="Select if you want auto boxing of controls"
             value={isNew ? false : formData.useBoxControls}
+            checked={isNew ? false : formData.useBoxControls}
             onChange={handleChange}
           />
       </form>

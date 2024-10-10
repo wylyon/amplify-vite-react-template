@@ -59,7 +59,7 @@ function App() {
 	        return false;
 	      }
       }
-      disableMsg = "User is not Authorized for Access.";
+      setDisableMsg("User is not Authorized for Access.");
       setIsDisabledUser(true);
       return true
     }
