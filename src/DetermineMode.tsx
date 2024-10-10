@@ -51,7 +51,7 @@ export default function DetermineMode(props) {
 	        return false;
 	      }
       }
-      disableMsg = "User is not Authorized for Access.";
+      setDisableMsg("User is not Authorized for Access.");
       setIsDisabledUser(true);
       return true
     }

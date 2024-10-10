@@ -21,7 +21,10 @@ export default function InputTemplate(props) {
     liveDate: '',
     prodDate: '',
     deactiveDate: '',
-    notes: ''
+    notes: '',
+    usePagination: false,
+    useAutoSpace: false,
+    useBoxControls: false
   });
   const [isUpdateTemplate, setIsUpdateTemplate] = useState(false);
   const [isUpdateTemplate2, setIsUpdateTemplate2] = useState(false);
@@ -111,7 +114,10 @@ export default function InputTemplate(props) {
 	    liveDate: updateFormData.live_date, 
       prodDate: updateFormData.prod_date,
       deactiveDate: updateFormData.deactive_date,
-      notes: updateFormData.notes
+      notes: updateFormData.notes,
+      usePagination: updateFormData.use_pagination,
+      useAutoSpace: updateFormData.auto_space,
+      useBoxControls: updateFormData.box_controls
     };
     {toggleTemplate()};
     setFormData(data);
@@ -257,7 +263,10 @@ export default function InputTemplate(props) {
         postLoadPage: formData.postLoadPage,
         liveDate: formData.liveDate,
         prodDate: formData.prodDate,
-        notes: formData.notes}} isAddMode = {true}/> }
+        notes: formData.notes,
+        usePagination: formData.usePagination,
+        useAutoSpace: formData.useAutoSpace,
+        useBoxControls: formData.useBoxControls}} isAddMode = {true}/> }
       {isUpdateTemplate && <InputTemplateAdd props={props} 
         onSubmitCancel={handleOnCancel} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, 
         divisionId: selectedDivisionId, 
@@ -267,7 +276,10 @@ export default function InputTemplate(props) {
         postLoadPage: formData.postLoadPage,
         liveDate: formData.liveDate,
         prodDate: formData.prodDate,
-        notes: formData.notes}} isAddMode = {false} />}
+        notes: formData.notes,
+        usePagination: formData.usePagination,
+        useAutoSpace: formData.useAutoSpace,
+        useBoxControls: formData.useBoxControls}} isAddMode = {false} />}
       {isUpdateTemplate2 && <InputTemplateAdd props={props} 
         onSubmitCancel={handleOnCancel} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, 
         divisionId: selectedDivisionId, 
@@ -277,7 +289,10 @@ export default function InputTemplate(props) {
         postLoadPage: formData.postLoadPage,
         liveDate: formData.liveDate,
         prodDate: formData.prodDate,
-        notes: formData.notes}} isAddMode = {false} />}
+        notes: formData.notes,
+        usePagination: formData.usePagination,
+        useAutoSpace: formData.useAutoSpace,
+        useBoxControls: formData.useBoxControls}} isAddMode = {false} />}
     </div>
   );
 }

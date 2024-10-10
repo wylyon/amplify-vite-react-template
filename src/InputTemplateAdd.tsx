@@ -22,7 +22,10 @@ export default function InputTemplateAdd(props) {
     postLoadPage: props.updateFormData.postLoadPage,
     liveDate: props.updateFormData.liveDate,
     prodDate: props.updateFormData.prodDate,
-    notes: props.updateFormData.notes
+    notes: props.updateFormData.notes,
+    usePagination: props.updateFormData.usePagination,
+    useAutoSpace: props.updateFormData.useAutoSpace,
+    useBoxControls: props.updateFormData.useBoxControls
   });
 
   const client = generateClient<Schema>();
@@ -74,6 +77,9 @@ export default function InputTemplateAdd(props) {
       live_date: formData.liveDate == '' ? null : formData.liveDate,
       prod_date: formData.prodDate == '' ? null : formData.prodDate,
       notes: formData.notes,
+      use_pagination: (formData.usePagination ? 1 : 0),
+      auto_space: (!formData.useAutoSpace ? 0 : 1),
+      box_controls: (!formData.useBoxControls ? 0 : 1) ,    
 	    created: now,
 	    created_by: 0});
     if (errors) {
@@ -93,7 +99,11 @@ export default function InputTemplateAdd(props) {
       post_load_page_attributes: formData.postLoadPage,
       live_date: formData.liveDate,
       prod_date: formData.prodDate,
-      notes: formData.notes});
+      notes: formData.notes,
+      use_pagination: (formData.usePagination ? 1 : 0),
+      auto_space: (!formData.useAutoSpace ? 0 : 1),
+      box_controls: (!formData.useBoxControls ? 0 : 1)
+      });
     if (errors) {
       setAlertMessage(errors[0].message);
       setSeverity('error');
@@ -222,7 +232,28 @@ export default function InputTemplateAdd(props) {
 	          size="100"
 	          value={isNew ? '' : formData.notes}
 	          onChange={handleChange}
-	      />
+	      /><br /><br />
+        <label>Use Pagination</label>
+          <input type="checkbox"
+            name="usePagination"
+            placeholder="Select if you want paging"
+            value={isNew ? false : formData.usePagination}
+            onChange={handleChange}
+          />&emsp;&emsp;
+        <label>Use Auto Spacing on Controls</label>
+          <input type="checkbox"
+            name="useAutoSpace"
+            placeholder="Select if you want auto spacing controls"
+            value={isNew ? false : formData.useAutoSpace}
+            onChange={handleChange}
+          />&emsp;&emsp;
+        <label>Use Boxing around Controls</label>
+          <input type="checkbox"
+            name="useAutoSpace"
+            placeholder="Select if you want auto boxing of controls"
+            value={isNew ? false : formData.useBoxControls}
+            onChange={handleChange}
+          />
       </form>
      </div>
      </React.Fragment>
