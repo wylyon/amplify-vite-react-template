@@ -14,6 +14,12 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import { Label } from "@mui/icons-material";
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { UserData } from "aws-cdk-lib/aws-ec2";
 
 export default function DisplayUser(props) {
   const client = generateClient<Schema>();
@@ -22,6 +28,24 @@ export default function DisplayUser(props) {
   const [alertMessage, setAlertMessage] = useState('');
   const [theSeverity, setTheSeverity] = useState('error');
   const [source, setSource] = useState('');
+  const [open, setOpen] = useState(false);
+  const [templateTitle, setTemplateTitle] = useState('');
+
+  const getTemplateTitle = () => {
+    if (props.userData.length == 1) {
+      setTemplateTitle(props.userData[0].title);
+    } else {
+      const match = props.userData.filter(comp => comp.templateId.includes(props.templateId));
+      if (match.length > 0) {
+        setTemplateTitle(match[0].title);
+      }
+    }
+  }
+
+  const handleClose = () => {
+    setOpen(false);
+    props.onSubmitChange(false);
+  };
 
   const handleCapture = (target) => {
     if (target.files) {
@@ -50,15 +74,16 @@ export default function DisplayUser(props) {
     const formJson = Object.fromEntries((formData as any).entries());
     // get all name/value pairs
     const nameValuePairs = Object.entries(formJson);
-
-    props.onSubmitChange(false);
+    setOpen(true);
+    
   };
 
-  const clickPhoto = () => {
-    document.getElementById("icon-button-photo").click();
+  const clickPhoto = (id) => {
+    document.getElementById(id).click();
   }
 
   useEffect(() => {
+    getTemplateTitle();
 	}, []);
 
   function createMarkup(dirty) {
@@ -67,6 +92,26 @@ export default function DisplayUser(props) {
 
   return (
     <React.Fragment>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {templateTitle}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Data Saved
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} autoFocus>
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
       <div key="preLoadAttributes" className="startProgram" dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes)} />
       {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
@@ -78,10 +123,10 @@ export default function DisplayUser(props) {
             <Stack direction="row" spacing={2} >
               <Paper elevation={2}>
                 <Typography variant="caption" gutterBottom>{comp.pre_load_attributes}</Typography>
-                <IconButton aria-label="upload picture" onClick={() => clickPhoto()}> 
+                <IconButton aria-label="upload picture" onClick={() => clickPhoto(comp.question_type + comp.question_order)}> 
                   <CameraAltIcon fontSize="large"/>
                 </IconButton>
-                <input type="file" id="icon-button-photo" name={"icon-button-photo" + comp.question_order} 
+                <input type="file" id={comp.question_type + comp.question_order} name={"icon-button-photo" + comp.question_order} 
                   capture="environment" style={{ display: "none"}} onChange={(e) => handleCapture(e.target)}/>
               </Paper>
               {source && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>

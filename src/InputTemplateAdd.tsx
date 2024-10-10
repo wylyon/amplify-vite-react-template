@@ -117,7 +117,7 @@ export default function InputTemplateAdd(props) {
   };
 
   const handleOnCancel = (e) => {
-    props.onSubmitChange(false);
+    props.onSubmitCancel(false);
   };
 
   const handleOnAlert = (e) => {

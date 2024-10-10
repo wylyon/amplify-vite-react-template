@@ -248,7 +248,8 @@ export default function InputTemplate(props) {
       </div>
       {isAssociateUser && <AssociateUsers onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} name={templateName} id={templateId} divisionId={selectedDivisionId}/>}
       {isSetupTemplate && <SetupTemplate onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} name={templateName} templateId={templateId} divisionId={selectedDivisionId} preLoadAttributes={preLoad} postLoadAttributes={postLoad} />}
-      {!isAssociateUser && selectedDivisionId != '' && !isSetupTemplate && <InputTemplateAdd props={props} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleOnCancel} onChange={handleTheChange} updateFormData = {{id: formData.id, 
+      {!isAssociateUser && selectedDivisionId != '' && !isSetupTemplate && <InputTemplateAdd props={props} 
+        onSubmitCancel={handleOnCancel} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleOnCancel} onChange={handleTheChange} updateFormData = {{id: formData.id, 
         divisionId: selectedDivisionId, 
         title: formData.title,
         description: formData.description,
@@ -257,7 +258,8 @@ export default function InputTemplate(props) {
         liveDate: formData.liveDate,
         prodDate: formData.prodDate,
         notes: formData.notes}} isAddMode = {true}/> }
-      {isUpdateTemplate && <InputTemplateAdd props={props} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, 
+      {isUpdateTemplate && <InputTemplateAdd props={props} 
+        onSubmitCancel={handleOnCancel} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, 
         divisionId: selectedDivisionId, 
         title: formData.title,
         description: formData.description,
@@ -266,7 +268,8 @@ export default function InputTemplate(props) {
         liveDate: formData.liveDate,
         prodDate: formData.prodDate,
         notes: formData.notes}} isAddMode = {false} />}
-      {isUpdateTemplate2 && <InputTemplateAdd props={props} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, 
+      {isUpdateTemplate2 && <InputTemplateAdd props={props} 
+        onSubmitCancel={handleOnCancel} onSubmitAdd={handleUpdateOnCancel} onSubmitChange={handleUpdateOnCancel} updateFormData = {{id: formData.id, 
         divisionId: selectedDivisionId, 
         title: formData.title,
         description: formData.description,

@@ -31,6 +31,7 @@ import SetupQuestion from "../src/SetupQuestion";
 import { AuthType } from "aws-cdk-lib/aws-stepfunctions-tasks";
 import Typography from "@mui/material/Typography";
 import Slider from "@mui/material/Slider";
+import Stack from '@mui/material/Stack';
 
 export default function SetupTemplate(props) {
   const [formData, setFormData] = useState({
@@ -234,6 +235,23 @@ export default function SetupTemplate(props) {
     setPreview(false);
   }
 
+  function setFormDataOrder (order) {
+    setFormData({
+      id: formData.id,
+      templateId: props.template_id,
+      questionOrder: order,
+      preLoadAttributes: formData.preLoadAttributes,
+      title: formData.title,
+      description: formData.description,
+      questionType: formData.questionType,
+      questionValues: formData.questionValues,
+      postLoadAttributes: formData.postLoadAttributes,
+      optionalFlag: formData.optionalFlag,
+      actionsFlag: false,
+      notes: '',
+    });
+  }
+
   const getQuestionsByTemplate = async (tempId) => {
     const { data: items, errors } = await client.queries.listQuestionsByTemplateId({
       templateId: tempId
@@ -245,8 +263,12 @@ export default function SetupTemplate(props) {
     }
     if (items.length < 1) {
       setIsPreviewActive(false);
+      setFormDataOrder(1);
     } else {
       setIsPreviewActive(true);
+      // get next order#
+      const nextOrder = items[items.length-1].question_order + 1;
+      setFormDataOrder(nextOrder);
     }
     setTemplateQuestion(items);
   };
@@ -608,9 +630,19 @@ export default function SetupTemplate(props) {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description"
-          sx={{height: '500px', width: '350px'}}>
-            <div className="startPreview" dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes)} />
-              {templateQuestion.map(comp => <DisplayQuestion props={props} question = {comp} isPreview = {true}/>)}
+            sx={{height: '500px', width: '650px'}}>
+            <div className="startPreview" dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes)} /><br/><br/><br/>
+            {templateQuestion.map(comp => 
+            <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
+              <Stack direction="row" spacing={1} >
+              <Paper elevation={0}>
+              <DisplayQuestion props={props} question = {comp} isPreview = {true}/>
+              </Paper>
+              <Paper elevation={0}>
+                <Typography variant="caption" gutterBottom>{"<---" + comp.title}</Typography>
+              </Paper>
+              </Stack>
+            </Box> )}
             <div dangerouslySetInnerHTML={createMarkup(props.postLoadAttributes)} />
           </DialogContentText>
         </DialogContent>
@@ -727,9 +759,9 @@ export default function SetupTemplate(props) {
             const text = formJson.textValues;
             if (whichControl.startsWith("Button") || whichControl.startsWith("Color")) {
               const labelText = formJson.labelValues;
-              if (text.length < 1) {
-                setDialogResult(labelText)
-                setQuestionValues(labelText);
+              if (text == null || text.length < 1) {
+                setDialogResult(whichControl.startsWith("Color") ? "|" + labelText : labelText);
+                setQuestionValues(whichControl.startsWith("Color") ? "|" + labelText : labelText);
               } else {
                 setDialogResult(text + "|" + labelText)
                 setQuestionValues(text + "|" + labelText);               
@@ -765,7 +797,8 @@ export default function SetupTemplate(props) {
           {whichControl.startsWith("Button") || whichControl.startsWith("Color") ?
             <TextField
               autoFocus 
-              defaultValue={dialogPrompt.split("|")[0]}
+              defaultValue={whichControl.startsWith("Color") ? dialogPrompt.split("|")[0] : null}
+              disabled = {whichControl.startsWith("Button")}
               margin="dense"
               id="name"
               name="textValues"
@@ -787,7 +820,7 @@ export default function SetupTemplate(props) {
             <TextField
             autoFocus
             required
-            defaultValue={dialogPrompt.split("|")[1]}
+            defaultValue={whichControl.startsWith("Button") ? dialogPrompt : dialogPrompt.split("|")[1]}
             margin="dense"
             id="name"
             name="labelValues"

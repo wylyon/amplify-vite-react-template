@@ -246,9 +246,9 @@ export default function UserMode(props) {
 	  		</a>
 		</div>
 		{isMultiTemplates && <PopupTemplate theTemplates={templates} onSelectTemplate={handleOnTemplate}/> }
-	  {	!isDefaultPage && <DisplayUser userId={props.userId} templateId={tempId} templateQuestions={templateQuestion} 
+	  {	!isDefaultPage && <DisplayUser userId={props.userId} templateId={tempId} userData={userDataArr} templateQuestions={templateQuestion} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
-		{!isDefaultPage2 && <DisplayUser userId={props.userId} templateId={tempId} templateQuestions={templateQuestion} 
+		{!isDefaultPage2 && <DisplayUser userId={props.userId} templateId={tempId} userData={userDataArr} templateQuestions={templateQuestion} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
     </main> 
   );
