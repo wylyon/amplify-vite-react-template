@@ -50,7 +50,8 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     })
     .returns(a.json().array())
     .handler(a.handler.inlineSql(
-      "SELECT a.id, b.id as template_user_id, t.id as template_id, t.title, t.pre_load_page_attributes, t.post_load_page_attributes, b.enabled_date, b.verified_date FROM " +
+      "SELECT a.id, b.id as template_user_id, t.id as template_id, t.title, t.pre_load_page_attributes, t.post_load_page_attributes, b.enabled_date, " +
+      "t.use_pagination, t.auto_space, t.box_controls, b.verified_date FROM " +
       "logistics.user a join logistics.template t on t.division_id = a.division_id left join logistics.template_permissions b " +
       "on b.user_id = a.id and t.id = b.template_id WHERE " +
       "a.email_address = :email and t.prod_date <= current_date();"
