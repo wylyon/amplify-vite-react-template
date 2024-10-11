@@ -11,6 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import LogoDevIcon from '@mui/icons-material/LogoDev';
 import Tooltip from '@mui/material/Tooltip';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
+import usePagination from "@mui/material/usePagination/usePagination";
 
 export default function UserMode(props) {
 
@@ -22,11 +23,14 @@ export default function UserMode(props) {
 		enabledDate: '',
 		verifiedDate: '',
 		emailAddress: props.userId,
+		title: '',
+		usePagination: false,
+		useAutoSpacing: false,
+		useBoxControls: false
 	}]);
 	
 	const [templateQuestion, setTemplateQuestion] = useState<Schema["template_question"]["type"][]>([]);
 	const [reload, setReload] = useState(false);
-	const [userDataArr, setUserDataArr] = useState([]);
 	const client = generateClient<Schema>();
 	const [filtered, setFiltered] = useState('');
 	const [isDefaultPage, setIsDefaultPage] = useState(true);
@@ -59,39 +63,21 @@ export default function UserMode(props) {
 		  postLoadPageAttributes: item.post_load_page_attributes,
 		  enabledDate: item.enabled_date, 
 		  verifiedDate: item.verified_date, 
-		  emailAddress: props.userId}];
+		  emailAddress: props.userId,
+		  usePagination: item.use_pagination,
+		  useAutoSpacing: item.auto_space,
+		  useBoxControls: item.box_controls}];
 		return data;
 	}
 	
 	function translateUserTemplates (items) {
 		const item = JSON.parse(items[0]);
 		var templateIdAndTitle = item.template_id + "!" + item.title;
-		var data = [{id: item.id, 
-			templateUserId: item.template_user_id,
-			templateId: item.template_id,
-			title: item.title,
-			preLoadPageAttributes: item.pre_load_page_attributes, 
-			postLoadPageAttributes: item.post_load_page_attributes,
-			enabledDate: item.enabled_date, 
-			verifiedDate: item.verified_date, 
-			emailAddress: props.userId}];
 		for (var i=1; i < items.length; i++) {
 			const nextItem = JSON.parse(items[i]);
 			templateIdAndTitle = templateIdAndTitle + "|" + nextItem.template_id + "!" + nextItem.title;
-		  data.push(
-			{id: nextItem.id, 
-				templateUserId: nextItem.template_user_id,
-				templateId: nextItem.template_id,
-				title: nextItem.title,
-				preLoadPageAttributes: nextItem.pre_load_page_attributes, 
-				postLoadPageAttributes: nextItem.post_load_page_attributes,
-				enabledDate: nextItem.enabled_date, 
-				verifiedDate: nextItem.verified_date, 
-				emailAddress: props.userId}
-		  );
 		}
 		setTemplates(templateIdAndTitle);
-		return data;
 	  }
 
 	const getQuestionsByTemplate = async (tempId) => {
@@ -126,13 +112,13 @@ export default function UserMode(props) {
 				  // note:  change view listuserTemplates to return live_date and use that field
 				  setIsDefaultPage(false);
 				  setIsDefaultPage2(true);
-				  setUserData(translateUserTemplate (userItems))
+				  setUserData(translateUserTemplate (userItems));
 				  getQuestionsByTemplate(userItems.template_id);
 				} else {
 				// here we have multiple templates...need to show list of templates to choose.
 				//  setUserData(translateUserTemplate (userItems))
 				  const firstItem = JSON.parse(userItems[0]);
-				  setUserDataArr(translateUserTemplates(userItems));
+				  translateUserTemplates(userItems);
 				  setIsMultiTemplates(true);
 				  setIsMulti(true);
 				  getUserPageDetailsByTemplate(props.userId, firstItem.template_id);
@@ -246,9 +232,9 @@ export default function UserMode(props) {
 	  		</a>
 		</div>
 		{isMultiTemplates && <PopupTemplate theTemplates={templates} onSelectTemplate={handleOnTemplate}/> }
-	  {	!isDefaultPage && <DisplayUser userId={props.userId} templateId={tempId} userData={userDataArr} templateQuestions={templateQuestion} 
+	  {	!isDefaultPage && <DisplayUser userId={props.userId} templateId={tempId} userData={userData} templateQuestions={templateQuestion} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
-		{!isDefaultPage2 && <DisplayUser userId={props.userId} templateId={tempId} userData={userDataArr} templateQuestions={templateQuestion} 
+		{!isDefaultPage2 && <DisplayUser userId={props.userId} templateId={tempId} userData={userData} templateQuestions={templateQuestion} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
     </main> 
   );

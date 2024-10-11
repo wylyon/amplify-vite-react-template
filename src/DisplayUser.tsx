@@ -30,14 +30,23 @@ export default function DisplayUser(props) {
   const [source, setSource] = useState('');
   const [open, setOpen] = useState(false);
   const [templateTitle, setTemplateTitle] = useState('');
+  const [usePagination, setUsePagination] = useState(false);
+  const [useAutoSpacing, setUseAutoSpacing] = useState(false);
+  const [useBoxControls, setUseBoxControls] = useState(false);
 
   const getTemplateTitle = () => {
     if (props.userData.length == 1) {
       setTemplateTitle(props.userData[0].title);
+      setUseAutoSpacing(props.userData[0].useAutoSpacing);
+      setUseBoxControls(props.userData[0].useBoxControls);
+      setUsePagination(props.userData[0].usePagination);
     } else {
       const match = props.userData.filter(comp => comp.templateId.includes(props.templateId));
       if (match.length > 0) {
         setTemplateTitle(match[0].title);
+        setUseAutoSpacing(match[0].useAutoSpacing);
+        setUseBoxControls(match[0].useBoxControls);
+        setUsePagination(match[0].usePagination);
       }
     }
   }
@@ -120,24 +129,44 @@ export default function DisplayUser(props) {
         {props.templateQuestions.map(comp => 
           (comp.question_type == 'photo') ?
           <div><br/><br/><br/><br/>
-            <Stack direction="row" spacing={2} >
-              <Paper elevation={2}>
-                <Typography variant="caption" gutterBottom>{comp.pre_load_attributes}</Typography>
-                <IconButton aria-label="upload picture" onClick={() => clickPhoto(comp.question_type + comp.question_order)}> 
-                  <CameraAltIcon fontSize="large"/>
-                </IconButton>
-                <input type="file" id={comp.question_type + comp.question_order} name={"icon-button-photo" + comp.question_order} 
-                  capture="environment" style={{ display: "none"}} onChange={(e) => handleCapture(e.target)}/>
-              </Paper>
-              {source && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
-                <Box sx={{ width: 100, height: 100, borderRadius: 1}}>
-                  <img src={source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}}></img>
-                </Box> 
-              </Paper> }
-            </Stack>
+          {useBoxControls==1 && 
+            <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
+              <Stack direction="row" spacing={2} >
+                <Paper elevation={2}>
+                  <Typography variant="caption" gutterBottom>{comp.pre_load_attributes}</Typography>
+                  <IconButton aria-label="upload picture" onClick={() => clickPhoto(comp.question_type + comp.question_order)}> 
+                    <CameraAltIcon fontSize="large"/>
+                  </IconButton>
+                  <input type="file" id={comp.question_type + comp.question_order} name={"icon-button-photo" + comp.question_order} 
+                    capture="environment" style={{ display: "none"}} onChange={(e) => handleCapture(e.target)}/>
+                </Paper>
+                {source && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
+                  <Box sx={{ width: 100, height: 100, borderRadius: 1}}>
+                    <img src={source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}}></img>
+                  </Box> 
+                </Paper> }
+              </Stack>
+            </Box>}
+            {useBoxControls==0 && 
+              <Stack direction="row" spacing={2} >
+                <Paper elevation={2}>
+                  <Typography variant="caption" gutterBottom>{comp.pre_load_attributes}</Typography>
+                  <IconButton aria-label="upload picture" onClick={() => clickPhoto(comp.question_type + comp.question_order)}> 
+                    <CameraAltIcon fontSize="large"/>
+                  </IconButton>
+                  <input type="file" id={comp.question_type + comp.question_order} name={"icon-button-photo" + comp.question_order} 
+                    capture="environment" style={{ display: "none"}} onChange={(e) => handleCapture(e.target)}/>
+                </Paper>
+                {source && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
+                  <Box sx={{ width: 100, height: 100, borderRadius: 1}}>
+                    <img src={source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}}></img>
+                  </Box> 
+                </Paper> }
+              </Stack>}
           </div>
           :
-          <DisplayQuestion props={props} question = {comp} isPreview={false} />)}
+          <DisplayQuestion props={props} question = {comp} isPreview={false} useBox={useBoxControls}/> 
+        )}
         <br/><br/>
         <Stack spacing={2} direction="row">
           <Button variant="contained" type="submit">Save</Button>

@@ -1,8 +1,12 @@
 // @ts-nocheck
 import * as React from 'react';
+import { useState} from "react";
 import Button from '@mui/material/Button';
+import { Box } from "@mui/material";
 
 export default function DisplayQuestion(props) {
+  const [useBoxControls, setUseBoxControls] = useState(props.useBox);
+
   const handleOnSignOut = (e) => {
     props.onSubmitChange(false);
   };
@@ -127,6 +131,12 @@ export default function DisplayQuestion(props) {
   }
 
   return (
-      <div key="props.question.title" dangerouslySetInnerHTML={createMarkup(props.question)} />
+    <React.Fragment>
+      {props.useBox == 1 && <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
+        <div key="props.question.title" dangerouslySetInnerHTML={createMarkup(props.question)} />
+      </Box>}
+      {props.useBox == 0 && 
+      <div key="props.question.title" dangerouslySetInnerHTML={createMarkup(props.question)} />}
+    </React.Fragment>
   );
 }

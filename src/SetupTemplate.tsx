@@ -636,7 +636,7 @@ export default function SetupTemplate(props) {
             <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
               <Stack direction="row" spacing={1} >
               <Paper elevation={0}>
-              <DisplayQuestion props={props} question = {comp} isPreview = {true}/>
+              <DisplayQuestion props={props} question = {comp}  useBox={false} isPreview = {true}/>
               </Paper>
               <Paper elevation={0}>
                 <Typography variant="caption" gutterBottom>{"<---" + comp.title}</Typography>
