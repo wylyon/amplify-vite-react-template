@@ -122,6 +122,25 @@ export const schema = configure({
     }).identifier([
         "id"
     ]),
+    "template": a.model({
+        id: a.string().required(),
+        division_id: a.string().required(),
+        title: a.string().required(),
+        description: a.string(),
+        pre_load_page_attributes: a.string(),
+        post_load_page_attributes: a.string(),
+        live_date: a.date(),
+        prod_date: a.date(),
+        deactive_date: a.datetime(),
+        notes: a.string(),
+        created: a.datetime().required(),
+        created_by: a.integer().required(),
+        use_pagination: a.integer(),
+        auto_space: a.integer(),
+        box_controls: a.integer()
+    }).identifier([
+        "id"
+    ]),
     "question_result": a.model({
         id: a.string().required(),
         template_question_id: a.string().required(),
@@ -152,7 +171,7 @@ export const schema = configure({
             "text",
             "datepicker",
             "button",
-            "checkbox_multiple_dropdown",
+            "checkbox_button",
             "contained_button_color",
             "switch",
             "toggle_button"
@@ -165,25 +184,6 @@ export const schema = configure({
         deactive_date: a.datetime(),
         created: a.datetime().required(),
         created_by: a.integer().required()
-    }).identifier([
-        "id"
-    ]),
-    "template": a.model({
-        id: a.string().required(),
-        division_id: a.string().required(),
-        title: a.string().required(),
-        description: a.string(),
-        pre_load_page_attributes: a.string(),
-        post_load_page_attributes: a.string(),
-        live_date: a.date(),
-        prod_date: a.date(),
-        deactive_date: a.datetime(),
-        notes: a.string(),
-        created: a.datetime().required(),
-        created_by: a.integer().required(),
-        use_pagination: a.integer(),
-        auto_space: a.integer(),
-        box_controls: a.integer()
     }).identifier([
         "id"
     ])
