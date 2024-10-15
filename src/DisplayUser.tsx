@@ -147,7 +147,7 @@ export default function DisplayUser(props) {
                 </Paper> }
               </Stack>
             </Box>}
-            {useBoxControls==0 && 
+            {useBoxControls==0 && useAutoSpacing==0 &&
               <Stack direction="row" spacing={2} >
                 <Paper elevation={2}>
                   <Typography variant="caption" gutterBottom>{comp.pre_load_attributes}</Typography>
@@ -163,9 +163,28 @@ export default function DisplayUser(props) {
                   </Box> 
                 </Paper> }
               </Stack>}
+              {useBoxControls==0 && useAutoSpacing==1 &&
+              <Box component="section"  sx={{ p: 2, border: '1px'}}>
+                <Stack direction="row" spacing={2} >
+                <Paper elevation={2}>
+                  <Typography variant="caption" gutterBottom>{comp.pre_load_attributes}</Typography>
+                  <IconButton aria-label="upload picture" onClick={() => clickPhoto(comp.question_type + comp.question_order)}> 
+                    <CameraAltIcon fontSize="large"/>
+                  </IconButton>
+                  <input type="file" id={comp.question_type + comp.question_order} name={"icon-button-photo" + comp.question_order} 
+                    capture="environment" style={{ display: "none"}} onChange={(e) => handleCapture(e.target)}/>
+                </Paper>
+                {source && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
+                  <Box sx={{ width: 100, height: 100, borderRadius: 1}}>
+                    <img src={source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}}></img>
+                  </Box> 
+                </Paper> }
+                </Stack>
+              </Box> 
+              }
           </div>
           :
-          <DisplayQuestion props={props} question = {comp} isPreview={false} useBox={useBoxControls}/> 
+          <DisplayQuestion props={props} question = {comp} isPreview={false} useBox={useBoxControls} useSpacing={useAutoSpacing} /> 
         )}
         <br/><br/>
         <Stack spacing={2} direction="row">

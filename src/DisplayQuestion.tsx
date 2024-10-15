@@ -3,6 +3,7 @@ import * as React from 'react';
 import { useState} from "react";
 import Button from '@mui/material/Button';
 import { Box } from "@mui/material";
+import Paper from '@mui/material/Paper';
 
 export default function DisplayQuestion(props) {
   const [useBoxControls, setUseBoxControls] = useState(props.useBox);
@@ -132,11 +133,16 @@ export default function DisplayQuestion(props) {
 
   return (
     <React.Fragment>
-      {props.useBox == 1 && <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
+      {props.useBox == 1 && 
+      <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
         <div key="props.question.title" dangerouslySetInnerHTML={createMarkup(props.question)} />
       </Box>}
-      {props.useBox == 0 && 
+      {props.useBox == 0 && props.useSpacing == 0 &&
       <div key="props.question.title" dangerouslySetInnerHTML={createMarkup(props.question)} />}
+      {props.useBox == 0 && props.useSpacing == 1 && 
+      <Box component="section"  sx={{ p: 2, border: '1px'}}>
+          <div key="props.question.title" dangerouslySetInnerHTML={createMarkup(props.question)} />
+      </Box>}
     </React.Fragment>
   );
 }
