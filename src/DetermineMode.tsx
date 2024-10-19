@@ -1,13 +1,26 @@
 // @ts-nocheck
+import * as React from 'react';
 import { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import AdminMode from '../src/AdminMode';
 import UserMode from '../src/UserMode';
 import DisableMode from '../src/DisableMode';
+import Button from '@mui/material/Button';
+import Avatar from '@mui/material/Avatar';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Dialog from '@mui/material/Dialog';
+import PersonIcon from '@mui/icons-material/Person';
+import AddIcon from '@mui/icons-material/Add';
+import Typography from '@mui/material/Typography';
+import { blue } from '@mui/material/colors';
 
 const client = generateClient<Schema>();
 
@@ -21,6 +34,8 @@ export default function DetermineMode(props) {
   const [mode, setMode] = useState(9);
   const [isAccessDisabled, setIsAccessDisabled] = useState(false);
   const [disableMsg, setDisableMsg] = useState('');
+  const [open, setOpen] = useState(false);
+  const [isValidUser, setIsValidUser] = useState(false);
 
   const getUser = async (userId) => {
     const { data: items, errors } = await client.queries.listUserByEmail ({
@@ -32,12 +47,14 @@ export default function DetermineMode(props) {
       setIsDisabledUser(true);
     } else {
       if (items == null || items.length < 1) {
+        setIsValidUser(false);
         return false;
       }
+      setIsValidUser(true);
       return true;
     }
   }
-  const fetchAdmins = async (emailId, items) => {
+  const fetchAdmins = (emailId, items) => {
     if (items.length < 1 || isSuperAdmin || mode != 9) {
       return false;
     }
@@ -57,6 +74,10 @@ export default function DetermineMode(props) {
     }
     if (!filterAdmin[0].company_id) {
       setIsSuperAdmin(true);
+    }
+    if (getUser(emailId)) {
+      // here we have an Admin who is also a template user
+      setOpen(true);
     }
     setMode(0);
     return false;
@@ -83,10 +104,49 @@ export default function DetermineMode(props) {
     props.onSubmitChange(false);
   };
 
+  const handleSuperClose = () => {
+    setOpen(false);
+  };
+
+  const handleListItemClick = (value: string) => {
+    setOpen(false);
+    if (value == "admin") {
+      setMode(0);
+    } else {
+      setMode(1);
+      setIsSuperAdmin(false);
+    }
+  };
+
   const filtered = admin.filter(comp => comp.email_address.includes(userEmail));
 
   return (
     <>
+    <Dialog onClose={handleSuperClose} open={open && isValidUser}>
+      <DialogTitle>Which Access?</DialogTitle>
+      <List sx={{ pt: 0 }}>
+        <ListItem disableGutters key="super">
+          <ListItemButton onClick={() => handleListItemClick("admin")}>
+            <ListItemAvatar>
+              <Avatar sx={{ bgcolor: blue[100], color: blue[600] }}>
+                <PersonIcon />
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText primary="Admin" />
+          </ListItemButton>         
+        </ListItem>
+        <ListItem disableGutters key="regular">
+          <ListItemButton onClick={() => handleListItemClick("regular")}>
+            <ListItemAvatar>
+              <Avatar sx={{ bgcolor: blue[100], color: blue[600] }}>
+                <PersonIcon />
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText primary="Regular" />
+          </ListItemButton>         
+        </ListItem>
+      </List>
+    </Dialog>
     {isDisabledUser && <DisableMode userId={props.userId} onSubmitChange={handleOnCancel} message={disableMsg} /> }
     {!isDisabledUser && mode == 0 && <AdminMode userId={props.userId} onSubmitChange={handleOnCancel} 
 	          companyId={filtered.length> 0 ? filtered[0].company_id : null} isSuperAdmin={isSuperAdmin} adminLength={admin.length}/>}

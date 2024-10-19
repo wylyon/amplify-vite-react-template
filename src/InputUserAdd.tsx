@@ -53,13 +53,7 @@ export default function InputAdminAdd(props) {
   function doesUserExist (emailAddress) {
     const filtered = user.filter(comp => comp.email_address.includes(emailAddress) );
     if (filtered == null || filtered.length < 1) {
-      const filteredAdmin = admin.filter(comp => comp.email_address.includes(emailAddress));
-      if (filteredAdmin == null || filteredAdmin.length < 1) {
-        return true;
-      }
-      setAlertMessage(emailAddress + " Already Exists as Admin.");
-      setIsAlert(true);
-      return false;
+      return true;
     }
     setAlertMessage(emailAddress + " Already Exists.");
     setIsAlert(true);

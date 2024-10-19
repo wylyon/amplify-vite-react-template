@@ -12,6 +12,9 @@
     body * {
       transform-style: preserve-3d;
     }
+    .nocolor {
+      background-color: cornsilk;
+    }
     .gwd-p-1l8f {
       text-align: center;
       font-weight: bold;
@@ -296,7 +299,7 @@ tbody {
       width: 150px;
       padding: 5px;
     }
-    ul {
+    #nav ul {
       list-style-type: none;
       margin: 0px;
       padding: 0px;

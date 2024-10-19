@@ -2,69 +2,36 @@
 // @ts-nocheck
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { generateClient } from 'aws-amplify/data';
-import DisplayQuestion from '../src/DisplayQuestion';
-import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Alert from '@mui/material/Alert';
 import { Box } from "@mui/material";
-import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import { Label } from "@mui/icons-material";
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { UserData } from "aws-cdk-lib/aws-ec2";
+import DisplayUserRow from '../src/DisplayUserRow';
+import Typography from '@mui/material/Typography';
+import Pagination from '@mui/material/Pagination';
 
 export default function DisplayUser(props) {
-  const client = generateClient<Schema>();
-	const [templateQuestion, setTemplateQuestion] = useState<Schema["template_question"]["type"][]>([]);
   const [isAlert, setIsAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [theSeverity, setTheSeverity] = useState('error');
-  const [source, setSource] = useState('');
   const [open, setOpen] = useState(false);
-  const [templateTitle, setTemplateTitle] = useState('');
-  const [usePagination, setUsePagination] = useState(false);
-  const [useAutoSpacing, setUseAutoSpacing] = useState(false);
-  const [useBoxControls, setUseBoxControls] = useState(false);
+  const [page, setPage] = useState(1);
 
-  const getTemplateTitle = () => {
-    if (props.userData.length == 1) {
-      setTemplateTitle(props.userData[0].title);
-      setUseAutoSpacing(props.userData[0].useAutoSpacing);
-      setUseBoxControls(props.userData[0].useBoxControls);
-      setUsePagination(props.userData[0].usePagination);
-    } else {
-      const match = props.userData.filter(comp => comp.templateId.includes(props.templateId));
-      if (match.length > 0) {
-        setTemplateTitle(match[0].title);
-        setUseAutoSpacing(match[0].useAutoSpacing);
-        setUseBoxControls(match[0].useBoxControls);
-        setUsePagination(match[0].usePagination);
-      }
-    }
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
   }
 
   const handleClose = () => {
     setOpen(false);
     props.onSubmitChange(false);
   };
-
-  const handleCapture = (target) => {
-    if (target.files) {
-      if (target.files.length !== 0) {
-        const file = target.files[0];
-        const newUrl = URL.createObjectURL(file);
-        setSource(newUrl);
-      }
-    }
-  }
   
   const handleCancel = (e) => {
   
@@ -87,12 +54,7 @@ export default function DisplayUser(props) {
     
   };
 
-  const clickPhoto = (id) => {
-    document.getElementById(id).click();
-  }
-
   useEffect(() => {
-    getTemplateTitle();
 	}, []);
 
   function createMarkup(dirty) {
@@ -108,7 +70,7 @@ export default function DisplayUser(props) {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {templateTitle}
+          {props.userData[0].title}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
@@ -126,69 +88,43 @@ export default function DisplayUser(props) {
             {alertMessage}
           </Alert>}
       <form onSubmit={handleSubmit}>
-        {props.templateQuestions.map(comp => 
-          (comp.question_type == 'photo') ?
-          <div><br/><br/><br/><br/>
-          {useBoxControls==1 && 
-            <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
-              <Stack direction="row" spacing={2} >
-                <Paper elevation={2}>
-                  <Typography variant="caption" gutterBottom>{comp.pre_load_attributes}</Typography>
-                  <IconButton aria-label="upload picture" onClick={() => clickPhoto(comp.question_type + comp.question_order)}> 
-                    <CameraAltIcon fontSize="large"/>
-                  </IconButton>
-                  <input type="file" id={comp.question_type + comp.question_order} name={"icon-button-photo" + comp.question_order} 
-                    capture="environment" style={{ display: "none"}} onChange={(e) => handleCapture(e.target)}/>
-                </Paper>
-                {source && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
-                  <Box sx={{ width: 100, height: 100, borderRadius: 1}}>
-                    <img src={source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}}></img>
-                  </Box> 
-                </Paper> }
-              </Stack>
-            </Box>}
-            {useBoxControls==0 && useAutoSpacing==0 &&
-              <Stack direction="row" spacing={2} >
-                <Paper elevation={2}>
-                  <Typography variant="caption" gutterBottom>{comp.pre_load_attributes}</Typography>
-                  <IconButton aria-label="upload picture" onClick={() => clickPhoto(comp.question_type + comp.question_order)}> 
-                    <CameraAltIcon fontSize="large"/>
-                  </IconButton>
-                  <input type="file" id={comp.question_type + comp.question_order} name={"icon-button-photo" + comp.question_order} 
-                    capture="environment" style={{ display: "none"}} onChange={(e) => handleCapture(e.target)}/>
-                </Paper>
-                {source && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
-                  <Box sx={{ width: 100, height: 100, borderRadius: 1}}>
-                    <img src={source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}}></img>
-                  </Box> 
-                </Paper> }
-              </Stack>}
-              {useBoxControls==0 && useAutoSpacing==1 &&
-              <Box component="section"  sx={{ p: 2, border: '1px'}}>
-                <Stack direction="row" spacing={2} >
-                <Paper elevation={2}>
-                  <Typography variant="caption" gutterBottom>{comp.pre_load_attributes}</Typography>
-                  <IconButton aria-label="upload picture" onClick={() => clickPhoto(comp.question_type + comp.question_order)}> 
-                    <CameraAltIcon fontSize="large"/>
-                  </IconButton>
-                  <input type="file" id={comp.question_type + comp.question_order} name={"icon-button-photo" + comp.question_order} 
-                    capture="environment" style={{ display: "none"}} onChange={(e) => handleCapture(e.target)}/>
-                </Paper>
-                {source && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
-                  <Box sx={{ width: 100, height: 100, borderRadius: 1}}>
-                    <img src={source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}}></img>
-                  </Box> 
-                </Paper> }
-                </Stack>
-              </Box> 
-              }
-          </div>
-          :
-          <DisplayQuestion props={props} question = {comp} isPreview={false} useBox={useBoxControls} useSpacing={useAutoSpacing} /> 
-        )}
+        { props.userData[0].usePagination==0 || (props.userData[0].usePagination==1 && props.templateQuestions.length < 1) ?
+          props.templateQuestions.map(comp => 
+          <DisplayUserRow  
+            props={props} 
+            questionType={comp.question_type} 
+            preLoadAttributes={comp.pre_load_attributes}
+            questionOrder={comp.question_order}
+            useBoxControls={props.userData[0].useBoxControls}
+            useAutoSpacing={props.userData[0].useAutoSpacing}
+            question={comp}
+          />
+        ) :
+        <Stack spacing={2}>
+          <Typography variant="h6">
+            {props.userData[0].title}<div className="rightText">Page: {page}</div>
+          </Typography>
+          <DisplayUserRow  
+            props={props} 
+            questionType={props.templateQuestions[page - 1].question_type} 
+            preLoadAttributes={props.templateQuestions[page - 1].pre_load_attributes}
+            questionOrder={props.templateQuestions[page - 1].question_order}
+            useBoxControls={props.userData[0].useBoxControls}
+            useAutoSpacing={props.userData[0].useAutoSpacing}
+            question={props.templateQuestions[page - 1]}
+          />
+          <Pagination count={props.templateQuestions.length} 
+            page={page} 
+            onChange={handlePageChange} 
+            showFirstButton 
+            showLastButton
+            color="primary"
+          />
+        </Stack>
+        }
         <br/><br/>
         <Stack spacing={2} direction="row">
-          <Button variant="contained" type="submit">Save</Button>
+          <Button variant="contained" disabled={props.userData[0].usePagination==0 ? false : page < props.templateQuestions.length ? true : false} type="submit">Save</Button>
           <Button variant="contained" color="error" onClick={handleCancel}>Cancel</Button>
         </Stack>
       </form>

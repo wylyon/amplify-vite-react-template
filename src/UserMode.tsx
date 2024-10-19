@@ -121,7 +121,23 @@ export default function UserMode(props) {
 				  translateUserTemplates(userItems);
 				  setIsMultiTemplates(true);
 				  setIsMulti(true);
-				  getUserPageDetailsByTemplate(props.userId, firstItem.template_id);
+				  for (var i=0; i < items.length; i++) {
+					const item = JSON.parse(items[i]);
+					if (item.template_id == firstItem.template_id) {
+						if (!item.verified_date) {
+							handleVerifiedDate(item.template_user_id);
+						}
+						setPreLoadPage(item.pre_load_page_attributes);
+						setPostLoadPage(item.post_load_page_attributes);
+						setTempId(firstItem.template_id);
+						// note:  change view listuserTemplates to return live_date and use that field
+						setIsDefaultPage(false);
+						setIsDefaultPage2(true);
+						setUserData(translateUserTemplate (item))	
+						getQuestionsByTemplate(firstItem.template_id);
+						return;						
+					}
+				  }
 				}
 			}
 		}

@@ -261,7 +261,11 @@ export default function SetupQuestion(props) {
     setIsValuesDisabled(true);
     setWhichControl('Switch');
   }
-
+  const handleToggleButtonClick = () => {
+    setIsValuesDisabled(false);
+    setWhichControl('Toggle Button labels');
+  }
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
@@ -614,6 +618,11 @@ export default function SetupQuestion(props) {
                           control={formData.questionType=="switch" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                           label="Switch" 
                           onClick={handleSwitchClick} onChange={handleChange}/></Tooltip>
+                        <Tooltip title="Select this for a toggle button" placement="right">
+                        <FormControlLabel value="toggle_button" 
+                          control={formData.questionType=="toggle_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                          label="Toggle Button" 
+                          onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
                     </RadioGroup>
               </AccordionDetails>
             </Accordion>

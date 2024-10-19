@@ -32,6 +32,7 @@ import { AuthType } from "aws-cdk-lib/aws-stepfunctions-tasks";
 import Typography from "@mui/material/Typography";
 import Slider from "@mui/material/Slider";
 import Stack from '@mui/material/Stack';
+import Pagination from '@mui/material/Pagination';
 
 export default function SetupTemplate(props) {
   const [formData, setFormData] = useState({
@@ -70,6 +71,11 @@ export default function SetupTemplate(props) {
   const [selectedRows, setSelectedRows] = useState([]);
   const [dialogControls, setDialogControls] = useState({});
   const [isWizard, setIsWizard] = useState(false);
+  const [page, setPage] = useState(1);
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  }
 
   const handleClickOpen = () => {
     if (formData.questionValues == '') {
@@ -448,6 +454,11 @@ export default function SetupTemplate(props) {
     setWhichControl('Button label');
   }
 
+  const handleToggleButtonClick = () => {
+    setIsValuesDisabled(false);
+    setWhichControl('Toggle Button labels');
+  }
+
   const handleColorButtonClick = () => {
     setIsValuesDisabled(false);
     setWhichControl('Color Button label');
@@ -632,7 +643,21 @@ export default function SetupTemplate(props) {
           <DialogContentText id="alert-dialog-description"
             sx={{height: '500px', width: '650px'}}>
             <div className="startPreview" dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes)} /><br/><br/><br/>
-            {templateQuestion.map(comp => 
+            {props.usePages ?
+              <Stack spacing={2}>
+                <Typography variant="h6">
+                  {props.name}
+                </Typography>
+                <DisplayQuestion props={props} question = {templateQuestion[page-1]}  useBox={false}  useSpacing={false} isPreview = {true}/>
+                <Pagination count={templateQuestion.length} 
+                  page={page} 
+                  onChange={handlePageChange} 
+                  showFirstButton 
+                  showLastButton
+                  color="primary"
+                />
+              </Stack>            
+            : templateQuestion.map(comp => 
             <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
               <Stack direction="row" spacing={1} >
               <Paper elevation={0}>
@@ -902,6 +927,11 @@ export default function SetupTemplate(props) {
                       control={formData.questionType=="switch" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                       label="Switch" 
                       onClick={handleSwitchClick} onChange={handleChange}/></Tooltip>
+                    <Tooltip title="Select this for a toggle button" placement="right">
+                    <FormControlLabel value="toggle_button" 
+                      control={formData.questionType=="toggle_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                      label="Toggle Button" 
+                      onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
                 </RadioGroup>
               </div>
               <div style={{ marginLeft: '200px'}}>

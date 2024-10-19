@@ -54,7 +54,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "t.use_pagination, t.auto_space, t.box_controls, b.verified_date FROM " +
       "logistics.user a join logistics.template t on t.division_id = a.division_id left join logistics.template_permissions b " +
       "on b.user_id = a.id and t.id = b.template_id WHERE " +
-      "a.email_address = :email and t.prod_date <= current_date();"
+      "a.email_address = :email and t.prod_date <= current_date() and b.id is not null;"
     )).authorization(allow => allow.publicApiKey()),
     listDivisionByCompanyId: a.query()
     .arguments({

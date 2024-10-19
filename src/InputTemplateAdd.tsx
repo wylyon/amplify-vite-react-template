@@ -47,6 +47,56 @@ export default function InputTemplateAdd(props) {
     }));
   };
 
+  const handlePaginationCheckChange = (e) => {
+    setFormData({
+      id: formData.id,  
+      divisionId: formData.divisionId,
+      title: formData.title,
+      description: formData.description,
+      preLoadPage: formData.preLoadPage,
+      postLoadPage: formData.postLoadPage,
+      liveDate: formData.liveDate,
+      prodDate: formData.prodDate,
+      notes: formData.notes,
+      usePagination: e.target.checked,
+      useAutoSpace: formData.useAutoSpace,
+      useBoxControls: formData.useBoxControls,
+    })
+  }
+
+  const handleAutoSpaceCheckChange = (e) => {
+    setFormData({
+      id: formData.id,  
+      divisionId: formData.divisionId,
+      title: formData.title,
+      description: formData.description,
+      preLoadPage: formData.preLoadPage,
+      postLoadPage: formData.postLoadPage,
+      liveDate: formData.liveDate,
+      prodDate: formData.prodDate,
+      notes: formData.notes,
+      usePagination: formData.usePagination,
+      useAutoSpace: e.target.checked,
+      useBoxControls: formData.useBoxControls,
+    })
+  }
+
+  const handleBoxControlsCheckChange = (e) => {
+    setFormData({
+      id: formData.id,  
+      divisionId: formData.divisionId,
+      title: formData.title,
+      description: formData.description,
+      preLoadPage: formData.preLoadPage,
+      postLoadPage: formData.postLoadPage,
+      liveDate: formData.liveDate,
+      prodDate: formData.prodDate,
+      notes: formData.notes,
+      usePagination: formData.usePagination,
+      useAutoSpace: formData.useAutoSpace,
+      useBoxControls: e.target.checked,
+    })
+  }
   const handleClickOpenPreview = (e) => {
     e.preventDefault();
     setPreview(true);
@@ -145,7 +195,7 @@ export default function InputTemplateAdd(props) {
     aria-describedby="alert-dialog-description"
   >
     <DialogTitle id="alert-dialog-title">
-      {"Preview of Template and Questions"}
+      {"Preview of Template Pre-Post Page HTML"}
     </DialogTitle>
     <DialogContent>
       <DialogContentText id="alert-dialog-description">
@@ -220,7 +270,7 @@ export default function InputTemplateAdd(props) {
 	        <div className="button-container">
   	        <button type="submit" style={{ margin: '8px 5px', padding: '5px' }}>{props.isAddMode || isGoAdd ? "Add" : "Update"}</button>
 	          <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>
-            <button className="activateButton" onClick={handleClickOpenPreview}>Preview</button>
+            <button className="activateButton" onClick={handleClickOpenPreview}>Preview Pre-Post html</button>
 	        </div>         
         </div>
       </div>
@@ -239,7 +289,7 @@ export default function InputTemplateAdd(props) {
             placeholder="Select if you want paging"
             value={isNew ? false : formData.usePagination}
             checked={isNew ? false : formData.usePagination}
-            onChange={handleChange}
+            onChange={handlePaginationCheckChange}
           />&emsp;&emsp;
         <label>Use Auto Spacing on Controls</label>
           <input type="checkbox"
@@ -247,7 +297,7 @@ export default function InputTemplateAdd(props) {
             placeholder="Select if you want auto spacing controls"
             value={isNew ? false : formData.useAutoSpace}
             checked={isNew ? false : formData.useAutoSpace}
-            onChange={handleChange}
+            onChange={handleAutoSpaceCheckChange}
           />&emsp;&emsp;
         <label>Use Boxing around Controls</label>
           <input type="checkbox"
@@ -255,7 +305,7 @@ export default function InputTemplateAdd(props) {
             placeholder="Select if you want auto boxing of controls"
             value={isNew ? false : formData.useBoxControls}
             checked={isNew ? false : formData.useBoxControls}
-            onChange={handleChange}
+            onChange={handleBoxControlsCheckChange}
           />
       </form>
      </div>

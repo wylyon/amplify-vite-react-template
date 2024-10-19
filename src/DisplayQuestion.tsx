@@ -46,6 +46,15 @@ export default function DisplayQuestion(props) {
     }
   }
 
+  function returnToggleButton(questionValueArr, questionSeq) {
+    var htmlSelect = '';
+    for (var i = 0; i < questionValueArr.length; i++) {
+      htmlSelect = htmlSelect + "<br /><input type=\"button\" style=\"width: 150px; height: 30px;\" id=\"btn" + 
+        i + questionSeq + "\" name=\"btn" + i + questionSeq + "\" value=\"" + questionValueArr[i] + "\">";
+    }
+    return htmlSelect;
+  }
+
   function returnDropDownRadioValues (questionValueArr, isDropDown, name) {
     var htmlSelect = '';
     for (var i = 0; i < questionValueArr.length; i++) {
@@ -107,6 +116,8 @@ export default function DisplayQuestion(props) {
         return returnButtonNameColor(questionValueArr, questionSeq);
       case TYPE_SWITCH:
         return "<label class=\"switch\"><input type=\"checkbox\"><span class=\"slider round\"></span></label>";
+      case TYPE_TOGGLE_BUTTON:
+        return returnToggleButton(questionValueArr, questionSeq);
       default:
         return ;
     }
