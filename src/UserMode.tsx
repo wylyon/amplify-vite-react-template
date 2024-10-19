@@ -102,18 +102,19 @@ export default function UserMode(props) {
 				const db = JSON.stringify(items);
 				const userItems = JSON.parse(db);
 				if (items.length < 2) {
+				  const firstItem = JSON.parse(userItems[0]);
 				// first update verified date if necessary..also this path is only one template
-				  if (!userItems.verified_date) {
-					handleVerifiedDate(userItems.template_user_id);
+				  if (!firstItem.verified_date) {
+					handleVerifiedDate(firstItem.template_user_id);
 				  }
-				  setPreLoadPage(userItems.pre_load_page_attributes);
-				  setPostLoadPage(userItems.post_load_page_attributes);
-				  setTempId(userItems.template_id);
+				  setPreLoadPage(firstItem.pre_load_page_attributes);
+				  setPostLoadPage(firstItem.post_load_page_attributes);
+				  setTempId(firstItem.template_id);
 				  // note:  change view listuserTemplates to return live_date and use that field
 				  setIsDefaultPage(false);
 				  setIsDefaultPage2(true);
-				  setUserData(translateUserTemplate (userItems));
-				  getQuestionsByTemplate(userItems.template_id);
+				  setUserData(translateUserTemplate (firstItem));
+				  getQuestionsByTemplate(firstItem.template_id);
 				} else {
 				// here we have multiple templates...need to show list of templates to choose.
 				//  setUserData(translateUserTemplate (userItems))
