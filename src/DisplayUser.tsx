@@ -38,6 +38,10 @@ export default function DisplayUser(props) {
     props.onSubmitChange(false);
   }
 
+  const handleOnSubmitOther = (e) => {
+
+  }
+
   const handleOnAlert = (e) => {
     setIsAlert(false);
     setAlertMessage('');
@@ -98,6 +102,7 @@ export default function DisplayUser(props) {
             useBoxControls={props.userData[0].useBoxControls}
             useAutoSpacing={props.userData[0].useAutoSpacing}
             question={comp}
+            onSubmitChange={handleOnSubmitOther}
           />
         ) :
         <Stack spacing={2}>
@@ -112,6 +117,7 @@ export default function DisplayUser(props) {
             useBoxControls={props.userData[0].useBoxControls}
             useAutoSpacing={props.userData[0].useAutoSpacing}
             question={props.templateQuestions[page - 1]}
+            onSubmitChange={handleOnSubmitOther}
           />
           <Pagination count={props.templateQuestions.length} 
             page={page} 
@@ -124,7 +130,9 @@ export default function DisplayUser(props) {
         }
         <br/><br/>
         <Stack spacing={2} direction="row">
-          <Button variant="contained" disabled={props.userData[0].usePagination==0 ? false : page < props.templateQuestions.length ? true : false} type="submit">Save</Button>
+          <Button variant="contained" 
+            disabled={props.userData[0].usePagination==0 ? false : page < props.templateQuestions.length ? true : false} 
+            type="submit">Save</Button>
           <Button variant="contained" color="error" onClick={handleCancel}>Cancel</Button>
         </Stack>
       </form>
