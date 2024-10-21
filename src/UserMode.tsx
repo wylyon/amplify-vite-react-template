@@ -145,8 +145,9 @@ export default function UserMode(props) {
 	};
 
 	const getUserPageDetailsByTemplate = async (emailAddress, templateId) => {
-		const { data: items, errors } = await client.queries.listUserTemplates({
+		const { data: items, errors } = await client.queries.listUserTemplatesByTemplateId({
 		  email: emailAddress,
+		  templateId: templateId
 		})
 		if (errors) {
 			alert(errors[0].message);
@@ -154,40 +155,18 @@ export default function UserMode(props) {
 			if (Array.isArray(items) && items.length > 0) {
 				const db = JSON.stringify(items);
 				const userItems = JSON.parse(db);
-				if (items.length < 2) {
-				// first update verified date if necessary..also this path is only one template
-				  if (userItems.template_id == templateId) {
-					if (!userItems.verified_date) {
-						handleVerifiedDate(userItems.template_user_id);
-					}
-					setPreLoadPage(userItems.pre_load_page_attributes);
-					setPostLoadPage(userItems.post_load_page_attributes);
-					setTempId(templateId);
-					// note:  change view listuserTemplates to return live_date and use that field
-					setIsDefaultPage(false);
-					setIsDefaultPage2(true);
-					setUserData(translateUserTemplate (userItems))
-					getQuestionsByTemplate(templateId);
-				  }
-				} else {
-					for (var i=0; i < items.length; i++) {
-						const item = JSON.parse(items[i]);
-						if (item.template_id == templateId) {
-							if (!item.verified_date) {
-								handleVerifiedDate(item.template_user_id);
-							}
-							setPreLoadPage(item.pre_load_page_attributes);
-							setPostLoadPage(item.post_load_page_attributes);
-							setTempId(templateId);
-							// note:  change view listuserTemplates to return live_date and use that field
-							setIsDefaultPage(false);
-							setIsDefaultPage2(true);
-							setUserData(translateUserTemplate (item))	
-							getQuestionsByTemplate(templateId);
-							return;						
-						}
-					}
+				const item = JSON.parse(items[0]);
+				if (!item.verified_date) {
+					handleVerifiedDate(item.template_user_id);
 				}
+				setPreLoadPage(item.pre_load_page_attributes);
+				setPostLoadPage(item.post_load_page_attributes);
+				setTempId(templateId);
+				// note:  change view listuserTemplates to return live_date and use that field
+				setIsDefaultPage(false);
+				setIsDefaultPage2(true);
+				setUserData(translateUserTemplate (item))	
+				getQuestionsByTemplate(templateId);				
 			}
 		}
 	};
