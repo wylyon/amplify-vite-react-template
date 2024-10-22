@@ -45,6 +45,22 @@ export const schema = configure({
         }
     }
 }).schema({
+    "admin": a.model({
+        id: a.string().required(),
+        username: a.string(),
+        email_address: a.string().required(),
+        company_id: a.string(),
+        company_name: a.string(),
+        first_name: a.string().required(),
+        last_name: a.string().required(),
+        middle_name: a.string(),
+        active_date: a.date(),
+        deactive_date: a.datetime(),
+        created: a.datetime().required(),
+        created_by: a.integer().required()
+    }).identifier([
+        "id"
+    ]),
     "company": a.model({
         id: a.string().required(),
         name: a.string().required(),
@@ -80,43 +96,15 @@ export const schema = configure({
     }).identifier([
         "id"
     ]),
-    "user": a.model({
+    "question_result": a.model({
         id: a.string().required(),
-        division_id: a.string().required(),
-        email_address: a.string().required(),
-        first_name: a.string().required(),
-        last_name: a.string().required(),
-        middle_name: a.string(),
-        active_date: a.date(),
-        deactive_date: a.datetime(),
-        notes: a.string(),
-        created: a.datetime().required(),
-        created_by: a.integer().required()
-    }).identifier([
-        "id"
-    ]),
-    "admin": a.model({
-        id: a.string().required(),
-        username: a.string(),
-        email_address: a.string().required(),
-        company_id: a.string(),
-        company_name: a.string(),
-        first_name: a.string().required(),
-        last_name: a.string().required(),
-        middle_name: a.string(),
-        active_date: a.date(),
-        deactive_date: a.datetime(),
-        created: a.datetime().required(),
-        created_by: a.integer().required()
-    }).identifier([
-        "id"
-    ]),
-    "template_permissions": a.model({
-        id: a.string().required(),
-        template_id: a.string().required(),
-        user_id: a.string().required(),
-        enabled_date: a.datetime(),
-        verified_date: a.datetime(),
+        template_question_id: a.string().required(),
+        result_photo_value: a.string(),
+        result_option_value: a.string(),
+        result_date_value: a.datetime(),
+        gps_lat: a.float(),
+        gps_long: a.float(),
+        what2words: a.string(),
         created: a.datetime().required(),
         created_by: a.integer().required()
     }).identifier([
@@ -141,15 +129,12 @@ export const schema = configure({
     }).identifier([
         "id"
     ]),
-    "question_result": a.model({
+    "template_permissions": a.model({
         id: a.string().required(),
-        template_question_id: a.string().required(),
-        result_photo_value: a.string(),
-        result_option_value: a.string(),
-        result_date_value: a.datetime(),
-        gps_lat: a.float(),
-        gps_long: a.float(),
-        what2words: a.string(),
+        template_id: a.string().required(),
+        user_id: a.string().required(),
+        enabled_date: a.datetime(),
+        verified_date: a.datetime(),
         created: a.datetime().required(),
         created_by: a.integer().required()
     }).identifier([
@@ -174,7 +159,8 @@ export const schema = configure({
             "checkbox_button",
             "contained_button_color",
             "switch",
-            "toggle_button"
+            "toggle_button",
+            "dialog_input"
         ]),
         question_values: a.string(),
         post_load_attributes: a.string(),
@@ -182,6 +168,22 @@ export const schema = configure({
         actions_flag: a.integer(),
         notes: a.string(),
         deactive_date: a.datetime(),
+        created: a.datetime().required(),
+        created_by: a.integer().required(),
+        trigger_value: a.string()
+    }).identifier([
+        "id"
+    ]),
+    "user": a.model({
+        id: a.string().required(),
+        division_id: a.string().required(),
+        email_address: a.string().required(),
+        first_name: a.string().required(),
+        last_name: a.string().required(),
+        middle_name: a.string(),
+        active_date: a.date(),
+        deactive_date: a.datetime(),
+        notes: a.string(),
         created: a.datetime().required(),
         created_by: a.integer().required()
     }).identifier([

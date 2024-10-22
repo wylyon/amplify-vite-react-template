@@ -48,13 +48,14 @@ export default function SetupTemplate(props) {
     optionalFlag: false,
     actionsFlag: false,
     notes: '',
+    triggerValue: '',
   });
 
   const [theSeverity, setTheSeverity] = useState('error');
   const client = generateClient<Schema>({
     authMode: 'apiKey',
   });
-  const [filtered, setFiltered] = useState('');
+  const [filtered, setFiltered] = useState<Schema["template_question"]["type"][]>([]);
   const [isValuesDisabled, setIsValuesDisabled] = useState(true);
   const [templateQuestion, setTemplateQuestion] = useState<Schema["template_question"]["type"][]>([]);
   const [isAlert, setIsAlert] = useState(false);
@@ -241,20 +242,21 @@ export default function SetupTemplate(props) {
     setPreview(false);
   }
 
-  function setFormDataOrder (order) {
+  function setFormDataFields (value, field) {
     setFormData({
       id: formData.id,
       templateId: props.template_id,
-      questionOrder: order,
-      preLoadAttributes: formData.preLoadAttributes,
+      questionOrder: field == 'order' ? value : formData.questionOrder,
+      preLoadAttributes: field == 'pre' ? value : formData.preLoadAttributes,
       title: formData.title,
       description: formData.description,
       questionType: formData.questionType,
-      questionValues: formData.questionValues,
+      questionValues: field == 'values' ? value : formData.questionValues,
       postLoadAttributes: formData.postLoadAttributes,
       optionalFlag: formData.optionalFlag,
       actionsFlag: false,
       notes: '',
+      triggerValue: formData.triggerValue,
     });
   }
 
@@ -269,14 +271,15 @@ export default function SetupTemplate(props) {
     }
     if (items.length < 1) {
       setIsPreviewActive(false);
-      setFormDataOrder(1);
+      setFormDataFields(1, 'order');
     } else {
       setIsPreviewActive(true);
       // get next order#
       const nextOrder = items[items.length-1].question_order + 1;
-      setFormDataOrder(nextOrder);
+      setFormDataFields(nextOrder, 'order');
     }
     setTemplateQuestion(items);
+    setFiltered(items.filter(comp => !comp.question_type.includes('dialog_input')));
   };
 
   const handleChange = (e) => {
@@ -315,6 +318,7 @@ export default function SetupTemplate(props) {
       optionalFlag: false,
       actionsFlag: false,
       notes: '',
+      triggerValue: '',
     });
     setWhichControl('');
   }
@@ -338,7 +342,8 @@ export default function SetupTemplate(props) {
       question_type: formData.questionType,
       question_values: formData.questionValues,
       post_load_attributes: formData.postLoadAttributes,
-      optional_flag: (!formData.optionalFlag ? 0 : 1)     
+      optional_flag: (!formData.optionalFlag ? 0 : 1),
+      trigger_value: formData.questionType == 'dialog_input' ? formData.questionValues : ''
     });
     if (errors) {
       setAlertMessage(errors[0].message);
@@ -368,7 +373,9 @@ export default function SetupTemplate(props) {
       optional_flag: (!formData.optionalFlag ? 0 : 1),
       notes: '',
       created: now,
-      created_by: 0});
+      created_by: 0,
+      trigger_value: formData.questionType == 'dialog_input' ? formData.questionValues : ''
+    });
     if (errors) {
       setAlertMessage(errors[0].message);
       setIsAlert(true);
@@ -459,6 +466,11 @@ export default function SetupTemplate(props) {
     setWhichControl('Toggle Button labels');
   }
 
+  const handleDialogInputClick = () => {
+    setIsValuesDisabled(false);
+    setWhichControl('Dialog Input');
+  }
+
   const handleColorButtonClick = () => {
     setIsValuesDisabled(false);
     setWhichControl('Color Button label');
@@ -492,35 +504,36 @@ export default function SetupTemplate(props) {
         setIsPreviewActive(true);
         setIsDeleteActive(true);
         setSelectedRows([ { id: rowSelectionModel[0]}]);
-        const filtered = templateQuestion.filter(comp => comp.id.includes(rowSelectionModel[0]));
-        if (filtered.length == 1 ) {
+        const filteredId = templateQuestion.filter(comp => comp.id.includes(rowSelectionModel[0]));
+        if (filteredId.length == 1 ) {
           setFormData({
-            id: filtered[0].id,
+            id: filteredId[0].id,
             templateId: props.template_id,
-            questionOrder: filtered[0].question_order,
-            preLoadAttributes: filtered[0].pre_load_attributes,
-            title: filtered[0].title,
-            description: filtered[0].description,
-            questionType: filtered[0].question_type,
-            questionValues: filtered[0].question_values,
-            postLoadAttributes: filtered[0].post_load_attributes,
-            optionalFlag: filtered[0].optional_flag,
+            questionOrder: filteredId[0].question_order,
+            preLoadAttributes: filteredId[0].pre_load_attributes,
+            title: filteredId[0].title,
+            description: filteredId[0].description,
+            questionType: filteredId[0].question_type,
+            questionValues: filteredId[0].question_values,
+            postLoadAttributes: filteredId[0].post_load_attributes,
+            optionalFlag: filteredId[0].optional_flag,
             actionsFlag: false,
             notes: '',
+            triggerValue: filteredId[0].trigger_value
           });
-          if (filtered[0].question_type == 'photo' || filtered[0].question_type == 'datepicker' || filtered[0].question_type == 'switch') {
+          if (filteredId[0].question_type == 'photo' || filteredId[0].question_type == 'datepicker' || filteredId[0].question_type == 'switch') {
             setWhichControl('');
             setDialogResult('');
             setIsValuesDisabled(true);
             setIsUpdate(true);
             return;
           } else {
-            if (filtered[0].question_type == 'button' || filtered[0].question_type == 'contained_button_color') {
-              setWhichControl(filtered[0].question_type == 'button' ? 'Button label' : 'Color Button label');
-              setDialogResult(filtered[0].question_values);              
+            if (filteredId[0].question_type == 'button' || filteredId[0].question_type == 'contained_button_color') {
+              setWhichControl(filteredId[0].question_type == 'button' ? 'Button label' : 'Color Button label');
+              setDialogResult(filteredId[0].question_values);              
             } else {
-              setWhichControl(filtered[0].question_type);
-              setDialogResult(filtered[0].question_values);
+              setWhichControl(filteredId[0].question_type);
+              setDialogResult(filteredId[0].question_values);
             }
           }
           setIsUpdate(true);
@@ -554,40 +567,6 @@ export default function SetupTemplate(props) {
     },
   ];
 
-  function setQuestionValues (textValue) {
-    setFormData({
-      id: formData.id,
-      templateId: props.template_id,
-      questionOrder: formData.questionOrder,
-      preLoadAttributes: formData.preLoadAttributes,
-      title: formData.title,
-      description: formData.description,
-      questionType: formData.questionType,
-      questionValues: textValue,
-      postLoadAttributes: formData.postLoadAttributes,
-      optionalFlag: formData.optionalFlag,
-      actionsFlag: false,
-      notes: '',
-    });
-  }
-
-  function setPreAttributes (textValue) {
-    setFormData({
-      id: formData.id,
-      templateId: props.template_id,
-      questionOrder: formData.questionOrder,
-      preLoadAttributes: textValue,
-      title: formData.title,
-      description: formData.description,
-      questionType: formData.questionType,
-      questionValues: formData.questionValues,
-      postLoadAttributes: formData.postLoadAttributes,
-      optionalFlag: formData.optionalFlag,
-      actionsFlag: false,
-      notes: '',
-    });
-  }
-
   function newQuestionSubmit (e) {
     setIsWizard(false);
     setFormData({
@@ -603,6 +582,7 @@ export default function SetupTemplate(props) {
       optionalFlag: e.optionalFlag,
       actionsFlag: false,
       notes: '',
+      triggerValue: e.triggerValue
     });
     if (e.questionType != 'photo' && e.questionType != 'datepicker') {
       setIsValuesDisabled(false);
@@ -629,7 +609,7 @@ export default function SetupTemplate(props) {
   return (
     <React.Fragment>
       <CssBaseline />
-      {isWizard && <SetupQuestion props={props} onSubmitChange={newQuestionSubmit} />}
+      {isWizard && <SetupQuestion props={props} onSubmitChange={newQuestionSubmit} nextOrder={templateQuestion.length+1}/>}
       <Dialog
         open={preview}
         onClose={handlePreviewClose}
@@ -648,8 +628,8 @@ export default function SetupTemplate(props) {
                 <Typography variant="h6">
                   {props.name}
                 </Typography>
-                <DisplayQuestion props={props} question = {templateQuestion[page-1]}  useBox={false}  useSpacing={false} isPreview = {true}/>
-                <Pagination count={templateQuestion.length} 
+                <DisplayQuestion props={props} question = {filtered[page-1]}  useBox={false}  useSpacing={false} isPreview = {true}/>
+                <Pagination count={filtered.length} 
                   page={page} 
                   onChange={handlePageChange} 
                   showFirstButton 
@@ -657,7 +637,7 @@ export default function SetupTemplate(props) {
                   color="primary"
                 />
               </Stack>            
-            : templateQuestion.map(comp => 
+            : filtered.map(comp => 
             <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
               <Stack direction="row" spacing={1} >
               <Paper elevation={0}>
@@ -692,7 +672,7 @@ export default function SetupTemplate(props) {
             const tabsAfter = formJson.tabValueAfter;
             if (label == "" && lines == "0" && tabs == "0") {
               // case where nothing was entered.
-              setPreAttributes("");
+              setFormDataFields("", 'pre');
             } else {
               // we have something to render here
               var preAttributes = "";
@@ -713,7 +693,7 @@ export default function SetupTemplate(props) {
                   preAttributes = preAttributes + "&emsp;";
                 }   
               }       
-              setPreAttributes(preAttributes);  
+              setFormDataFields(preAttributes, 'pre');  
             }
             handlePreClose();
           },
@@ -786,27 +766,27 @@ export default function SetupTemplate(props) {
               const labelText = formJson.labelValues;
               if (text == null || text.length < 1) {
                 setDialogResult(whichControl.startsWith("Color") ? "|" + labelText : labelText);
-                setQuestionValues(whichControl.startsWith("Color") ? "|" + labelText : labelText);
+                setFormDataFields(whichControl.startsWith("Color") ? "|" + labelText : labelText, 'values');
               } else {
                 setDialogResult(text + "|" + labelText)
-                setQuestionValues(text + "|" + labelText);               
+                setFormDataFields(text + "|" + labelText, 'values');               
               }
             } else {
               const textArr = text.split(/\r?\n/);
               if (textArr.length < 1) {
                 setDialogResult(text);
-                setQuestionValues(text);
+                setFormDataFields(text, 'values');
               } else {
                 if (textArr.length == 1) {
                   setDialogResult(textArr[0]);
-                  setQuestionValues(textArr[0]);
+                  setFormDataFields(textArr[0], 'values');
                 } else {
                   var newText = textArr[0];
                   for (var i = 1; i < textArr.length; i++) {
                     newText = newText + "|" + textArr[i];
                   }
                   setDialogResult(newText);
-                  setQuestionValues(newText);
+                  setFormDataFields(newText, 'values');
                 }
               }
             }
@@ -817,7 +797,8 @@ export default function SetupTemplate(props) {
         <DialogTitle>{whichControl == '' ? 'Default' : whichControl} Values</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Enter each {whichControl == '' ? 'Default' : whichControl} value:
+            {whichControl.startsWith('Dialog') ? "Enter trigger value:" :
+            "Enter each " + whichControl == '' ? 'Default' : whichControl + " value"}
           </DialogContentText>
           {whichControl.startsWith("Button") || whichControl.startsWith("Color") ?
             <TextField
@@ -837,9 +818,9 @@ export default function SetupTemplate(props) {
             margin="dense"
             id="name"
             name="textValues"
-            label="Values"
-            multiline
-            rows={8}
+            label={whichControl.startsWith('Dialog') ? "Value" : "Values"}
+            multiline={whichControl.startsWith('Dialog') ? false : true}
+            rows={whichControl.startsWith('Dialog') ? 1 : 8}
           /> }
           {whichControl.startsWith("Button") || whichControl.startsWith("Color") ?
             <TextField
@@ -932,6 +913,11 @@ export default function SetupTemplate(props) {
                       control={formData.questionType=="toggle_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                       label="Toggle Button" 
                       onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
+                    <Tooltip title="Select this for a dialog input (triggered by previous question)" placement="right">
+                    <FormControlLabel value="dialog_input" 
+                      control={formData.questionType=="dialog_input" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                      label="Dialog Input" 
+                      onClick={handleDialogInputClick} onChange={handleChange}/></Tooltip>
                 </RadioGroup>
               </div>
               <div style={{ marginLeft: '200px'}}>

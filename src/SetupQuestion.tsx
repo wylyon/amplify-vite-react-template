@@ -37,7 +37,7 @@ export default function SetupQuestion(props) {
   const [formData, setFormData] = useState({
     id: '',
     templateId: props.template_id,
-    questionOrder: 0,
+    questionOrder: props.nextOrder,
     preLoadAttributes: '',
     title: '',
     description: '',
@@ -47,6 +47,7 @@ export default function SetupQuestion(props) {
     optionalFlag: false,
     actionsFlag: false,
     notes: '',
+    triggerValue: '',
   });
   const [open, setOpen] = useState(true);
   const [openValues, setOpenValues] = useState(false);
@@ -266,6 +267,11 @@ export default function SetupQuestion(props) {
     setWhichControl('Toggle Button labels');
   }
   
+  const handleDialogInputClick = () => {
+    setIsValuesDisabled(false);
+    setWhichControl('Dialog Input');
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
@@ -288,6 +294,7 @@ export default function SetupQuestion(props) {
       optionalFlag: formData.optionalFlag,
       actionsFlag: false,
       notes: '',
+      triggerValue: textValue,
     });
   }
 
@@ -305,6 +312,7 @@ export default function SetupQuestion(props) {
       optionalFlag: formData.optionalFlag,
       actionsFlag: false,
       notes: '',
+      triggerValue: formData.triggerValue
     });
   }
 
@@ -366,12 +374,14 @@ export default function SetupQuestion(props) {
         <DialogTitle>{whichControl == '' ? 'Default' : whichControl} Values</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Enter each {whichControl == '' ? 'Default' : whichControl} value:
+            {whichControl.startsWith('Dialog') ? "Enter trigger value:" :
+            "Enter each " + whichControl == '' ? 'Default' : whichControl + " value"}
           </DialogContentText>
           {whichControl.startsWith("Button") || whichControl.startsWith("Color") ?
             <TextField
               autoFocus 
-              defaultValue={dialogPrompt.split("|")[0]}
+              defaultValue={whichControl.startsWith("Color") ? dialogPrompt.split("|")[0] : null}
+              disabled = {whichControl.startsWith("Button")}
               margin="dense"
               id="name"
               name="textValues"
@@ -385,15 +395,15 @@ export default function SetupQuestion(props) {
             margin="dense"
             id="name"
             name="textValues"
-            label="Values"
-            multiline
-            rows={8}
+            label={whichControl.startsWith('Dialog') ? "Value" : "Values"}
+            multiline={whichControl.startsWith('Dialog') ? false : true}
+            rows={whichControl.startsWith('Dialog') ? 1 : 8}
           /> }
           {whichControl.startsWith("Button") || whichControl.startsWith("Color") ?
             <TextField
             autoFocus
             required
-            defaultValue={dialogPrompt.split("|")[1]}
+            defaultValue={whichControl.startsWith("Button") ? dialogPrompt : dialogPrompt.split("|")[1]}
             margin="dense"
             id="name"
             name="labelValues"
@@ -623,6 +633,11 @@ export default function SetupQuestion(props) {
                           control={formData.questionType=="toggle_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                           label="Toggle Button" 
                           onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
+                        <Tooltip title="Select this for a dialog input (triggered by previous question)" placement="right">
+                        <FormControlLabel value="dialog_input" 
+                          control={formData.questionType=="dialog_input" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                          label="Dialog Input" 
+                          onClick={handleDialogInputClick} onChange={handleChange}/></Tooltip>
                     </RadioGroup>
               </AccordionDetails>
             </Accordion>
