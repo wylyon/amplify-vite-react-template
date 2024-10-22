@@ -16,6 +16,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DisplayUserRow from '../src/DisplayUserRow';
 import Typography from '@mui/material/Typography';
 import Pagination from '@mui/material/Pagination';
+import PaginationItem from '@mui/material/PaginationItem';
+import { disable } from "aws-amplify/analytics";
 
 export default function DisplayUser(props) {
   const [isAlert, setIsAlert] = useState(false);
@@ -23,6 +25,7 @@ export default function DisplayUser(props) {
   const [theSeverity, setTheSeverity] = useState('error');
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
@@ -40,6 +43,14 @@ export default function DisplayUser(props) {
 
   const handleOnSubmitOther = (e) => {
 
+  }
+
+  const handleNextPage = (e) => {
+    if (currentPage < props.templateQuestions.length) {
+      if (page <= currentPage) {
+        setCurrentPage(currentPage+1);
+      }
+    }
   }
 
   const handleOnAlert = (e) => {
@@ -103,11 +114,12 @@ export default function DisplayUser(props) {
             useAutoSpacing={props.userData[0].useAutoSpacing}
             question={comp}
             onSubmitChange={handleOnSubmitOther}
+            onNextPage={handleNextPage}
           />
         ) :
         <Stack spacing={2}>
           <Typography variant="h6">
-            {props.userData[0].title}<div className="rightText">Page: {page}</div>
+            {props.userData[0].title}<div className="rightText">Page: {page} of {props.templateQuestions.length}</div>
           </Typography>
           <DisplayUserRow  
             props={props} 
@@ -118,13 +130,13 @@ export default function DisplayUser(props) {
             useAutoSpacing={props.userData[0].useAutoSpacing}
             question={props.templateQuestions[page - 1]}
             onSubmitChange={handleOnSubmitOther}
+            onNextPage={handleNextPage}
           />
-          <Pagination count={props.templateQuestions.length} 
+          <Pagination count={currentPage} 
             page={page} 
             onChange={handlePageChange} 
-            showFirstButton 
-            showLastButton
             color="primary"
+            size="large"
           />
         </Stack>
         }

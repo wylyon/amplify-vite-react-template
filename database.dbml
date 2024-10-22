@@ -1,0 +1,144 @@
+Enum "template_question_question_type_enum" {
+  "photo"
+  "dropdown"
+  "multiple_dropdown"
+  "radiobox"
+  "input"
+  "text"
+  "datepicker"
+  "button"
+  "checkbox_button"
+  "contained_button_color"
+  "switch"
+  "toggle_button"
+}
+
+Table "admin" {
+  "id" varchar(36) [pk, not null]
+  "username" varchar(255)
+  "email_address" varchar(255) [unique, not null]
+  "company_id" varchar(255)
+  "company_name" varchar(255)
+  "first_name" varchar(255) [not null]
+  "last_name" varchar(255) [not null]
+  "middle_name" varchar(255)
+  "active_date" date
+  "deactive_date" timestamp
+  "created" timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  "created_by" int [not null, default: 0]
+}
+
+Table "company" {
+  "id" varchar(36) [pk, not null]
+  "name" varchar(255) [not null]
+  "email" varchar(255) [not null]
+  "address1" varchar(255) [not null]
+  "address2" varchar(255)
+  "city" varchar(255) [not null]
+  "state" varchar(2) [not null]
+  "zipcode" varchar(20) [not null]
+  "ref_department" varchar(255)
+  "notes" varchar(1000)
+  "deactive_date" timestamp
+  "created" timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  "created_by" int [not null, default: 0]
+}
+
+Table "division" {
+  "id" varchar(36) [pk, not null]
+  "company_id" varchar(36) [not null]
+  "name" varchar(255) [not null]
+  "email" varchar(255)
+  "address1" varchar(255)
+  "address2" varchar(255)
+  "city" varchar(255)
+  "state" varchar(2)
+  "zipcode" varchar(20)
+  "ref_department" varchar(255)
+  "notes" varchar(1000)
+  "deactive_date" timestamp
+  "created" timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  "created_by" int [not null, default: 0]
+}
+
+Table "question_result" {
+  "id" varchar(36) [pk, not null]
+  "template_question_id" varchar(36) [not null]
+  "result_photo_value" varchar(1000)
+  "result_option_value" varchar(100)
+  "result_date_value" datetime
+  "gps_lat" double
+  "gps_long" double
+  "what2words" varchar(100)
+  "created" timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  "created_by" int [not null, default: 0]
+}
+
+Table "template" {
+  "id" varchar(36) [pk, not null]
+  "division_id" varchar(36) [not null]
+  "title" varchar(255) [not null]
+  "description" varchar(1000)
+  "pre_load_page_attributes" varchar(1000)
+  "post_load_page_attributes" varchar(1000)
+  "live_date" date
+  "prod_date" date
+  "deactive_date" timestamp
+  "notes" varchar(1000)
+  "created" timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  "created_by" int [not null, default: 0]
+  "use_pagination" tinyint(1) [default: 0]
+  "auto_space" tinyint(1) [default: 0]
+  "box_controls" tinyint(1) [default: 0]
+
+  Indexes {
+    division_id [type: btree, name: "idx_template_division"]
+  }
+}
+
+Table "template_permissions" {
+  "id" varchar(36) [pk, not null]
+  "template_id" varchar(36) [not null]
+  "user_id" varchar(36) [not null]
+  "enabled_date" timestamp
+  "verified_date" timestamp
+  "created" timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  "created_by" int [not null, default: 0]
+
+  Indexes {
+    user_id [type: btree, name: "idx_template_permission"]
+    template_id [type: btree, name: "idx_template_permission_template"]
+  }
+}
+
+Table "template_question" {
+  "id" varchar(36) [pk, not null]
+  "template_id" varchar(36) [not null]
+  "question_order" smallint
+  "pre_load_attributes" varchar(1000)
+  "title" varchar(255) [not null]
+  "description" varchar(1000)
+  "question_type" template_question_question_type_enum
+  "question_values" varchar(1000)
+  "post_load_attributes" varchar(1000)
+  "optional_flag" tinyint(1) [default: 1]
+  "actions_flag" tinyint(1) [default: 1]
+  "notes" varchar(1000)
+  "deactive_date" timestamp
+  "created" timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  "created_by" int [not null, default: 0]
+}
+
+Table "user" {
+  "id" varchar(36) [pk, not null]
+  "division_id" varchar(36) [not null]
+  "email_address" varchar(255) [unique, not null]
+  "first_name" varchar(255) [not null]
+  "last_name" varchar(255) [not null]
+  "middle_name" varchar(255)
+  "active_date" date
+  "deactive_date" timestamp
+  "notes" varchar(1000)
+  "created" timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  "created_by" int [not null, default: 0]
+}

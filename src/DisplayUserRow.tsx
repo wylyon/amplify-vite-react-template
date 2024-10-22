@@ -9,7 +9,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { Box } from "@mui/material";
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
-import { Label } from "@mui/icons-material";
+import { Check, CheckBox, Label } from "@mui/icons-material";
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -20,9 +20,13 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
+import ListItemText from '@mui/material/ListItemText';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Checkbox from '@mui/material/Checkbox';
 
 export default function DisplayUserRow(props) {
   const [source, setSource] = useState('');
@@ -31,19 +35,25 @@ export default function DisplayUserRow(props) {
   const [heading, setHeading] = useState('');
   const [comboName, setComboName] = useState<string[]>([]);
 
-  const handleChangeMultiple = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const { options } = event.target;
-    const value: string[] = [];
-    for (let i = 0, l = options.length; i < l; i += 1) {
-      if (options[i].selected) {
-        value.push(options[i].value);
-        if (options[i].value == "Other") {
-          setHeading("Animal Type");
-          setOther(true);
-        }
-      }
-    }
-    setComboName(value);
+  const ITEM_HEIGHT = 48;
+  const ITEM_PADDING_TOP = 8;
+  const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+  };
+  const handleChangeMultiple = (event: SelectChangeEvent<typeof comboName>) => {
+    const {
+      target: { value },
+    } = event;
+    setComboName(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
+    props.onNextPage(true);
   };
 
   const handleOtherClose = () => {
@@ -57,12 +67,14 @@ export default function DisplayUserRow(props) {
         const file = target.files[0];
         const newUrl = URL.createObjectURL(file);
         setSource(newUrl);
+        props.onNextPage(true);
       }
     }
   }
   
   const handleToggleChange = (event: React.MouseEvent<HTMLElement>, nextView: string) => {
     setView(nextView);
+    props.onNextPage(true);
     if (nextView == "Other") {
       setHeading("Animal");
       setOther(true);
@@ -224,26 +236,23 @@ export default function DisplayUserRow(props) {
           </div>
           : props.questionType == 'multiple_dropdown' ?
             <div>
-              <Typography variant="caption" gutterBottom>{props.preLoadAttributes}</Typography>
-              <FormControl sx={{ m: 1, minWidth: 120, maxWidth: 300 }}>
-                <InputLabel shrink htmlFor="select-multiple-native">
-                Values
-                </InputLabel>
-                <Select<string[]>
+              <FormControl sx={{ m: 1, width: 300 }}>
+                <InputLabel id={"multiple-checkbox-label"+props.question.question_order}>{props.preLoadAttributes}</InputLabel>
+                <Select
+                  labelId={"multiple-checkbox-label"+props.question.question_order}
+                  id={"multiple-checkbox"+props.question.question_order}
                   multiple
-                  native
                   value={comboName}
-                  // @ts-ignore Typings are not considering `native`
                   onChange={handleChangeMultiple}
-                  label="Values"
-                  inputProps={{
-                    id: 'select-multiple-native',
-                  }}
+                  input={<OutlinedInput label="Values" />}
+                  renderValue={(selected) => selected.join(', ')}
+                  MenuProps={MenuProps}
                 >
                   {props.question.question_values.split("|").map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
+                    <MenuItem key={name} value={name}>
+                      <Checkbox checked={comboName.includes(name)} />
+                      <ListItemText primary={name} />
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
