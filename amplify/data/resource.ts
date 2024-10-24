@@ -20,6 +20,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "SELECT id, username, email_address, company_id, company_name, first_name, last_name, middle_name, active_date, deactive_date, created, created_by FROM logistics.admin WHERE email_address = :email;"
     )).authorization(allow => allow.publicApiKey()),
     listTemplates: a.query()
+    .arguments({})
     .returns(a.json().array())
     .handler(a.handler.inlineSql(
       "SELECT t.id, t.division_id, d.name as division, c.name as company, t.title, t.description, t.pre_load_page_attributes, t.post_load_page_attributes, t.live_date, t.prod_date, t.deactive_date, t.notes, t.created, t.created_by, " +
