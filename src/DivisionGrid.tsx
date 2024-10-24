@@ -12,14 +12,101 @@ export default function DivisionGrid(props) {
 	const [loading, setLoading] = useState(true);
 
 	const client = generateClient<Schema>();
-	const [division, setCompany] = useState<Schema["company"]["type"][]>([]);
+	const [userData, setUserData] = useState([{
+		id: '',   
+		companyId: '',
+		company: '',
+		name: '',
+		email: '',
+		address1: '',
+		address2: '',
+		city: '',
+		state: '',
+		zipcode: '',
+		refDepartment: '',
+		notes: '',
+		deactiveDate: null,
+		created: '',
+		createdBy: ''
+	  }]);
+
+	  function translateUserDivision (item) {
+		const data = [{id: item.id, 
+			companyId: item.company_id, 
+			company: item.company, 
+			name: item.name,
+			email: item.email,
+			address1: item.address1,
+			address2: item.address2,
+			city: item.city,
+			state: item.state,
+			zipcode: item.zipcode,
+			refDepartment: item.ref_department,
+			notes: item.notes,
+			deactiveDate: item.deactive_date,
+			created: item.created,
+			createdBy: item.created_by
+		  }];
+		return data;
+	  }
+	
+	  function translateUserDivisions (items) {
+		var item = JSON.parse(items[0]);
+		var data = [{id: item.id, 
+			companyId: item.company_id, 
+			company: item.company, 
+			name: item.name,
+			email: item.email,
+			address1: item.address1,
+			address2: item.address2,
+			city: item.city,
+			state: item.state,
+			zipcode: item.zipcode,
+			refDepartment: item.ref_department,
+			notes: item.notes,
+			deactiveDate: item.deactive_date,
+			created: item.created,
+			createdBy: item.created_by
+		  }];
+		for (var i=1; i < items.length; i++) {
+		  const item = JSON.parse(items[i]);
+		  data.push(
+			{id: item.id, 
+				companyId: item.company_id, 
+				company: item.company, 
+				name: item.name,
+				email: item.email,
+				address1: item.address1,
+				address2: item.address2,
+				city: item.city,
+				state: item.state,
+				zipcode: item.zipcode,
+				refDepartment: item.ref_department,
+				notes: item.notes,
+				deactiveDate: item.deactive_date,
+				created: item.created,
+				createdBy: item.created_by}
+		  );
+		}
+		return data;
+	  }
+
+	  const getDivisions = async () => {
+		const { data: items, errors } = await client.queries.listAllDivisions({
+		})
+		if (Array.isArray(items) && items.length > 0) {
+		  const db = JSON.stringify(items);
+		  const userItems = JSON.parse(db);
+		  if (items.length < 2) {
+			setUserData(translateUserDivision (userItems));
+		  } else {
+			setUserData(translateUserDivisions (userItems));
+		  }
+		}
+	  };
 
 	useEffect(() => {
-		const sub = client.models.company.observeQuery().subscribe({
-		  next: (data) => setCompany([...data.items]),
-		});
-		setLoading(false);
-		return () => sub.unsubscribe();
+		getDivisions();
 	  }, []);
 
 	  function handleRowClick (params, event, details) {
@@ -34,6 +121,10 @@ export default function DivisionGrid(props) {
 		} else {
 		}
 	  }
+	}
+
+	const handleRowChangeEvent: GridEventListener<'rowCountChange'> = (params, event, details) => {
+		setLoading(false);
 	}
 
 	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
@@ -61,7 +152,7 @@ export default function DivisionGrid(props) {
   return (
 	<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 		<DataGrid
-		rows={company}
+		rows={userData}
 		slots={{ toolbar: GridToolbar}}
 		loading={loading}
 		columns={columns}
@@ -73,6 +164,7 @@ export default function DivisionGrid(props) {
 		pageSizeOptions={[9, 10]}
 		checkboxSelection
 		onRowClick={handleRowClick}
+		onRowCountChange={handleRowChangeEvent}
 		onRowSelectionModelChange={handleRowSelection}
 		sx={{ border: 0 }}
 		/>
