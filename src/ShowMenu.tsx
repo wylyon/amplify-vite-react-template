@@ -1,5 +1,6 @@
 
 // @ts-nocheck
+import * as React from 'react';
 import { useState, useEffect } from "react";
 import InputSettings from '../src/InputSettings';
 import InputAdmin from '../src/InputAdmin';
@@ -11,9 +12,16 @@ import InputUser from '../src/InputUser';
 import InputTemplate from '../src/InputTemplate';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 export default function ShowMenu(props) {
   const client = generateClient<Schema>();
+  const [open, setOpen] = useState(false);
   const [company, setCompany] = useState<Schema["company"]["type"][]>([]);
   const [formData, setFormData] = useState({
     id: '',   
@@ -136,61 +144,88 @@ export default function ShowMenu(props) {
     (props.selectedCompanyId) ? getCompanyById(props.selectedCompanyId) : null;
     return true;
   }
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   return (
+    <React.Fragment>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Feature Not Implemented Yet."}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            This feature has not yet been implemented.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={handleClose} autoFocus>Ok</Button>
+        </DialogActions>
+      </Dialog>
+      <div>
+        {!props.isSuperAdmin && getCompanyName() ? <div>
+        <label><b>Company:</b> {selectedCompany}</label></div> : null}
+        {props.isSuperAdmin  && <SelectCustomer props={props} selected="All" onSelectCompany={handleSelectChange} /> }
+        <div className="grid-container">
+      <div id="nav">
+          <ul>
+              <li><a href="index.html">Home</a></li>
+              <li onClick={handleClickOpen}><a href="#">Report</a></li>
+              <li onClick={toggleCompany}><a href="#">Company</a></li>
+        <li onClick={toggleDivision}><a href="#">
+      {(selectedCompany != "All" && selectedCompany != "") ? "Division" : 
+      <i>Division</i>}
+          </a></li>
+        <li><a href="#">Users +</a>
+          <ul>
+        <li onClick={toggleAdmin}><a href="#">
+      {(props.isSuperAdmin) ? "Admin" : <i>Admin</i>}</a></li>
+        <li onClick={toggleUser}><a href="#">
+      {(selectedCompany != "All" && selectedCompany != "") ? "Divisional" : 
+      <i>Divisional</i>}</a></li>
+          </ul>
+        </li>
+        <li onClick={toggleTemplate}><a href="#">
+      {(selectedCompany != "All" && selectedCompany != "") ? "Template" : 
+      <i>Template</i>}</a></li>
+        {(props.isSuperAdmin) ?
+        <li><a href="#">Settings +</a>
+      <ul>
+        <li onClick={toggleSettings}><a href="#">Web Access</a></li>
+      </ul>
+        </li> : null }
+        </ul>
+      </div>
     <div>
-      {!props.isSuperAdmin && getCompanyName() ? <div>
-      <label><b>Company:</b> {selectedCompany}</label></div> : null}
-      {props.isSuperAdmin  && <SelectCustomer props={props} selected="All" onSelectCompany={handleSelectChange} /> }
-      <div className="grid-container">
-  	<div id="nav">
-    	  <ul>
-      	    <li><a href="index.html">Home</a></li>
-      	    <li><a href="about.html">Report</a></li>
-      	    <li onClick={toggleCompany}><a href="#">Company</a></li>
-	    <li onClick={toggleDivision}><a href="#">
-		{(selectedCompany != "All" && selectedCompany != "") ? "Division" : 
-		<i>Division</i>}
-	      </a></li>
-	    <li><a href="#">Users +</a>
-		    <ul>
-			<li onClick={toggleAdmin}><a href="#">
-		{(props.isSuperAdmin) ? "Admin" : <i>Admin</i>}</a></li>
-			<li onClick={toggleUser}><a href="#">
-		{(selectedCompany != "All" && selectedCompany != "") ? "Divisional" : 
-		<i>Divisional</i>}</a></li>
-		    </ul>
-	    </li>
-	    <li onClick={toggleTemplate}><a href="#">
-		{(selectedCompany != "All" && selectedCompany != "") ? "Template" : 
-		<i>Template</i>}</a></li>
-	    {(props.isSuperAdmin) ?
-	    <li><a href="about.html">Settings +</a>
-		<ul>
-		  <li onClick={toggleSettings}><a href="#">Web Access</a></li>
-		</ul>
-	    </li> : null }
-   	  </ul>
-  	</div>
-	<div>
-	  {isSettingsOpen && <InputSettings onSubmitChange={toggleSettings}/>}
-	  {isAdminOpen && <InputAdmin onSubmitChange={toggleAdmin} props={props} numAdmin={props.numAdmin}/>}
-	  {isUserOpen && <InputUser onSubmitChange={toggleUser} props={props} 
-      companyId={selectedCompanyId != null ? selectedCompanyId : props.selectedCompanyId} />}
-    {isTemplateOpen && <InputTemplate onSubmitChange={toggleTemplate} props={props} 
-      companyId={selectedCompanyId != null ? selectedCompanyId : props.selectedCompanyId} 
+      {isSettingsOpen && <InputSettings onSubmitChange={toggleSettings}/>}
+      {isAdminOpen && <InputAdmin onSubmitChange={toggleAdmin} props={props} numAdmin={props.numAdmin}/>}
+      {isUserOpen && <InputUser onSubmitChange={toggleUser} props={props} 
+        companyId={selectedCompanyId != null ? selectedCompanyId : props.selectedCompanyId} />}
+      {isTemplateOpen && <InputTemplate onSubmitChange={toggleTemplate} props={props} 
+        companyId={selectedCompanyId != null ? selectedCompanyId : props.selectedCompanyId} 
+        companyName = {selectedCompany} />}
+      {isCompanyOpen && <InputCompany onSubmitChange={toggleCompany} numCompanies = {company.length} />}
+      {isDivisionOpen && <InputDivision onSubmitChange={toggleDivision} props={props} 
+      companyId = {selectedCompanyId != null ? selectedCompanyId : props.selectedCompanyId}
       companyName = {selectedCompany} />}
-	  {isCompanyOpen && <InputCompany onSubmitChange={toggleCompany} numCompanies = {company.length} />}
-	  {isDivisionOpen && <InputDivision onSubmitChange={toggleDivision} props={props} 
-		companyId = {selectedCompanyId != null ? selectedCompanyId : props.selectedCompanyId}
-		companyName = {selectedCompany} />}
-	</div>
-	  {isCompanySelected && <InputCustCompany onSubmitChange={toggleCompany} props={props} 
-	    updateFormData = {{id: formData.id, name: formData.name, email: formData.email,
-        	address1: formData.address1, address2: formData.address2, city: formData.city, 
-		state: formData.state, zipcode: formData.zipcode, ref_department: formData.ref_department, 
-		notes: formData.notes}} isAddMode = {false} />}
     </div>
-  </div>
+      {isCompanySelected && <InputCustCompany onSubmitChange={toggleCompany} props={props} 
+        updateFormData = {{id: formData.id, name: formData.name, email: formData.email,
+            address1: formData.address1, address2: formData.address2, city: formData.city, 
+      state: formData.state, zipcode: formData.zipcode, ref_department: formData.ref_department, 
+      notes: formData.notes}} isAddMode = {false} />}
+      </div>
+    </div>
+  </React.Fragment>
   );
 }

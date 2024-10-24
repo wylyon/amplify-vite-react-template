@@ -19,6 +19,13 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .handler(a.handler.inlineSql(
       "SELECT id, username, email_address, company_id, company_name, first_name, last_name, middle_name, active_date, deactive_date, created, created_by FROM logistics.admin WHERE email_address = :email;"
     )).authorization(allow => allow.publicApiKey()),
+    listTemplates: a.query()
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT t.id, t.division_id, d.name as division, c.name as company, t.title, t.description, t.pre_load_page_attributes, t.post_load_page_attributes, t.live_date, t.prod_date, t.deactive_date, t.notes, t.created, t.created_by, " +
+      "t.use_pagination, t.auto_space, t.box_controls " +
+      " FROM logistics.template t JOIN logistics.division d on d.id = t.division_id JOIN logistics.company c on c.id = d.company_id;"
+    )).authorization(allow => allow.publicApiKey()),
     listTemplateByDivisionId: a.query()
     .arguments({
       divisionId: a.string().required(),
@@ -68,6 +75,12 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "logistics.user a join logistics.template t on t.division_id = a.division_id left join logistics.template_permissions b " +
       "on b.user_id = a.id and t.id = b.template_id WHERE " +
       "a.email_address = :email and t.id = :templateId and t.prod_date <= current_date() and b.id is not null;"
+    )).authorization(allow => allow.publicApiKey()),
+    listDivisions: a.query()
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT d.id, d.company_id, c.name as company, d.name, d.email, d.address1, d.address2, d.city, d.state, d.zipcode, d.ref_department, d.notes, d.deactive_date, d.created, d.created_by " +
+      "FROM logistics.division d join logistics.company c on c.id = d.company_id;"
     )).authorization(allow => allow.publicApiKey()),
     listDivisionByCompanyId: a.query()
     .arguments({

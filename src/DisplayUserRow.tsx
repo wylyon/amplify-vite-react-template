@@ -31,8 +31,9 @@ import Checkbox from '@mui/material/Checkbox';
 export default function DisplayUserRow(props) {
   const [source, setSource] = useState('');
   const [view, setView] = useState('list');
-  const [other, setOther] = useState(false);
+  const [open, setOpen] = useState(false);
   const [heading, setHeading] = useState('');
+  const [title, setTitle] = useState('');
   const [comboName, setComboName] = useState<string[]>([]);
 
   const ITEM_HEIGHT = 48;
@@ -56,8 +57,14 @@ export default function DisplayUserRow(props) {
     props.onNextPage(true);
   };
 
+  const handleCloseMultiple = (event) => {
+    if (Array.isArray(comboName) && comboName.length > 0) {
+      comboName.map((item, index) => trigger_check(item));
+    }
+  }
+
   const handleOtherClose = () => {
-    setOther(false);
+    setOpen(false);
     props.onSubmitChange(false);
   };
 
@@ -72,13 +79,25 @@ export default function DisplayUserRow(props) {
     }
   }
   
+  function trigger_check (value) {
+    if (props.nextQuestion == null) {
+      return;
+    }
+    if (props.nextQuestion.question_type == 'dialog_input') {
+      // we have a trigger to check
+      if (props.nextQuestion.trigger_value == value) {
+        setHeading(props.nextQuestion.pre_load_attributes);
+        setTitle(props.nextQuestion.title);
+        setOpen(true);
+      }
+    }
+    return;
+  }
+
   const handleToggleChange = (event: React.MouseEvent<HTMLElement>, nextView: string) => {
     setView(nextView);
     props.onNextPage(true);
-    if (nextView == "Other") {
-      setHeading("Animal");
-      setOther(true);
-    }
+    trigger_check(nextView);
   };
 
   const clickPhoto = (id) => {
@@ -95,7 +114,7 @@ export default function DisplayUserRow(props) {
   return (
     <React.Fragment>
       <Dialog
-        open={other}
+        open={open}
         onClose={handleOtherClose}
         PaperProps={{
           component: 'form',
@@ -109,17 +128,15 @@ export default function DisplayUserRow(props) {
           },
         }}
       >
-        <DialogTitle>Other</DialogTitle>
+        <DialogTitle>{title}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Enter Other {heading}
-          </DialogContentText>
+          <DialogContentText>{heading}</DialogContentText>
           <TextField
             autoFocus
             margin="dense"
             id="other"
             name="other"
-            label={heading}
+            label="input"
             type="other"
             fullWidth
             variant="outlined"
@@ -244,6 +261,7 @@ export default function DisplayUserRow(props) {
                   multiple
                   value={comboName}
                   onChange={handleChangeMultiple}
+                  onClose={handleCloseMultiple}
                   input={<OutlinedInput label="Values" />}
                   renderValue={(selected) => selected.join(', ')}
                   MenuProps={MenuProps}

@@ -26,13 +26,13 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import DisplayQuestion from "../src/DisplayQuestion";
 import SetupQuestion from "../src/SetupQuestion";
 import { AuthType } from "aws-cdk-lib/aws-stepfunctions-tasks";
 import Typography from "@mui/material/Typography";
 import Slider from "@mui/material/Slider";
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination';
+import PopupReview from "../src/PopupPreview";
 
 export default function SetupTemplate(props) {
   const [formData, setFormData] = useState({
@@ -72,11 +72,6 @@ export default function SetupTemplate(props) {
   const [selectedRows, setSelectedRows] = useState([]);
   const [dialogControls, setDialogControls] = useState({});
   const [isWizard, setIsWizard] = useState(false);
-  const [page, setPage] = useState(1);
-
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-  }
 
   const handleClickOpen = () => {
     if (formData.questionValues == '') {
@@ -589,10 +584,6 @@ export default function SetupTemplate(props) {
     }
   }
 
-  function createMarkup(dirty) {
-    return { __html: dirty };
-    }
-
   const paginationModel = { page: 0, pageSize: 5 };
   const marks = [
     { value: 0, label: '0'},
@@ -609,54 +600,18 @@ export default function SetupTemplate(props) {
   return (
     <React.Fragment>
       <CssBaseline />
-      {isWizard && <SetupQuestion props={props} onSubmitChange={newQuestionSubmit} nextOrder={templateQuestion.length+1}/>}
-      <Dialog
-        open={preview}
-        onClose={handlePreviewClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"Preview of Template and Questions"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description"
-            sx={{height: '500px', width: '650px'}}>
-            <div className="startPreview" dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes)} /><br/><br/><br/>
-            {props.usePages ?
-              <Stack spacing={2}>
-                <Typography variant="h6">
-                  {props.name}
-                </Typography>
-                <DisplayQuestion props={props} question = {filtered[page-1]}  useBox={false}  useSpacing={false} isPreview = {true}/>
-                <Pagination count={filtered.length} 
-                  page={page} 
-                  onChange={handlePageChange} 
-                  showFirstButton 
-                  showLastButton
-                  color="primary"
-                />
-              </Stack>            
-            : filtered.map(comp => 
-            <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
-              <Stack direction="row" spacing={1} >
-              <Paper elevation={0}>
-              <DisplayQuestion props={props} question = {comp}  useBox={false}  useSpacing={false} isPreview = {true}/>
-              </Paper>
-              <Paper elevation={0}>
-                <Typography variant="caption" gutterBottom>{"<---" + comp.title}</Typography>
-              </Paper>
-              </Stack>
-            </Box> )}
-            <div dangerouslySetInnerHTML={createMarkup(props.postLoadAttributes)} />
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handlePreviewClose} autoFocus>
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {isWizard && <SetupQuestion props={props} 
+        onSubmitChange={newQuestionSubmit} 
+        nextOrder={templateQuestion.length+1}
+      />}
+      {preview && <PopupReview props={props} 
+        onSubmitClose={handlePreviewClose}
+        preLoadAttributes={props.preLoadAttributes}
+        usePages={props.usePages}
+        name={props.name}
+        filtered={filtered}
+        postLoadAttributes={props.postLoadAttributes}
+      />}
       <Dialog
         open={openPreAttributes}
         onClose={handlePreClose}

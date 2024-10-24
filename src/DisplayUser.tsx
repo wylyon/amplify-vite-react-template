@@ -46,7 +46,7 @@ export default function DisplayUser(props) {
   }
 
   const handleNextPage = (e) => {
-    if (currentPage < props.templateQuestions.length) {
+    if (currentPage < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length) {
       if (page <= currentPage) {
         setCurrentPage(currentPage+1);
       }
@@ -68,6 +68,28 @@ export default function DisplayUser(props) {
     setOpen(true);
     
   };
+
+  function getNonDialogQuestion (index) {
+    const limit = props.templateQuestions.length;
+    if (index == limit) {
+      return props.templateQuestions[index];
+    }
+    return (props.templateQuestions[index].question_type == 'dialog_input' ? props.templateQuestions[index+1] : props.templateQuestions[index]);
+  }
+
+  function getNextQuestion (q) {
+    var index = 0;
+    for (var i = 0; i<props.templateQuestions.length; i++) {
+      if (q.id == props.templateQuestions[i].id) {
+        index = i+1;
+      }
+    }
+    const limit = props.templateQuestions.length;
+    if (index == limit) {
+      return null;
+    }
+    return (props.templateQuestions[index]);
+  }
 
   useEffect(() => {
 	}, []);
@@ -104,33 +126,36 @@ export default function DisplayUser(props) {
           </Alert>}
       <form onSubmit={handleSubmit}>
         { props.userData[0].usePagination==0 || (props.userData[0].usePagination==1 && props.templateQuestions.length < 1) ?
-          props.templateQuestions.map(comp => 
-          <DisplayUserRow  
-            props={props} 
-            questionType={comp.question_type} 
-            preLoadAttributes={comp.pre_load_attributes}
-            questionOrder={comp.question_order}
-            useBoxControls={props.userData[0].useBoxControls}
-            useAutoSpacing={props.userData[0].useAutoSpacing}
-            question={comp}
-            onSubmitChange={handleOnSubmitOther}
-            onNextPage={handleNextPage}
-          />
-        ) :
+          props.templateQuestions.map((comp, index) => 
+            comp.question_type != 'dialog_input' ?
+            <DisplayUserRow  
+              props={props} 
+              questionType={comp.question_type} 
+              preLoadAttributes={comp.pre_load_attributes}
+              questionOrder={comp.question_order}
+              useBoxControls={props.userData[0].useBoxControls}
+              useAutoSpacing={props.userData[0].useAutoSpacing}
+              question={comp}
+              onSubmitChange={handleOnSubmitOther}
+              onNextPage={handleNextPage}
+              nextQuestion={index+1 < props.templateQuestions.length ? props.templateQuestions[index+1] : null}
+            /> : null      
+          ) :
         <Stack spacing={2}>
           <Typography variant="h6">
-            {props.userData[0].title}<div className="rightText">Page: {page} of {props.templateQuestions.length}</div>
+            {props.userData[0].title}<div className="rightText">Page: {page} of {props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length}</div>
           </Typography>
           <DisplayUserRow  
             props={props} 
-            questionType={props.templateQuestions[page - 1].question_type} 
-            preLoadAttributes={props.templateQuestions[page - 1].pre_load_attributes}
-            questionOrder={props.templateQuestions[page - 1].question_order}
+            questionType={getNonDialogQuestion(page - 1).question_type} 
+            preLoadAttributes={getNonDialogQuestion(page - 1).pre_load_attributes}
+            questionOrder={getNonDialogQuestion(page - 1).question_order}
             useBoxControls={props.userData[0].useBoxControls}
             useAutoSpacing={props.userData[0].useAutoSpacing}
-            question={props.templateQuestions[page - 1]}
+            question={getNonDialogQuestion(page - 1)}
             onSubmitChange={handleOnSubmitOther}
             onNextPage={handleNextPage}
+            nextQuestion={getNextQuestion(getNonDialogQuestion(page - 1))}
           />
           <Pagination count={currentPage} 
             page={page} 
@@ -143,7 +168,7 @@ export default function DisplayUser(props) {
         <br/><br/>
         <Stack spacing={2} direction="row">
           <Button variant="contained" 
-            disabled={props.userData[0].usePagination==0 ? false : page < props.templateQuestions.length ? true : false} 
+            disabled={props.userData[0].usePagination==0 ? false : page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? true : false} 
             type="submit">Save</Button>
           <Button variant="contained" color="error" onClick={handleCancel}>Cancel</Button>
         </Stack>
