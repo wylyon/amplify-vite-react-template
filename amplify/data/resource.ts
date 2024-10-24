@@ -76,7 +76,8 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "on b.user_id = a.id and t.id = b.template_id WHERE " +
       "a.email_address = :email and t.id = :templateId and t.prod_date <= current_date() and b.id is not null;"
     )).authorization(allow => allow.publicApiKey()),
-    listDivisions: a.query()
+    listAllDivisions: a.query()
+    .arguments({})
     .returns(a.json().array())
     .handler(a.handler.inlineSql(
       "SELECT d.id, d.company_id, c.name as company, d.name, d.email, d.address1, d.address2, d.city, d.state, d.zipcode, d.ref_department, d.notes, d.deactive_date, d.created, d.created_by " +
