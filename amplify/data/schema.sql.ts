@@ -45,22 +45,6 @@ export const schema = configure({
         }
     }
 }).schema({
-    "admin": a.model({
-        id: a.string().required(),
-        username: a.string(),
-        email_address: a.string().required(),
-        company_id: a.string(),
-        company_name: a.string(),
-        first_name: a.string().required(),
-        last_name: a.string().required(),
-        middle_name: a.string(),
-        active_date: a.date(),
-        deactive_date: a.datetime(),
-        created: a.datetime().required(),
-        created_by: a.integer().required()
-    }).identifier([
-        "id"
-    ]),
     "company": a.model({
         id: a.string().required(),
         name: a.string().required(),
@@ -96,15 +80,16 @@ export const schema = configure({
     }).identifier([
         "id"
     ]),
-    "question_result": a.model({
+    "user": a.model({
         id: a.string().required(),
-        template_question_id: a.string().required(),
-        result_photo_value: a.string(),
-        result_option_value: a.string(),
-        result_date_value: a.datetime(),
-        gps_lat: a.float(),
-        gps_long: a.float(),
-        what2words: a.string(),
+        division_id: a.string().required(),
+        email_address: a.string().required(),
+        first_name: a.string().required(),
+        last_name: a.string().required(),
+        middle_name: a.string(),
+        active_date: a.date(),
+        deactive_date: a.datetime(),
+        notes: a.string(),
         created: a.datetime().required(),
         created_by: a.integer().required()
     }).identifier([
@@ -126,6 +111,20 @@ export const schema = configure({
         use_pagination: a.integer(),
         auto_space: a.integer(),
         box_controls: a.integer()
+    }).identifier([
+        "id"
+    ]),
+    "question_result": a.model({
+        id: a.string().required(),
+        template_question_id: a.string().required(),
+        result_photo_value: a.string(),
+        result_option_value: a.string(),
+        result_date_value: a.datetime(),
+        gps_lat: a.float(),
+        gps_long: a.float(),
+        what2words: a.string(),
+        created: a.datetime().required(),
+        created_by: a.integer().required()
     }).identifier([
         "id"
     ]),
@@ -174,16 +173,16 @@ export const schema = configure({
     }).identifier([
         "id"
     ]),
-    "user": a.model({
+    "admin": a.model({
         id: a.string().required(),
-        division_id: a.string().required(),
+        username: a.string(),
         email_address: a.string().required(),
+        company_id: a.string(),
         first_name: a.string().required(),
         last_name: a.string().required(),
         middle_name: a.string(),
         active_date: a.date(),
         deactive_date: a.datetime(),
-        notes: a.string(),
         created: a.datetime().required(),
         created_by: a.integer().required()
     }).identifier([
