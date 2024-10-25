@@ -2,6 +2,7 @@
 // @ts-nocheck
 import CompanyGrid from '../src/CompanyGrid';
 import DivisionGrid from '../src/DivisionGrid';
+import TemplateGrid from '../src/TemplateGrid';
 import * as React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -77,13 +78,13 @@ export default function AdminMain(props) {
 		<DivisionGrid props={props} />
 	</TabPanel>
 	<TabPanel value={value} index={2}>
-		Item Three
+		<TemplateGrid props={props} />
 	</TabPanel>
 	<TabPanel value={value} index={3}>
 		Item Four
 	</TabPanel>
 	<TabPanel value={value} index={4}>
-		Item Five
+		NOTE:   Reports not yet implemented.
 	</TabPanel>
 	</Box>
   );

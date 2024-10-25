@@ -11,6 +11,20 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .handler(a.handler.inlineSql(
       "SELECT id, division_id, email_address, first_name, last_name, middle_name, active_date, deactive_date, notes, created, created_by FROM logistics.user WHERE email_address = :email;"
     )).authorization(allow => allow.publicApiKey()),
+    listAllAdmin: a.query()
+    .arguments({})
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT a.id, c.name as company, a.company_id, a.email_address, a.first_name, a.last_name, a.middle_name, a.active_date, a.deactive_date, a.created, a.created_by " +
+      "FROM logistics.admin a left join logistics.company c on c.id = a.company_id;"
+    )).authorization(allow => allow.publicApiKey()),
+    listAllUsers: a.query()
+    .arguments({})
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT a.id, a.division_id, d.name as division, c.name as company, a.email_address, a.first_name, a.last_name, a.middle_name, a.active_date, a.deactive_date, a.notes, a.created, a.created_by " +
+      "FROM logistics.users a join logistics.division d on d.id = a.division_id join logistics.company c on c.id = d.company_id;"
+    )).authorization(allow => allow.publicApiKey()),
     listAdminByEmail: a.query()
     .arguments({
       email: a.string().required(),
