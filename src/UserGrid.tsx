@@ -97,7 +97,7 @@ export default function UserGrid(props) {
 
 	  const handleUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setChecked(event.target.checked);
-		getTemplates();
+		getTemplates(event.target.checked);
 	  };
 
 	  function getDate(value) {
@@ -110,9 +110,9 @@ export default function UserGrid(props) {
 	  function translateUserTemplate (item) {
 		const data = [{id: item.id, 
 			company: item.company, 
-			divisionId: (!checked) ? item.division_id : null,
-			division: (!checked) ? item.division : null,
-			companyId: (checked) ? item.company_id : null,
+			divisionId: item.division_id,
+			division: item.division,
+			companyId: item.company_id,
 			email: item.email_address,
 			firstName: item.first_name,
 			lastName: item.last_name,
@@ -129,9 +129,9 @@ export default function UserGrid(props) {
 		const item = JSON.parse(items[0]);
 		var data = [{id: item.id, 
 			company: item.company, 
-			divisionId: (!checked) ? item.division_id : null,
-			division: (!checked) ? item.division : null,
-			companyId: (checked) ? item.company_id : null,
+			divisionId: item.division_id,
+			division: item.division,
+			companyId: item.company_id,
 			email: item.email_address,
 			firstName: item.first_name,
 			lastName: item.last_name,
@@ -146,9 +146,9 @@ export default function UserGrid(props) {
 		  data.push(
 			{id: item.id, 
 				company: item.company, 
-				divisionId: (!checked) ? item.division_id : null,
-				division: (!checked) ? item.division : null,
-				companyId: (checked) ? item.company_id : null,
+				divisionId: item.division_id,
+				division: item.division,
+				companyId: item.company_id,
 				email: item.email_address,
 				firstName: item.first_name,
 				lastName: item.last_name,
@@ -162,9 +162,9 @@ export default function UserGrid(props) {
 		return data;
 	  }
 
-	  const getTemplates = async () => {
+	  const getTemplates = async (isAdmin) => {
 		const { data: items, errors } = 
-			(checked) ? await client.queries.listAllAdmin({
+			(isAdmin) ? await client.queries.listAllAdmin({
 		}) : await client.queries.listAllUsers({});
 		if (Array.isArray(items) && items.length > 0) {
 		  const db = JSON.stringify(items);
@@ -179,7 +179,7 @@ export default function UserGrid(props) {
 	  };
 
 	useEffect(() => {
-		getTemplates();
+		getTemplates(true);
 	  }, []);
 
 	  function handleRowClick (params, event, details) {
