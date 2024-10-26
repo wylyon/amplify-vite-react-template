@@ -3,6 +3,7 @@
 import CompanyGrid from '../src/CompanyGrid';
 import DivisionGrid from '../src/DivisionGrid';
 import TemplateGrid from '../src/TemplateGrid';
+import UserGrid from '../src/UserGrid';
 import * as React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -65,7 +66,7 @@ export default function AdminMain(props) {
 		aria-label="Vertical tabs example"
 		sx={{ borderRight: 1, borderColor: 'divider' }}
 	>
-		<Tab label="Companies" {...a11yProps(0)} wrapped/>
+		<Tab label="Companies" {...a11yProps(0)} />
 		<Tab label="Divisions" {...a11yProps(1)} />
 		<Tab label="Templates" {...a11yProps(2)} />
 		<Tab label="Users" {...a11yProps(3)} />
@@ -81,7 +82,7 @@ export default function AdminMain(props) {
 		<TemplateGrid props={props} />
 	</TabPanel>
 	<TabPanel value={value} index={3}>
-		Item Four
+		<UserGrid props={props} />
 	</TabPanel>
 	<TabPanel value={value} index={4}>
 		NOTE:   Reports not yet implemented.

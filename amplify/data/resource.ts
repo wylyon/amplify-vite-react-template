@@ -23,7 +23,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .returns(a.json().array())
     .handler(a.handler.inlineSql(
       "SELECT a.id, a.division_id, d.name as division, c.name as company, a.email_address, a.first_name, a.last_name, a.middle_name, a.active_date, a.deactive_date, a.notes, a.created, a.created_by " +
-      "FROM logistics.users a join logistics.division d on d.id = a.division_id join logistics.company c on c.id = d.company_id;"
+      "FROM logistics.user a join logistics.division d on d.id = a.division_id join logistics.company c on c.id = d.company_id;"
     )).authorization(allow => allow.publicApiKey()),
     listAdminByEmail: a.query()
     .arguments({
