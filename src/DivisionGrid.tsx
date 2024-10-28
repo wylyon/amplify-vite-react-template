@@ -52,7 +52,7 @@ function EditToolbar(props: EditToolbarProps) {
 	  <GridToolbarContainer>
 		<Tooltip title="Add a new Division">
 			<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-		  	Add record
+		  	Add Division
 			</Button>
 			</Tooltip>
 		<Tooltip title="Deactivate a Division">

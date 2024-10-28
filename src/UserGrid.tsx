@@ -58,7 +58,7 @@ function EditToolbar(props: EditToolbarProps) {
 	  <GridToolbarContainer>
 		<Tooltip title="Add a new User">
 			<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-		  	Add record
+		  	Add a User
 			</Button>
 		</Tooltip>
 		<Tooltip title="Deactivate a User">

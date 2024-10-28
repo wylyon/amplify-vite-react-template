@@ -55,7 +55,7 @@ function EditToolbar(props: EditToolbarProps) {
 	  <GridToolbarContainer>
 		<Tooltip title="Add a new Template">
 			<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-		  	Add record
+		  	Add a Template
 			</Button>
 		</Tooltip>
 		<Tooltip title="Deactivate a Template">
