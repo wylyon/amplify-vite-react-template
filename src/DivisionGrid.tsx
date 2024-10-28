@@ -54,16 +54,8 @@ function EditToolbar(props: EditToolbarProps) {
 			<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
 		  	Add Division
 			</Button>
-			</Tooltip>
-		<Tooltip title="Deactivate a Division">
-			<IconButton color="warning" aria-label="Deactivate a Division"><DeleteOutlineIcon /></IconButton>
 		</Tooltip>
-		<Tooltip title="Delete a Division">
-			<IconButton color="error" aria-label="Delete a Division"><DeleteIcon /></IconButton>
-		</Tooltip>
-		<Tooltip title="ReActivate a Division">
-			<IconButton color="default" aria-label='Reactivate a Division'><AddCircleOutlineIcon /></IconButton>
-		</Tooltip>
+		<GridToolbar />
 	  </GridToolbarContainer>
 	);
   }

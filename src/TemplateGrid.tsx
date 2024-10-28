@@ -58,21 +58,7 @@ function EditToolbar(props: EditToolbarProps) {
 		  	Add a Template
 			</Button>
 		</Tooltip>
-		<Tooltip title="Deactivate a Template">
-			<IconButton color="warning" aria-label="Deactivate a Template"><DeleteOutlineIcon /></IconButton>
-		</Tooltip>
-		<Tooltip title="Delete a Template">
-			<IconButton color="error" aria-label="Delete a Template"><DeleteIcon /></IconButton>
-		</Tooltip>
-		<Tooltip title="ReActivate a Template">
-			<IconButton color="default" aria-label='Reactivate a Template'><AddCircleOutlineIcon /></IconButton>
-		</Tooltip>
-		<Tooltip title="Associate Users">
-			<IconButton color="info" aria-label='Associate Users'><PersonAddAltIcon /></IconButton>
-		</Tooltip>
-		<Tooltip title="Build Template">
-			<IconButton color="info" aria-label='Build Template'><BuildIcon /></IconButton>
-		</Tooltip>
+		<GridToolbar />
 	  </GridToolbarContainer>
 	);
   }
@@ -261,8 +247,8 @@ export default function TemplateGrid(props) {
 			width: 80,
 			getActions: (params) => [
 				<GridActionsCellItem icon={<EditIcon />} label="Edit" color='primary' onClick={handleEdit(params.id)} />,
-				<GridActionsCellItem icon={<PersonAddAltIcon />} label='Associate' onClick={handleAssociations(params.id)} showInMenu/>,
-				<GridActionsCellItem icon={<BuildIcon />} label='Build' onClick={handleBuild(params.id)} showInMenu/>,
+				<GridActionsCellItem icon={<PersonAddAltIcon />} label='Associate Users' onClick={handleAssociations(params.id)} showInMenu/>,
+				<GridActionsCellItem icon={<BuildIcon />} label='Build Template' onClick={handleBuild(params.id)} showInMenu/>,
 				<GridActionsCellItem icon={<DeleteOutlineIcon />} label="Deactivate" onClick={handleDeactivate(params.id)} showInMenu/>,
 				<GridActionsCellItem icon={<AddCircleOutlineIcon />} label="Activate" onClick={handleActivate(params.id)} showInMenu/>,
 				<GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={handleDelete(params.id)} showInMenu />,

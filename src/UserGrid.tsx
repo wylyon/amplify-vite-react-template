@@ -61,15 +61,7 @@ function EditToolbar(props: EditToolbarProps) {
 		  	Add a User
 			</Button>
 		</Tooltip>
-		<Tooltip title="Deactivate a User">
-			<IconButton color="warning" aria-label="Deactivate a Template"><DeleteOutlineIcon /></IconButton>
-		</Tooltip>
-		<Tooltip title="Delete a User">
-			<IconButton color="error" aria-label="Delete a Template"><DeleteIcon /></IconButton>
-		</Tooltip>
-		<Tooltip title="ReActivate a User">
-			<IconButton color="default" aria-label='Reactivate a Template'><AddCircleOutlineIcon /></IconButton>
-		</Tooltip>
+		<GridToolbar />
 	  </GridToolbarContainer>
 	);
   }

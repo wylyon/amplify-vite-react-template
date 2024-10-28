@@ -61,16 +61,8 @@ function EditToolbar(props: EditToolbarProps) {
 			<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
 		  	Add Company
 			</Button>
-			</Tooltip>
-		<Tooltip title="Deactivate a Company">
-			<IconButton color="warning" aria-label="Deactivate a Company"><DeleteOutlineIcon /></IconButton>
 		</Tooltip>
-		<Tooltip title="Delete a Company">
-			<IconButton color="error" aria-label="Delete a Company"><DeleteIcon /></IconButton>
-		</Tooltip>
-		<Tooltip title="ReActivate a Company">
-			<IconButton color="default" aria-label='Reactivate a Company'><AddCircleOutlineIcon /></IconButton>
-		</Tooltip>
+		<GridToolbar />
 	  </GridToolbarContainer>
 	);
   }
@@ -127,23 +119,23 @@ export default function CompanyGrid(props) {
 
 	const handleDeactiveOrActivate = async(id, isDeactive) => {
 		const now = new Date();
-		if (isDeactive) {
-			const { errors, data: updatedData } = await client.models.company.update({
-				id: id,
-				deactive_date: now
-			});
-			if (errors) {
-				alert(errors[0].message);
-			}
-		} else {
-			const { errors, data: updatedData } = await client.models.company.update({
-				id: id,
-				deactive_date: null
-			});
-			if (errors) {
-				alert(errors[0].message);
-			}
-		}
+//		if (isDeactive) {
+//			const { errors, data: updatedData } = await client.models.company.update({
+//				id: id,
+//				deactive_date: now
+//			});
+//			if (errors) {
+//				alert(errors[0].message);
+//			}
+//		} else {
+//			const { errors, data: updatedData } = await client.models.company.update({
+//				id: id,
+//				deactive_date: null
+//			});
+//			if (errors) {
+//				alert(errors[0].message);
+//			}
+//		}
 	}
 
 	function handleDeactivate (id) {
