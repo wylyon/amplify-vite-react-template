@@ -18,6 +18,9 @@
     .grid-headers {
       background-color: lightgrey;
     }
+    .grid-alert {
+      background-color: red;
+    }
     .gwd-p-1l8f {
       text-align: center;
       font-weight: bold;

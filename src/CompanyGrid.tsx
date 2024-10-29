@@ -119,35 +119,36 @@ export default function CompanyGrid(props) {
 
 	const handleDeactiveOrActivate = async(id, isDeactive) => {
 		const now = new Date();
-//		if (isDeactive) {
-//			const { errors, data: updatedData } = await client.models.company.update({
-//				id: id,
-//				deactive_date: now
-//			});
-//			if (errors) {
-//				alert(errors[0].message);
-//			}
-//		} else {
-//			const { errors, data: updatedData } = await client.models.company.update({
-//				id: id,
-//				deactive_date: null
-//			});
-//			if (errors) {
-//				alert(errors[0].message);
-//			}
-//		}
+		const { errors, data: updatedData } = await client.models.company.update({
+			id: id,
+			deactive_date: (isDeactive) ? now : null
+		});
+		if (errors) {
+			alert(errors[0].message);
+		}
+		allCompanies();
 	}
 
-	function handleDeactivate (id) {
+	const handleDeleteRow = async(id) => {
+		const { errors, data: deletedData } = await client.models.company.delete({
+			id: id
+		});
+		if (errors) {
+			alert(errors[0].message);
+		}
+	}
+
+	const handleDeactivate = (id: GridRowId) => () => {
 		handleDeactiveOrActivate(id, true);
 	}
 
-	function handleActivate (id) {
+	const handleActivate = (id: GridRowId) => () => {
 		handleDeactiveOrActivate(id, false);
 	}
 	
 	const handleDeleteClick = (id: GridRowId) => () => {
-		setCompany(rows.filter((row) => row.id !== id));
+		setCompany(company.filter((row) => row.id !== id));
+		handleDeleteRow(id);
 	  };	
 
 	const handleEditClick = (id: GridRowId) => () => {
@@ -240,6 +241,21 @@ export default function CompanyGrid(props) {
 			width: 100, 
 			headerClassName: 'grid-headers',
 			editable: true  },
+		{ field: 'isActive',
+			headerName: 'isActive',
+			width: 100,
+			type: 'boolean',
+			headerClassName: 'grid-headers',
+			valueGetter: (value, row) => {
+				return row.deactive_date == null;
+			},
+			cellClassName: (params: GridCellParams<any, number>) => {
+				if (params.value) {
+					return '';
+				}
+				return 'grid-alert';
+			},
+			editable: false  },
 		{ field: 'ref_department', 
 			headerName: 'Department', 
 			width: 200, 
