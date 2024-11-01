@@ -1,6 +1,7 @@
 
 // @ts-nocheck
 import AdminMain from '../src/AdminMain';
+import AdminSuper from '../src/AdminSuper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -22,9 +23,8 @@ export default function AdminMode(props) {
 		</div>
 		<Stack>
 			<Typography variant="h4" sx={{textAlign: 'center', bgcolor: 'background.paper'}}>Log/Report Capture Tool</Typography>
-			<AdminMain
-			props={props}
-		/>
+			{props.isSuperAdmin && <AdminSuper props={props} /> }
+			{!props.isSuperAdmin && <AdminMain props={props} companyId={props.companyId}/> }
 		</Stack>
     </main> 
   );

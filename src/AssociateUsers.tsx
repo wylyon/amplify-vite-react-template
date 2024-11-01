@@ -3,6 +3,24 @@ import { useState, useEffect } from "react";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import { v4 as uuidv4 } from 'uuid';
+import React from "react";
+import CssBaseline from '@mui/material/CssBaseline';
+import Paper from '@mui/material/Paper';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import NativeSelect from '@mui/material/NativeSelect';
+import Button from "@mui/material/Button";
+import DisplayQuestion from "../src/DisplayQuestion";
+import Stack from '@mui/material/Stack';
+import Pagination from '@mui/material/Pagination';
+import Typography from "@mui/material/Typography";
 
 export default function AssociateUsers(props) {
 
@@ -15,7 +33,7 @@ export default function AssociateUsers(props) {
     verifiedDate: '',
     emailAddress: '',
   }]);
-
+  const [open, setOpen] = useState(true);
   const [userDataArr, setUserDataArr] = useState([]);
   const client = generateClient<Schema>();
   const [filtered, setFiltered] = useState('');
@@ -72,6 +90,7 @@ export default function AssociateUsers(props) {
   }, []);
 
   const handleOnCancel = (e) => {
+    setOpen(false);
     props.onSubmitChange(false);
   };
 
@@ -117,9 +136,22 @@ export default function AssociateUsers(props) {
   const filter = userData.filter(comp => comp.id != '');
 
   return (
-    <div className="addTemplateData">
-      <h3 align="center">{props.name} Template Users</h3>
-      <button className="cancelUserButton" onClick={handleOnCancel}>Cancel</button>
+    <React.Fragment>
+    <CssBaseline />
+    <Dialog
+        open={open}
+        fullWidth
+        maxWidth='lg'
+        onClose={handleOnCancel}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {props.name} Template Users
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+    <div>
       <table>
 	    <thead>
 	      <tr>
@@ -135,8 +167,8 @@ export default function AssociateUsers(props) {
 	        <td>{comp.emailAddress}</td>
 	        <td>{comp.firstName + " " + comp.lastName}</td>
 	        <td ><button className={(!comp.templateUserId) ? "activateButton" : "cancelButton"}
-		        onClick={() => handleAddUser(comp.id, comp.templateUserId)}>{(!comp.templateUserId) ? "Add User To Template" : 
-            "Delete User From Template"}</button></td>
+		        onClick={() => handleAddUser(comp.id, comp.templateUserId)}>{(!comp.templateUserId) ? "Add To Template" : 
+            "Delete From Template"}</button></td>
           {!comp.templateUserId ? <td>{comp.enabledDate}</td> : 
             <td><button className={(!comp.enabledDate) ? "activateButton" : "cancelButton"}
             onClick={() => handleOnDelete(comp.templateUserId, comp.enabledDate)}>{(!comp.enabledDate) ? "Activate" : "DeActivate"}</button></td>}
@@ -144,7 +176,15 @@ export default function AssociateUsers(props) {
 	      </tr>)}
 	    </tbody>
 	  </table>
-
     </div>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleOnCancel} autoFocus>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </React.Fragment>
   );
 }

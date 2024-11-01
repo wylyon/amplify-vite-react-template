@@ -25,6 +25,25 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "SELECT a.id, a.division_id, d.name as division, c.name as company, a.email_address, a.first_name, a.last_name, a.middle_name, a.active_date, a.deactive_date, a.notes, a.created, a.created_by " +
       "FROM logistics.user a join logistics.division d on d.id = a.division_id join logistics.company c on c.id = d.company_id;"
     )).authorization(allow => allow.publicApiKey()),
+    listAllAdminByCompanyId: a.query()
+    .arguments({
+      companyId: a.string().required(),
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT a.id, c.name as company, a.company_id, a.email_address, a.first_name, a.last_name, a.middle_name, a.active_date, a.deactive_date, a.created, a.created_by " +
+      "FROM logistics.admin a left join logistics.company c on c.id = a.company_id WHERE c.id = :companyId;"
+    )).authorization(allow => allow.publicApiKey()),
+    listAllUsersByCompanyId: a.query()
+    .arguments({
+      companyId: a.string().required(),
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT a.id, a.division_id, d.name as division, c.name as company, a.email_address, a.first_name, a.last_name, a.middle_name, a.active_date, a.deactive_date, a.notes, a.created, a.created_by " +
+      "FROM logistics.user a join logistics.division d on d.id = a.division_id join logistics.company c on c.id = d.company_id WHERE c.id = :companyId;"
+    )).authorization(allow => allow.publicApiKey()),
+
     listAdminByEmail: a.query()
     .arguments({
       email: a.string().required(),
@@ -41,6 +60,17 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "t.use_pagination, t.auto_space, t.box_controls " +
       " FROM logistics.template t JOIN logistics.division d on d.id = t.division_id JOIN logistics.company c on c.id = d.company_id;"
     )).authorization(allow => allow.publicApiKey()),
+    listAllTemplatesByCompanyId: a.query()
+    .arguments({
+      companyId: a.string().required(),
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT t.id, t.division_id, d.name as division, c.name as company, t.title, t.description, t.pre_load_page_attributes, t.post_load_page_attributes, t.live_date, t.prod_date, t.deactive_date, t.notes, t.created, t.created_by, " +
+      "t.use_pagination, t.auto_space, t.box_controls " +
+      " FROM logistics.template t JOIN logistics.division d on d.id = t.division_id JOIN logistics.company c on c.id = d.company_id and c.id = :companyId;"
+    )).authorization(allow => allow.publicApiKey()),
+
     listTemplateByDivisionId: a.query()
     .arguments({
       divisionId: a.string().required(),
@@ -97,6 +127,15 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .handler(a.handler.inlineSql(
       "SELECT d.id, d.company_id, c.name as company, d.name, d.email, d.address1, d.address2, d.city, d.state, d.zipcode, d.ref_department, d.notes, d.deactive_date, d.created, d.created_by " +
       "FROM logistics.division d join logistics.company c on c.id = d.company_id;"
+    )).authorization(allow => allow.publicApiKey()),
+    listAllDivisionsByCompanyId: a.query()
+    .arguments({
+      companyId: a.string().required(),
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT d.id, d.company_id, c.name as company, d.name, d.email, d.address1, d.address2, d.city, d.state, d.zipcode, d.ref_department, d.notes, d.deactive_date, d.created, d.created_by " +
+      "FROM logistics.division d join logistics.company c on c.id = d.company_id WHERE c.id = :companyId;"
     )).authorization(allow => allow.publicApiKey()),
     listDivisionByCompanyId: a.query()
     .arguments({

@@ -3,23 +3,28 @@
 import { useState } from "react";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
+import Alert from '@mui/material/Alert';
+
 export default function InputCustCompany(props) {
   const [formData, setFormData] = useState({
-    id: props.updateFormData.id,
-    name: props.updateFormData.name,
-    email: props.updateFormData.email,
-    address1: props.updateFormData.address1,
-    address2: props.updateFormData.address2,
-    city: props.updateFormData.city,
-    state: props.updateFormData.state,
-    zipcode: props.updateFormData.zipcode,
-    ref_department: props.updateFormData.ref_department,
-    notes: props.updateFormData.notes,
+    id: props.company.id,
+    name: props.company.name,
+    email: props.company.email,
+    address1: props.company.address1,
+    address2: props.company.address2,
+    city: props.company.city,
+    state: props.company.state,
+    zipcode: props.company.zipcode,
+    ref_department: props.company.ref_department,
+    notes: props.company.notes,
   });
 
   const client = generateClient<Schema>();
   const [isNew, setIsNew] = useState(false);
   const [isGoAdd, setIsGoAdd] = useState(false);
+  const [isAlert, setIsAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [isAlertError, setIsAlertError] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,19 +38,28 @@ export default function InputCustCompany(props) {
     const now = new Date();
     const currentDateTime = now.toLocaleString();
 
-    await client.models.company.update({ 
-	id: props.updateFormData.id,
-	name: formData.name, 
-	email: formData.email,
-	address1: formData.address1,
-	address2: formData.address2,
-	city: formData.city,
-	state: formData.state,
-	zipcode: formData.zipcode,
-	ref_department: formData.ref_department,
-	notes: formData.notes,
-	created: now,
-	created_by: 0});
+    const { data: updateData, errors } = await client.models.company.update({ 
+      id: props.company.id,
+      name: formData.name, 
+      email: formData.email,
+      address1: formData.address1,
+      address2: formData.address2,
+      city: formData.city,
+      state: formData.state,
+      zipcode: formData.zipcode,
+      ref_department: formData.ref_department,
+      notes: formData.notes,
+      created: now,
+      created_by: 0});
+    if (errors) {
+      setAlertMessage(errors[0].message);
+      setIsAlertError(true);
+      setIsAlert(true);
+      return;
+    }
+    setAlertMessage("Company record updated!");
+    setIsAlertError(false);
+    setIsAlert(true);
   }
 
   const handleSubmit = (e) => {
@@ -59,7 +73,7 @@ export default function InputCustCompany(props) {
   };
 
   return (
-    <div className="addCustomerData2">
+    <div>
      <h1 align="center">Company Maintenance</h1>
       <form onSubmit={handleSubmit}>
       <label>
@@ -79,7 +93,7 @@ export default function InputCustCompany(props) {
 	  size="40"
           value={formData.email}
           onChange={handleChange}
-        /><br />
+        /><br /><br />
       <label>
         Address:</label><br />
         <input
@@ -97,7 +111,7 @@ export default function InputCustCompany(props) {
 	  size="45"
           value={formData.address2}
           onChange={handleChange}
-        /><br />
+        /><br /><br />
 	<label>City: </label>
         <input
           type="text"
@@ -124,7 +138,7 @@ export default function InputCustCompany(props) {
 	  size="10"
           value={formData.zipcode}
           onChange={handleChange}
-        /><br />
+        /><br /><br />
 	<label>Dept: </label>
         <input
           type="text"
@@ -147,6 +161,7 @@ export default function InputCustCompany(props) {
 	  <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>
 	</div>
       </form>
+      {isAlert && <Alert severity={isAlertError ? "error" : "success"} onClose={() => {setIsAlert(false)}} >{alertMessage}</Alert>}
      </div>
   );
 }

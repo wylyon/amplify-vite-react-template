@@ -149,7 +149,7 @@ export default function DetermineMode(props) {
     </Dialog>
     {isDisabledUser && <DisableMode userId={props.userId} onSubmitChange={handleOnCancel} message={disableMsg} /> }
     {!isDisabledUser && mode == 0 && <AdminMode userId={props.userId} onSubmitChange={handleOnCancel} 
-	          companyId={filtered.length> 0 ? filtered[0].company_id : null} isSuperAdmin={isSuperAdmin} adminLength={admin.length}/>}
+	          companyId={filtered.length> 0 ? filtered[0].company_id : null} isSuperAdmin={isSuperAdmin} adminLength={admin.length} />}
     {!isDisabledUser && mode == 1 && <UserMode userId={props.userId} onSubmitChange={handleOnCancel} />}        
     </>
   );

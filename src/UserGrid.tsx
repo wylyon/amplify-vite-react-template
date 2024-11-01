@@ -1,5 +1,6 @@
 
 // @ts-nocheck
+import * as React from 'react';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { DataGrid, 
@@ -7,10 +8,15 @@ import { DataGrid,
 	GridRowsProp,
 	GridRowModesModel,
 	GridSlots,
+	GridRowModes,
 	GridToolbar, 
 	GridToolbarContainer,
 	GridColumnVisibilityModel, 
-	GridActionsCellItem, 
+	GridActionsCellItem,
+	GridEventListener,
+	GridRowModel,
+	GridRowEditStopReasons, 
+	GridCellParams, gridClasses,
 	GridRowId } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
 import { useState, useEffect} from "react";
@@ -23,14 +29,21 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Tooltip from '@mui/material/Tooltip';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
-import BuildIcon from '@mui/icons-material/Build';
 import EditIcon from '@mui/icons-material/Edit';
-import usePagination from '@mui/material/usePagination/usePagination';
+import SaveIcon from '@mui/icons-material/Save';
+import { v4 as uuidv4 } from 'uuid';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import CancelIcon from '@mui/icons-material/Close';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import SelectGridCustomer from '../src/SelectGridCustomer';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
 
 interface EditToolbarProps {
 	setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
@@ -43,16 +56,28 @@ function EditToolbar(props: EditToolbarProps) {
 	const { setRows, setRowModesModel } = props;
   
 	const handleClick = () => {
-	  const id = randomId();
-	  setRows((oldRows) => [
-		...oldRows,
-		{ id, name: '', age: '', role: '', isNew: true },
-	  ]);
-	  setRowModesModel((oldModel) => ({
-		...oldModel,
-		[id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
-	  }));
-	};
+		const id = uuidv4();
+		setRows((oldRows) => [
+		  ...oldRows,
+		  { id, 
+			  username: '',
+			  companyId: '',
+			  company: '',
+			  divisionId: '',
+			  division: '',
+			  email: '', 
+			  firstName: '',
+			  lastName: '',
+			  middleName: '',
+			  notes: '',
+			  isNew: true
+		  },
+		]);
+		setRowModesModel((oldModel) => ({
+		  ...oldModel,
+		  [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
+		}));
+	  };
   
 	return (
 	  <GridToolbarContainer>
@@ -68,28 +93,66 @@ function EditToolbar(props: EditToolbarProps) {
 
 export default function UserGrid(props) {
 	const [loading, setLoading] = useState(true);
+	const [isAdmin, setIsAdmin] = useState(props.filter == null ? true : false);
+	const [open, setOpen] = useState(false);
+	const [error, setError] = useState('');
+	const [deleteId, setDeleteId] = useState('');
+	const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+
+	const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
+	  if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+		event.defaultMuiPrevented = true;
+	  }
+	};
 
 	const client = generateClient<Schema>();
+	const [company, setCompany] = useState<Schema["company"]["type"][]>([]);
+	const [division, setDivision] = useState<Schema["division"]["type"][]>([]);
 	const [userData, setUserData] = useState([{
 		id: '',   
+		userName: '',
+		companyId: '',
+		company: '',
 		divisionId: '',
 		division: '',
-		company: '',
-		companyId: '',
 		email: '',
 		firstName: '',
 		lastName: '',
 		middleName: '',
 		activeDate: null,
 		deactiveDate: null,
+		notes: '',
 		created: '',
 		createdBy: '',
 	  }]);
 	  const [checked, setChecked] = useState(true);
+	  const [rows, setRows] = useState<GridRowsProp>([]);
+
+	  const allCompanies = async () => {
+		  const { data: items, errors } = await client.models.company.list();
+		  if (errors) {
+			alert(errors[0].message);
+		  } else {
+			setCompany(items);
+		  }
+		}
+		
+		const allDivisions = async () => {
+			const { data: items, errors } = await client.models.division.list();
+			if (errors) {
+			  setError(errors[0].message);
+			  setOpen(true);
+			} else {
+			  setDivision(props.filter == null ? items : items.filter(comp => comp.company_id.includes(filter.id)));
+			}
+			setLoading(false);
+		  }
 
 	  const handleUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setChecked(event.target.checked);
-		getTemplates(event.target.checked);
+		setLoading(true);
+		getTemplates(event.target.checked, true);
+		setIsAdmin(event.target.checked);
 	  };
 
 	  function getDate(value) {
@@ -111,6 +174,7 @@ export default function UserGrid(props) {
 			middleName: item.middle_name,
 			activeDate: getDate(item.active_date),
 			deactiveDate: getDate(item.deactive_date),
+			notes: item.notes,
 			created: item.created,
 			createdBy: item.created_by,
 		  }];
@@ -130,6 +194,7 @@ export default function UserGrid(props) {
 			middleName: item.middle_name,
 			activeDate: getDate(item.active_date),
 			deactiveDate: getDate(item.deactive_date),
+			notes: item.notes,
 			created: item.created,
 			createdBy: item.created_by,
 		  }];
@@ -147,6 +212,7 @@ export default function UserGrid(props) {
 				middleName: item.middle_name,
 				activeDate: getDate(item.active_date),
 				deactiveDate: getDate(item.deactive_date),
+				notes: item.notes,
 				created: item.created,
 				createdBy: item.created_by,}
 		  );
@@ -154,7 +220,7 @@ export default function UserGrid(props) {
 		return data;
 	  }
 
-	  const getTemplates = async (isAdmin) => {
+	  const getTemplates = async (isAdmin, isLoading) => {
 		const { data: items, errors } = 
 			(isAdmin) ? await client.queries.listAllAdmin({
 		}) : await client.queries.listAllUsers({});
@@ -162,16 +228,26 @@ export default function UserGrid(props) {
 		  const db = JSON.stringify(items);
 		  const userItems = JSON.parse(db);
 		  if (items.length < 2) {
-			setUserData(translateUserTemplate (userItems));
+			const data = translateUserTemplate (userItems);
+			setUserData(data);
+			setRows(props.filter == null ? data : data.filter(comp => comp.company.includes(props.filter.name)));
 		  } else {
-			setUserData(translateUserTemplates (userItems));
+			const data = translateUserTemplates(userItems);
+			setUserData(data);
+			setRows(props.filter == null ? data : data.filter(comp => comp.company.includes(props.filter.name)));
 		  }
-		  setLoading(false);
+		  if (isLoading) {
+			setLoading(false);
+		  }
 		}
 	  };
 
 	useEffect(() => {
-		getTemplates(true);
+		getTemplates(isAdmin, props.filter != null);
+		if (props.filter == null) {
+			allCompanies();
+		}
+		allDivisions();
 	  }, []);
 
 	  function handleRowClick (params, event, details) {
@@ -197,75 +273,335 @@ export default function UserGrid(props) {
 	  divisionId: false,
     });
 
-	function handleDeactivate (id) {
+	const handleSuperAdmin = async(id) => {
+		const { errors, data: updatedData} = await client.models.admin.update({
+			id: id,
+			company_id: null
+		});
+		if (errors) {
+			setError(errors[0].message);
+			setOpen(true);
+		}
+		setLoading(true);
+		getTemplates(isAdmin, true);		
 	}
 
-	function handleActivate (id) {
+	const handleDeactiveOrActivate = async(id, isDeactive) => {
+		const now = new Date();
+		const { errors, data: updatedData } = 
+			(isAdmin) ? 	
+				await client.models.admin.update({
+					id: id,
+					deactive_date: (isDeactive) ? now : null
+				}) :
+				await client.models.user.update({
+					id: id,
+					deactive_date: (isDeactive) ? now : null
+				});				
+		if (errors) {
+			setError(errors[0].message);
+			setOpen(true);
+		}
+		setLoading(true);
+		getTemplates(isAdmin, true);
+	}
+
+	const handleDeleteRow = async(id) => {
+		const { errors, data: deletedData } = 
+		(isAdmin) ?
+			await client.models.admin.delete({
+				id: id
+			}) :
+			await client.models.user.delete({
+				id: id
+			});
+		if (errors) {
+			setError(errors[0].message);
+			setOpen(true);
+		}
+	}
+
+	const handleAddRow = async(newRow:GridRowModel) => {
+		const now = new Date();
+		const companyArr = (isAdmin) ? newRow.company.split("|") : newRow.division.split("|");
+		if (isAdmin) {
+			const { errors, data: items } = await client.models.admin.create({
+				id: newRow.id,
+				company_id: companyArr.length < 2 ? (newRow.companyId == '' ? null : newRow.companyId) : companyArr[1],
+				email_address: newRow.email,
+				first_name: newRow.firstName,
+				last_name: newRow.lastName,
+				middle_name: newRow.middleName,
+				active_date: newRow.activeDate != null ? newRow.activeDate.toISOString().slice(0, 10) : null,
+				created: now,
+				created_by: 0			
+			});			
+			if (errors) {
+				setError(errors[0].message);
+				setOpen(true);
+			}
+		} else {
+			const { errors, data: items } = await client.models.user.create({
+				id: newRow.id,
+				division_id: companyArr.length < 2 ? newRow.divisionId : companyArr[1],
+				email_address: newRow.email,
+				first_name: newRow.firstName,
+				last_name: newRow.lastName,
+				middle_name: newRow.middleName,
+				notes: newRow.notes,
+				active_date: newRow.activeDate === undefined ? null : (newRow.activeDate != null ? newRow.activeDate.toISOString().slice(0, 10) : null),
+				created: now,
+				created_by: 0			
+			}); 		
+			if (errors) {
+				setError(errors[0].message);
+				setOpen(true);
+			}	
+		}
+	}
+
+	const handleUpdateRow = async(newRow: GridRowModel) => {
+		const companyArr = (isAdmin) ? newRow.company.split("|") : newRow.division.split("|");
+		const { errors, data: updatedData } = 
+		(isAdmin) ?
+			await client.models.admin.update({ 
+				id: newRow.id,
+				company_id: companyArr.length < 2 ? (newRow.companyId == '' ? null : newRow.companyId) : companyArr[1],
+				email_address: newRow.email,
+				first_name: newRow.firstName,
+				last_name: newRow.lastName,
+				middle_name: newRow.middleName,
+				active_date: newRow.activeDate != null ? newRow.activeDate.toISOString().slice(0, 10) : null,
+			}) :
+			await client.models.user.update({ 
+				id: newRow.id,
+				division_id: companyArr.length < 2 ? newRow.companyId : companyArr[1],
+				email_address: newRow.email,
+				first_name: newRow.firstName,
+				last_name: newRow.lastName,
+				middle_name: newRow.middleName,
+				active_date: newRow.activeDate === undefined ? null : (newRow.activeDate != null ? newRow.activeDate.toISOString().slice(0, 10) : null),
+				notes: newRow.notes
+			}); 			
+		if (errors) {
+			setError(errors[0].message);
+			setOpen(true);
+		}
+	}
+
+	const handleDeactivate = (id: GridRowId) => () => {
+		handleDeactiveOrActivate(id, true);
+	}
+
+	const handleActivate = (id: GridRowId) => () => {
+		handleDeactiveOrActivate(id, false);
 	}
 	
-	function handleDelete (id) {
+	const handleDeleteClick = (id: GridRowId) => () => {
+		setOpen(false);
+		setError('');
+		setRows(rows.filter((row) => row.id !== id));
+		handleDeleteRow(id);
+	};	
+
+	const handleDelete = (id: GridRowId) => () => {
+		setDeleteId(id);
+		setError('');
+		setOpen(true);
 	}
 
-	function handleAssociations (id) {
+	const handleEditClick = (id: GridRowId) => () => {
+		setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+	};
+
+	const handleSaveClick = (id: GridRowId) => () => {
+		setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+	};
+
+	const handleMakeSuperAdmin = (id: GridRowId) => () => {
+		handleSuperAdmin(id);
 	}
 
-	function handleBuild (id) {
-	}
+	const handleCancelClick = (id: GridRowId) => () => {
+		setRowModesModel({
+		...rowModesModel,
+		[id]: { mode: GridRowModes.View, ignoreModifications: true },
+		});
+	
+	const editedRow = rows.find((row) => row.id === id);
+		if (editedRow!.isNew) {
+		setRows(rows.filter((row) => row.id !== id));
+		}
+	};
 
-	function handleEdit (id) {
+	const processRowUpdate = (newRow: GridRowModel) => {
+		const updatedRow = { ...newRow, isNew: false };
+		setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+		if (newRow.isNew) {
+			handleAddRow(newRow);
+		} else {
+			handleUpdateRow(newRow);
+		}
+		return updatedRow;
+	};
+
+	const processRowUpdateError = (error) => {
+		setError(error);
+		setOpen(true);
 	}
+	
+	const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+		setRowModesModel(newRowModesModel);
+	};
+
+	const renderSelectEditInputCell: GridColDef['renderCell'] = (params) => {
+		return <SelectGridCustomer {...params} company={company} nullOk={true}/>;
+	  };
+
+	const renderSelectDivisionEditInputCell: GridColDef['renderCell'] = (params) => {
+	return <SelectGridCustomer {...params} company={division}  nullOk={false}/>;
+	};
 
 	const columns: GridColDef[] = [
 		{ field: 'id', headerName: 'Id', width: 70 },
 		{ field: 'divisionId', headerName: 'DivisionId', width: 70 },
-		checked ? { field: 'companyId', headerName: 'CompanyId', width: 70 } : 
-		 { field: 'division', headerName: 'Division Name', width: 200, headerClassName: 'grid-headers' },
-		{ field: 'company', headerName: 'Company Name', width: 200, headerClassName: 'grid-headers' },
-		{ field: 'email', headerName: 'Email Address', width: 200, headerClassName: 'grid-headers' },
-		{ field: 'firstName', headerName: 'First Name', width: 150, headerClassName: 'grid-headers' },
-		{ field: 'lastName', headerName: 'Last Name', width: 150, headerClassName: 'grid-headers' },
-		{ field: 'middleName', headerName: 'Middle', width: 100, headerClassName: 'grid-headers' },
-		{
-		  field: 'activeDate',
-		  type: 'date',
-		  headerName: 'Active',
-		  width: 100, headerClassName: 'grid-headers'
-		},
-		{ field: 'deactiveDate', headerName: 'DeActive', type: 'date', width: 100, headerClassName: 'grid-headers' },
+		isAdmin ? { field: 'company', headerName: 'Company Name', width: 200, headerClassName: 'grid-headers', editable: true,
+			renderEditCell: renderSelectEditInputCell,
+			valueGetter: (value) => {
+				return value == null ? null : value.split("|")[0];
+			}
+		  } :
+		  { field: 'company', headerName: 'Company Name', width: 200, headerClassName: 'grid-headers', editable: true,
+			valueGetter: (value, row) => {
+				return row.isNew ? "--" : value;
+			}
+		   },
+		  isAdmin ? { field: 'companyId', headerName: 'CompanyId', width: 70 } : 
+		  { field: 'division', headerName: 'Division Name', width: 200, headerClassName: 'grid-headers',
+			renderEditCell: renderSelectDivisionEditInputCell,
+			valueGetter: (value) => {
+				return value == null ? null : value.split("|")[0];
+		  }, editable: true 
+		 },
+		{ field: 'email', headerName: 'Email Address', width: 200, headerClassName: 'grid-headers', editable: true  },
+		{ field: 'firstName', headerName: 'First Name', width: 150, headerClassName: 'grid-headers', editable: true  },
+		{ field: 'lastName', headerName: 'Last Name', width: 150, headerClassName: 'grid-headers', editable: true  },
+		{ field: 'middleName', headerName: 'Middle', width: 100, headerClassName: 'grid-headers', editable: true  },
+		!isAdmin ? { field: 'notes', headerName: 'Notes', width: 200, headerClassName: 'grid-headers', editable: true  } :
+		  { field: 'isSuperAdmin', headerName: 'isSuperAdmin', width: 120, type: 'boolean', headerClassName: 'grid-headers',
+			valueGetter: (value, row) => {
+				return row.companyId == null;
+			}
+		  },
+		{ field: 'activeDate', type: 'date', headerName: 'Active Date', width: 100, headerClassName: 'grid-headers', editable: true},
+		{ field: 'isActive',
+			headerName: 'isEnabled',
+			width: 100,
+			type: 'boolean',
+			headerClassName: 'grid-headers',
+			valueGetter: (value, row) => {
+				return row.deactiveDate == null || row.isNew;
+			},
+			cellClassName: (params: GridCellParams<any, number>) => {
+				if (params.value) {
+					return '';
+				}
+				return 'grid-alert';
+			},
+			editable: false  },
 		{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
 			type: 'actions',
 			width: 80,
-			getActions: (params) => [
-				<GridActionsCellItem icon={<EditIcon />} label="Edit" color='primary' onClick={handleEdit(params.id)} />,
-				<GridActionsCellItem icon={<DeleteOutlineIcon />} label="Deactivate" onClick={handleDeactivate(params.id)} showInMenu/>,
-				<GridActionsCellItem icon={<AddCircleOutlineIcon />} label="Activate" onClick={handleActivate(params.id)} showInMenu/>,
-				<GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={handleDelete(params.id)} showInMenu />,
-			],
+			getActions: ({ id }) => {
+				const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
+		
+				if (isInEditMode) {
+				  return [
+					<GridActionsCellItem
+					  icon={<SaveIcon />}
+					  label="Save"
+					  sx={{
+						color: 'primary.main',
+					  }}
+					  onClick={handleSaveClick(id)}
+					/>,
+					<GridActionsCellItem
+					  icon={<CancelIcon />}
+					  label="Cancel"
+					  className="textPrimary"
+					  onClick={handleCancelClick(id)}
+					  color="inherit"
+					/>,
+				  ];
+				}
+
+				return [
+				<GridActionsCellItem icon={<EditIcon />} label="Edit" color='primary' onClick={handleEditClick(id)} />,
+				<GridActionsCellItem icon={<SupervisedUserCircleIcon />} label="Make SuperAdmin" disabled={!isAdmin} 
+					onClick={handleMakeSuperAdmin(id)} showInMenu/>,
+				<GridActionsCellItem icon={<DeleteOutlineIcon />} label="Deactivate" onClick={handleDeactivate(id)} showInMenu/>,
+				<GridActionsCellItem icon={<AddCircleOutlineIcon />} label="Activate" onClick={handleActivate(id)} showInMenu/>,
+				<GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={handleDelete(id)} showInMenu />,
+				]
+			}
 		}
 	  ];
 
-	const paginationModel = { page: 0, pageSize: 9 };
+	  const handleClose = () => {
+		setOpen(false);
+		setError('');
+		setDeleteId('');
+	};
 
   return (
+	<React.Fragment>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {error == '' ? "Are You Sure?" : "ERROR"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+			{error == '' ? "Are you sure you want to delete this record? (NOTE: " +
+			"This can orphan rows if there is activity against this user)" : error}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+			{error == '' ? <Button variant='contained' color='success' onClick={handleDeleteClick(deleteId)}>Delete</Button> : null}
+          <Button variant='contained' color='error' onClick={handleClose} autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
 	<Stack>
-    <FormGroup>
+    {props.filter == null ? <FormGroup>
       <Typography variant='subtitle1'>Company User 
 		<FormControlLabel control={<Switch defaultChecked onChange={handleUserChange}/>} 
 			label="Admin User" />
 	  </Typography>
-    </FormGroup>
+    </FormGroup> : null }
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
-			rows={userData}
+			rows={rows}
 			slots={{ toolbar: GridToolbar}}
 			loading={loading}
 			columns={columns}
+			editMode='row'
+			rowModesModel={rowModesModel}
+			onRowModesModelChange={handleRowModesModelChange}
+			onRowEditStop={handleRowEditStop}
+			processRowUpdate={processRowUpdate}
+			onProcessRowUpdateError={processRowUpdateError}
 			columnVisibilityModel={columnVisibilityModel}
-			onColumnVisibilityModelChange={(newCompany) =>
-				setColumnVisibilityModel(newCompany)
+			onColumnVisibilityModelChange={(newRow) =>
+				setColumnVisibilityModel(newRow)
 			}
-			initialState={{ pagination: { paginationModel } }}
-			pageSizeOptions={[9, 10]}
+			initialState={{ pagination: { paginationModel: { pageSize: 10} } }}
+			pageSizeOptions={[10, 20, 50, 100, { value: -1, label: 'All'}]}
 			checkboxSelection
 			onRowClick={handleRowClick}
 			onRowCountChange={handleRowChangeEvent}
@@ -274,8 +610,12 @@ export default function UserGrid(props) {
 			slots={{
 				toolbar: EditToolbar as GridSlots['toolbar'],
 			  }}
+			slotProps={{
+				toolbar: { setRows, setRowModesModel },
+			}}
 			/>
 		</Paper>
 	</Stack>
+	</React.Fragment>
   );
 }

@@ -1,5 +1,6 @@
 
 // @ts-nocheck
+import * as React from 'react';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { DataGrid, 
@@ -30,6 +31,12 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Tooltip from '@mui/material/Tooltip';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
+import { v4 as uuidv4 } from 'uuid';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import CancelIcon from '@mui/icons-material/Close';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
@@ -44,10 +51,21 @@ function EditToolbar(props: EditToolbarProps) {
 	const { setRows, setRowModesModel } = props;
   
 	const handleClick = () => {
-	  const id = randomId();
+	  const id = uuidv4();
 	  setRows((oldRows) => [
 		...oldRows,
-		{ id, name: '', age: '', role: '', isNew: true },
+		{ id, 
+			name: '', 
+			email: '', 
+			address1: '', 
+			address2: '',
+			city: '',
+			state: '',
+			zipcode: '',
+			ref_department: '',
+			notes: '',
+			isNew: true
+		},
 	  ]);
 	  setRowModesModel((oldModel) => ({
 		...oldModel,
@@ -69,6 +87,9 @@ function EditToolbar(props: EditToolbarProps) {
 
 export default function CompanyGrid(props) {
 	const [loading, setLoading] = useState(true);
+	const [open, setOpen] = useState(false);
+	const [error, setError] = useState('');
+	const [deleteId, setDeleteId] = useState('');
 	const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
 
 	const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
@@ -79,14 +100,15 @@ export default function CompanyGrid(props) {
 
 	const client = generateClient<Schema>();
 	const [company, setCompany] = useState<Schema["company"]["type"][]>([]);
+	const [rows, setRows] = useState<GridRowsProp>([]);
 
 	const allCompanies = async () => {
 		const { data: items, errors } = await client.models.company.list();
 		if (errors) {
 		  alert(errors[0].message);
 		} else {
-
-			setCompany(items);
+		  setCompany(items);
+		  setRows(items);
 		  setLoading(false);
 		}
 	  }
@@ -124,7 +146,8 @@ export default function CompanyGrid(props) {
 			deactive_date: (isDeactive) ? now : null
 		});
 		if (errors) {
-			alert(errors[0].message);
+			setError(errors[0].message);
+			setOpen(true);
 		}
 		allCompanies();
 	}
@@ -134,7 +157,49 @@ export default function CompanyGrid(props) {
 			id: id
 		});
 		if (errors) {
-			alert(errors[0].message);
+			setError(errors[0].message);
+			setOpen(true);
+		}
+	}
+
+	const handleAddRow = async(newRow:GridRowModel) => {
+		const now = new Date();
+		const { errors, data: items } = await client.models.company.create({
+			id: newRow.id,
+			name: newRow.name, 
+			email: newRow.email,
+			address1: newRow.address1,
+			address2: newRow.address2,
+			city: newRow.city,
+			state: newRow.state,
+			zipcode: newRow.zipcode,
+			ref_department: newRow.ref_department,
+			notes: newRow.notes,
+			created: now,
+			created_by: 0			
+		});
+		if (errors) {
+			setError(errors[0].message);
+			setOpen(true);
+		}
+	}
+
+	const handleUpdateRow = async(newRow: GridRowModel) => {
+		const { errors, data: updatedData } = await client.models.company.update({ 
+			id: newRow.id,
+			name: newRow.name, 
+			email: newRow.email,
+			address1: newRow.address1,
+			address2: newRow.address2,
+			city: newRow.city,
+			state: newRow.state,
+			zipcode: newRow.zipcode,
+			ref_department: newRow.ref_department,
+			notes: newRow.notes
+		  });
+		if (errors) {
+			setError(errors[0].message);
+			setOpen(true);
 		}
 	}
 
@@ -147,9 +212,17 @@ export default function CompanyGrid(props) {
 	}
 	
 	const handleDeleteClick = (id: GridRowId) => () => {
-		setCompany(company.filter((row) => row.id !== id));
+		setOpen(false);
+		setError('');
+		setRows(rows.filter((row) => row.id !== id));
 		handleDeleteRow(id);
 	  };	
+
+	const handleDelete = (id: GridRowId) => () => {
+		setDeleteId(id);
+		setError('');
+		setOpen(true);
+	}
 
 	const handleEditClick = (id: GridRowId) => () => {
 		setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
@@ -165,35 +238,26 @@ export default function CompanyGrid(props) {
 		  [id]: { mode: GridRowModes.View, ignoreModifications: true },
 		});
 	
-	const editedRow = company.find((row) => row.id === id);
+	const editedRow = rows.find((row) => row.id === id);
 		if (editedRow!.isNew) {
-		  setCompany(company.filter((row) => row.id !== id));
+		  setRows(rows.filter((row) => row.id !== id));
 		}
 	  };
 
-	  const processRowUpdate = async(newRow: GridRowModel) => {
+	  const processRowUpdate = (newRow: GridRowModel) => {
 		const updatedRow = { ...newRow, isNew: false };
-		setCompany(company.map((row) => (row.id === newRow.id ? updatedRow : row)));
-		const { errors, data: updatedData } = await client.models.company.update({ 
-			id: newRow.id,
-			name: newRow.name, 
-			email: newRow.email,
-			address1: newRow.address1,
-			address2: newRow.address2,
-			city: newRow.city,
-			state: newRow.state,
-			zipcode: newRow.zipcode,
-			ref_department: newRow.ref_department,
-			notes: newRow.notes
-		  });
-		if (errors) {
-			alert(errors[0].message);
+		setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+		if (newRow.isNew) {
+			handleAddRow(newRow);
+		} else {
+			handleUpdateRow(newRow);
 		}
 		return updatedRow;
 	  };
 
 	  const processRowUpdateError = (error) => {
-		alert (error);
+		setError(error);
+		setOpen(true);
 	  }
 	
 	  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
@@ -218,14 +282,12 @@ export default function CompanyGrid(props) {
 		  	headerName: 'Address-1',
 		  	width: 200, 
 			headerClassName: 'grid-headers' ,
-			editable: true 
-		},
+			editable: true },
 		{ field: 'address2',
 			headerName: 'Address-2',
 			width: 100, 
 		  	headerClassName: 'grid-headers' ,
-		  	editable: true 
-	  	},
+		  	editable: true },
 		{ field: 'city', 
 			headerName: 'City', 
 			width: 150, 
@@ -233,7 +295,7 @@ export default function CompanyGrid(props) {
 			editable: true   },
 		{ field: 'state', 
 			headerName: 'State', 
-			width: 50, 
+			width: 100, 
 			headerClassName: 'grid-headers',
 			editable: true   },
 		{ field: 'zipcode', 
@@ -247,7 +309,7 @@ export default function CompanyGrid(props) {
 			type: 'boolean',
 			headerClassName: 'grid-headers',
 			valueGetter: (value, row) => {
-				return row.deactive_date == null;
+				return row.deactive_date == null || row.isNew;
 			},
 			cellClassName: (params: GridCellParams<any, number>) => {
 				if (params.value) {
@@ -298,19 +360,46 @@ export default function CompanyGrid(props) {
 				<GridActionsCellItem icon={<EditIcon />} label="Edit" color='primary' onClick={handleEditClick(id)} />,
 				<GridActionsCellItem icon={<DeleteOutlineIcon />} label="Deactivate" onClick={handleDeactivate(id)} showInMenu/>,
 				<GridActionsCellItem icon={<AddCircleOutlineIcon />} label="Activate" onClick={handleActivate(id)} showInMenu/>,
-				<GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={handleDeleteClick(id)} showInMenu />,
+				<GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={handleDelete(id)} showInMenu />,
 				]
 			}
 		}
 	  ];
 
-	const paginationModel = { page: 0, pageSize: 5 };
+	const handleClose = () => {
+		setOpen(false);
+		setError('');
+		setDeleteId('');
+	};
 
   return (
+	<React.Fragment>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {error == '' ? "Are You Sure?" : "ERROR"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+			{error == '' ? "Are you sure you want to delete this record? (NOTE: " +
+			"This can orphan rows if there is activity against this company)" : error}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+			{error == '' ? <Button variant='contained' color='success' onClick={handleDeleteClick(deleteId)}>Delete</Button> : null}
+          <Button variant='contained' color='error' onClick={handleClose} autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
 	<Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
-				rows={company}
+				rows={rows}
 				slots={{ toolbar: GridToolbar}}
 				loading={loading}
 				columns={columns}
@@ -324,8 +413,8 @@ export default function CompanyGrid(props) {
 				onColumnVisibilityModelChange={(newCompany) =>
 					setColumnVisibilityModel(newCompany)
 				}
-				initialState={{ pagination: { paginationModel } }}
-				pageSizeOptions={[5, 10]}
+				initialState={{ pagination: { paginationModel: { pageSize: 10} } }}
+				pageSizeOptions={[10, 20, 50, 100, { value: -1, label: 'All'}]}
 				checkboxSelection
 				onRowClick={handleRowClick}
 				onRowCountChange={handleRowChangeEvent}
@@ -335,10 +424,11 @@ export default function CompanyGrid(props) {
 					toolbar: EditToolbar as GridSlots['toolbar'],
 				  }}
 				slotProps={{
-					toolbar: { setCompany, setRowModesModel },
+					toolbar: { setRows, setRowModesModel },
 				}}
 			/>
   		</Paper>
 	</Stack>
+	</React.Fragment>
   );
 }

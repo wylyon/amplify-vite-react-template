@@ -72,6 +72,7 @@ export default function SetupTemplate(props) {
   const [selectedRows, setSelectedRows] = useState([]);
   const [dialogControls, setDialogControls] = useState({});
   const [isWizard, setIsWizard] = useState(false);
+  const [openSetup, setOpenSetup] = useState(true);
 
   const handleClickOpen = () => {
     if (formData.questionValues == '') {
@@ -385,6 +386,7 @@ export default function SetupTemplate(props) {
 
 
   const handleOnCancel = (e) => {
+    setOpenSetup(false);
     props.onSubmitChange(false);
   };
 
@@ -793,7 +795,20 @@ export default function SetupTemplate(props) {
           <Button type="submit">Save</Button>
         </DialogActions>
       </Dialog>
-      <Container fixed>
+      <Dialog
+        open={openSetup}
+        fullWidth
+        maxWidth='lg'
+        onClose={handleOnCancel}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {props.name} Template Questions
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+      <Container>
         <div>
           {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
@@ -942,6 +957,14 @@ export default function SetupTemplate(props) {
           </Box>
         </div>
       </Container>
+      </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleOnCancel} autoFocus>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </React.Fragment>
   );
 }
