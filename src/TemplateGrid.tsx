@@ -715,7 +715,7 @@ export default function TemplateGrid(props) {
           <Button variant='contained' color='success' type="submit">Save</Button>
         </DialogActions>
       </Dialog>
-      {preview && (filtered || isEmpty || filtered.length > 0) && <PopupReview props={props} 
+      {preview && (isEmpty || (filtered && filtered.length > 0)) && <PopupReview props={props} 
         onSubmitClose={handlePreviewClose}
         preLoadAttributes={preHtml}
         usePages={usePages}
