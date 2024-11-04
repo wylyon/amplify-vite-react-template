@@ -157,16 +157,22 @@ export default function TemplateGrid(props) {
 		  return;
 		}
 		if (items == null || items.length < 1) {
+			setFiltered(null);
 			setIsEmpty(true);
 		} else {
+			setFiltered(items.filter(comp => !comp.question_type.includes('dialog_input')));
 			setIsEmpty(false);
 		}
-		setFiltered(items.filter(comp => !comp.question_type.includes('dialog_input')));
 		setLoading(false);
 	  };
 
 	  const allDivisions = async () => {
-		  const { data: items, errors } = await client.models.division.list();
+		  const { data: items, errors } = 
+		  props.filter == null ?
+		  	await client.models.division.list() :
+			await client.queries.listDivisionByCompanyId({
+				companyId: props.filter.id
+			});
 		  if (errors) {
 			setError(errors[0].message);
 			setOpen(true);
@@ -251,8 +257,13 @@ export default function TemplateGrid(props) {
 	  }
 
 	  const getTemplates = async (isLoading) => {
-		const { data: items, errors } = await client.queries.listAllTemplates({
-		})
+		const { data: items, errors } = 
+		props.filter == null ?
+			await client.queries.listAllTemplates({
+			}) :
+			await client.queries.listAllTemplatesByCompanyId({
+				companyId: props.filter.id
+			});
 		if (errors) {
 			setError(errors[0].message);
 			setOpen(true);
@@ -264,11 +275,11 @@ export default function TemplateGrid(props) {
 		  if (items.length < 2) {
 			const data = translateUserTemplate (userItems);
 			setUserData(data);
-			setRows(props.filter == null ? data : data.filter(comp => comp.company.includes(props.filter.name)));
+			setRows(data);
 		  } else {
 			const data = translateUserTemplates(userItems);
 			setUserData(data);
-			setRows(props.filter == null ? data : data.filter(comp => comp.company.includes(props.filter.name)));
+			setRows(data);
 		  }
 		  if (isLoading) {
 			setLoading(false);
@@ -347,7 +358,7 @@ export default function TemplateGrid(props) {
 		const companyArr = newRow.divisionName.split("|");
 		const { errors, data: items } = await client.models.template.create({
 			id: newRow.id,
-			division_id: companyArr.length < 2 ? newRow.divisionId : companyArr[1],
+			division_id: companyArr.length < 2 ? division[0].id : companyArr[1],
 			title: newRow.title, 
 			description: newRow.description,
 			live_date: newRow.liveDate != null ? newRow.liveDate.toISOString().slice(0, 10) : null,
@@ -426,9 +437,14 @@ export default function TemplateGrid(props) {
 		}
 	};
 
-	const processRowUpdate = (newRow: GridRowModel) => {
+	const processRowUpdate = (newRow: GridRowModel, oldRow: GridRowModel) => {
 		const updatedRow = { ...newRow, isNew: false };
 		setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+		if (newRow.title == "") {
+			setError("Please provide a template title.");
+			setOpen(true);
+			return oldRow;
+		}
 		if (newRow.isNew) {
 			handleAddRow(newRow);
 		} else {
@@ -524,6 +540,21 @@ export default function TemplateGrid(props) {
 		setUsePages(false);
 	}
 
+	const preProcessEditCellProps = (params: GridPreProcessEditCellProps) => {
+		if (!params.hasChanged) {
+			return { ...params.props, error: null};
+		}
+		const existingTemplates = rows.map((row) => row.title.toLowerCase());
+		const titleName = params.props.value!.toString();
+		const exists = existingTemplates.includes(titleName.toLowerCase()) && titleName.length > 1;
+		const errorMessage = exists ? `${titleName} is already taken.` : null;
+		if (errorMessage != null) {
+			setError(errorMessage);
+			setOpen(true);
+		}
+		return { ...params.props, error: errorMessage};
+	}
+
 	const columns: GridColDef[] = [
 		{ field: 'id', headerName: 'Id', width: 70 },
 		{ field: 'divisionId', headerName: 'DivisionId', width: 70 },
@@ -538,7 +569,9 @@ export default function TemplateGrid(props) {
 				return value.split("|")[0];
 		  }, editable: true 
 		 },
-		{ field: 'title', headerName: 'Template Title', width: 150, headerClassName: 'grid-headers', editable: true  },
+		{ field: 'title', headerName: 'Template Title', width: 150, headerClassName: 'grid-headers', 
+			preProcessEditCellProps,
+			editable: true  },
 		{ field: 'description', headerName: 'Description', width: 200, headerClassName: 'grid-headers', editable: true  },
 		{ field: 'notes', headerName: 'Notes', headerClassName: 'grid-headers', width: 150, editable: true  },
 		{ field: 'liveDate', type: 'date', headerName: 'Live', width: 100, headerClassName: 'grid-headers', editable: true },
@@ -682,7 +715,7 @@ export default function TemplateGrid(props) {
           <Button variant='contained' color='success' type="submit">Save</Button>
         </DialogActions>
       </Dialog>
-      {preview && filtered && (filtered.length > 0 || isEmpty) && <PopupReview props={props} 
+      {preview && (filtered || isEmpty || filtered.length > 0) && <PopupReview props={props} 
         onSubmitClose={handlePreviewClose}
         preLoadAttributes={preHtml}
         usePages={usePages}
@@ -722,7 +755,6 @@ export default function TemplateGrid(props) {
 			}
 			initialState={{ pagination: { paginationModel: { pageSize: 10} } }}
 			pageSizeOptions={[10, 20, 50, 100, { value: -1, label: 'All'}]}
-			checkboxSelection
 			onRowClick={handleRowClick}
 			onRowCountChange={handleRowChangeEvent}
 			onRowSelectionModelChange={handleRowSelection}

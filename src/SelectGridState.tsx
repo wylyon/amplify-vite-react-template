@@ -8,8 +8,9 @@ import {
   GridColDef,
   useGridApiContext,
 } from '@mui/x-data-grid';
+import { getStates } from '../src/utils.js';
 
-export default function SelectEditInputCell(props: GridRenderCellParams) {
+export default function SelectGridState(props: GridRenderCellParams) {
   const { id, value, field } = props;
   const apiRef = useGridApiContext();
 
@@ -27,10 +28,8 @@ export default function SelectEditInputCell(props: GridRenderCellParams) {
       native
       autoFocus
     >
-  {props.nullOk ? <option key={props.company.length} value=''></option> : null}
-	{Array.isArray(props.company) ? props.company.map(comp => (!comp.deactive_date) ? 
-	    (<option key={comp.name + "|" + comp.id} value={comp.name + "|" + comp.id}>{comp.name}</option>) : null) :
-      <option key={props.company.name + "|" + props.company.id} value={props.company.name + "|" + props.company.id}>{props.company.name}</option>}
+	{getStates().map(comp => 
+	    (<option key={comp} value={comp}>{comp}</option>))}
     </Select>
   );
 }

@@ -16,6 +16,7 @@ import { DataGrid,
 	GridEventListener,
 	GridRowModel,
 	GridRowEditStopReasons, 
+	GridPreProcessEditCellProps,
 	GridCellParams, gridClasses,
 	GridRowId } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
@@ -128,25 +129,31 @@ export default function UserGrid(props) {
 	  const [checked, setChecked] = useState(true);
 	  const [rows, setRows] = useState<GridRowsProp>([]);
 
-	  const allCompanies = async () => {
-		  const { data: items, errors } = await client.models.company.list();
-		  if (errors) {
-			alert(errors[0].message);
-		  } else {
-			setCompany(items);
-		  }
+	const allCompanies = async () => {
+		const { data: items, errors } = await client.models.company.list();
+		if (errors) {
+		setError(errors[0].message);
+		setOpen(true);
+		} else {
+		setCompany(items);
 		}
-		
-		const allDivisions = async () => {
-			const { data: items, errors } = await client.models.division.list();
-			if (errors) {
-			  setError(errors[0].message);
-			  setOpen(true);
-			} else {
-			  setDivision(props.filter == null ? items : items.filter(comp => comp.company_id.includes(filter.id)));
-			}
-			setLoading(false);
-		  }
+	}
+	
+	const allDivisions = async () => {
+		const { data: items, errors } = 
+		props.filter == null ?
+			await client.models.division.list() :
+			await client.queries.listDivisionByCompanyId({
+				companyId: props.filter.id
+			});
+		if (errors) {
+			setError(errors[0].message);
+			setOpen(true);
+		} else {
+			setDivision(items);
+		}
+		setLoading(false);
+		}
 
 	  const handleUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setChecked(event.target.checked);
@@ -222,24 +229,41 @@ export default function UserGrid(props) {
 
 	  const getTemplates = async (isAdmin, isLoading) => {
 		const { data: items, errors } = 
-			(isAdmin) ? await client.queries.listAllAdmin({
-		}) : await client.queries.listAllUsers({});
-		if (Array.isArray(items) && items.length > 0) {
-		  const db = JSON.stringify(items);
-		  const userItems = JSON.parse(db);
-		  if (items.length < 2) {
-			const data = translateUserTemplate (userItems);
-			setUserData(data);
-			setRows(props.filter == null ? data : data.filter(comp => comp.company.includes(props.filter.name)));
-		  } else {
-			const data = translateUserTemplates(userItems);
-			setUserData(data);
-			setRows(props.filter == null ? data : data.filter(comp => comp.company.includes(props.filter.name)));
-		  }
-		  if (isLoading) {
+			(isAdmin) ? (
+				props.filter == null ?
+					await client.queries.listAllAdmin({
+				}) : 
+					await client.queries.listAllAdminByCompanyId({
+						companyId: props.filter.id
+					})
+			) : (
+				props.filter == null ? 
+					await client.queries.listAllUsers({}) :
+					await client.queries.listAllUsersByCompanyId({
+						companyId: props.filter.id
+					})
+			);
+		if (errors) {
+			setError(errors[0].message);
+			setOpen(true);
+		} else {
+			if (Array.isArray(items) && items.length > 0) {
+				const db = JSON.stringify(items);
+				const userItems = JSON.parse(db);
+				if (items.length < 2) {
+				  const data = translateUserTemplate (userItems);
+				  setUserData(data);
+				  setRows(data);
+				} else {
+				  const data = translateUserTemplates(userItems);
+				  setUserData(data);
+				  setRows(data);
+				}
+			  }
+		}
+		if (isLoading) {
 			setLoading(false);
 		  }
-		}
 	  };
 
 	useEffect(() => {
@@ -343,7 +367,7 @@ export default function UserGrid(props) {
 		} else {
 			const { errors, data: items } = await client.models.user.create({
 				id: newRow.id,
-				division_id: companyArr.length < 2 ? newRow.divisionId : companyArr[1],
+				division_id: companyArr.length < 2 ? division[0].id : companyArr[1],
 				email_address: newRow.email,
 				first_name: newRow.firstName,
 				last_name: newRow.lastName,
@@ -434,8 +458,23 @@ export default function UserGrid(props) {
 		}
 	};
 
-	const processRowUpdate = (newRow: GridRowModel) => {
+	const processRowUpdate = (newRow: GridRowModel, oldRow: GridRowModel) => {
 		const updatedRow = { ...newRow, isNew: false };
+		if (newRow.email == "") {
+			setError("Please provide an email address.");
+			setOpen(true);
+			return oldRow;
+		}
+		if (newRow.firstName == "") {
+			setError("Please provide a first name.");
+			setOpen(true);
+			return oldRow;
+		}
+		if (newRow.lastName == "") {
+			setError("Please provide a last name.");
+			setOpen(true);
+			return oldRow;
+		}
 		setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
 		if (newRow.isNew) {
 			handleAddRow(newRow);
@@ -462,6 +501,21 @@ export default function UserGrid(props) {
 	return <SelectGridCustomer {...params} company={division}  nullOk={false}/>;
 	};
 
+	const preProcessEditCellProps = (params: GridPreProcessEditCellProps) => {
+		if (!params.hasChanged) {
+			return { ...params.props, error: null};
+		}
+		const existingUsers = rows.map((row) => row.email.toLowerCase());
+		const userEmail = params.props.value!.toString();
+		const exists = existingUsers.includes(userEmail.toLowerCase()) && userEmail.length > 1;
+		const errorMessage = exists ? `${userEmail} is already taken.` : null;
+		if (errorMessage != null) {
+			setError(errorMessage);
+			setOpen(true);
+		}
+		return { ...params.props, error: errorMessage};
+	}
+
 	const columns: GridColDef[] = [
 		{ field: 'id', headerName: 'Id', width: 70 },
 		{ field: 'divisionId', headerName: 'DivisionId', width: 70 },
@@ -483,8 +537,10 @@ export default function UserGrid(props) {
 				return value == null ? null : value.split("|")[0];
 		  }, editable: true 
 		 },
-		{ field: 'email', headerName: 'Email Address', width: 200, headerClassName: 'grid-headers', editable: true  },
-		{ field: 'firstName', headerName: 'First Name', width: 150, headerClassName: 'grid-headers', editable: true  },
+		{ field: 'email', headerName: 'Email Address', width: 200, headerClassName: 'grid-headers', 
+			preProcessEditCellProps,
+			editable: true  },
+		{ field: 'firstName', headerName: 'First Name', width: 150, headerClassName: 'grid-headers', editable: true },
 		{ field: 'lastName', headerName: 'Last Name', width: 150, headerClassName: 'grid-headers', editable: true  },
 		{ field: 'middleName', headerName: 'Middle', width: 100, headerClassName: 'grid-headers', editable: true  },
 		!isAdmin ? { field: 'notes', headerName: 'Notes', width: 200, headerClassName: 'grid-headers', editable: true  } :
@@ -602,7 +658,6 @@ export default function UserGrid(props) {
 			}
 			initialState={{ pagination: { paginationModel: { pageSize: 10} } }}
 			pageSizeOptions={[10, 20, 50, 100, { value: -1, label: 'All'}]}
-			checkboxSelection
 			onRowClick={handleRowClick}
 			onRowCountChange={handleRowChangeEvent}
 			onRowSelectionModelChange={handleRowSelection}

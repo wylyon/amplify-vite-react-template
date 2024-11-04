@@ -40,6 +40,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import CancelIcon from '@mui/icons-material/Close';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SelectGridCustomer from '../src/SelectGridCustomer';
+import SelectGridState from '../src/SelectGridState';
 
 interface EditToolbarProps {
 	setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
@@ -123,32 +124,17 @@ export default function DivisionGrid(props) {
 	const [rows, setRows] = useState<GridRowsProp>([]);
 
 	const allCompanies = async () => {
-		const { data: items, errors } = await client.models.company.list();
+		const { data: items, errors } = 
+		props.filter == null ?
+			await client.models.company.list() :
+			await client.models.company.get({
+				id: props.filter.id
+			});
 		if (errors) {
 		  alert(errors[0].message);
 		} else {
 		  setCompany(items);
 		}
-	  }
-
-	  function translateUserDivision (item) {
-		const data = [{id: item.id, 
-			companyId: item.company_id, 
-			company: item.company, 
-			name: item.name,
-			email: item.email,
-			address1: item.address1,
-			address2: item.address2,
-			city: item.city,
-			state: item.state,
-			zipcode: item.zipcode,
-			refDepartment: item.ref_department,
-			notes: item.notes,
-			deactiveDate: item.deactive_date,
-			created: item.created,
-			createdBy: item.created_by
-		  }];
-		return data;
 	  }
 	
 	  function translateUserDivisions (items) {
@@ -193,20 +179,19 @@ export default function DivisionGrid(props) {
 	  }
 
 	  const getDivisions = async () => {
-		const { data: items, errors } = await client.queries.listAllDivisions({
-		})
+		const { data: items, errors } = 
+		props.filter == null ?
+			await client.queries.listAllDivisions({
+		}) :
+			await client.queries.listAllDivisionsByCompanyId({
+				companyId: props.filter.id
+			});
 		if (Array.isArray(items) && items.length > 0) {
 		  const db = JSON.stringify(items);
 		  const userItems = JSON.parse(db);
-		  if (items.length < 2) {
-			const data = translateUserDivision (userItems);
-			setUserData(data);
-			setRows(props.filter == null ? data : data.filter(comp => comp.companyId.includes(props.filter.id)));
-		  } else {
-			const data = translateUserDivisions (userItems);
-			setUserData(data);
-			setRows(props.filter == null ? data : data.filter(comp => comp.companyId.includes(props.filter.id)));
-		  }
+		  const data = translateUserDivisions (userItems);
+		  setUserData(data);
+		  setRows(data);
 		  setLoading(false);
 		}
 	  };
@@ -265,7 +250,7 @@ export default function DivisionGrid(props) {
 		const companyArr = newRow.company.split("|");
 		const { errors, data: items } = await client.models.division.create({
 			id: newRow.id,
-			company_id: companyArr.length < 2 ? newRow.companyId : companyArr[1],
+			company_id: companyArr.length < 2 ? (Array.isArray(company) ? company[0].id : company.id) : companyArr[1],
 			name: newRow.name, 
 			email: newRow.email,
 			address1: newRow.address1,
@@ -346,9 +331,34 @@ export default function DivisionGrid(props) {
 		}
 	};
 
-	const processRowUpdate = (newRow: GridRowModel) => {
+	const processRowUpdate = (newRow: GridRowModel, oldRow: GridRowModel) => {
 		const updatedRow = { ...newRow, isNew: false };
 		setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+		if (newRow.name == "") {
+			setError("Please provide a division name.");
+			setOpen(true);
+			return oldRow;
+		}
+		if (newRow.email == "") {
+			setError("Please provide an email address.");
+			setOpen(true);
+			return oldRow;
+		}
+		if (newRow.address1 == "") {
+			setError("Please provide an address.");
+			setOpen(true);
+			return oldRow;
+		}
+		if (newRow.city == "") {
+			setError("Please provide a city.");
+			setOpen(true);
+			return oldRow;
+		}
+		if (newRow.zipcode == "") {
+			setError("Please provide a zipcode.");
+			setOpen(true);
+			return oldRow;
+		}
 		if (newRow.isNew) {
 			handleAddRow(newRow);
 		} else {
@@ -370,6 +380,25 @@ export default function DivisionGrid(props) {
 		return <SelectGridCustomer {...params} company={company}  nullOk={false}/>;
 	  };
 
+	const renderSelectEditStateInputCell: GridColDef['renderCell'] = (params) => {
+		return <SelectGridState {...params} />;
+	};
+
+	const preProcessEditCellProps = (params: GridPreProcessEditCellProps) => {
+		if (!params.hasChanged) {
+			return { ...params.props, error: null};
+		}
+		const existingCompanies = rows.map((row) => row.name.toLowerCase());
+		const companyName = params.props.value!.toString();
+		const exists = existingCompanies.includes(companyName.toLowerCase()) && companyName.length > 1;
+		const errorMessage = exists ? `${companyName} is already taken.` : null;
+		if (errorMessage != null) {
+			setError(errorMessage);
+			setOpen(true);
+		}
+		return { ...params.props, error: errorMessage};
+	}
+
 	const columns: GridColDef[] = [
 		{ field: 'id', headerName: 'Id', width: 70 },
 		{ field: 'company', headerName: 'Company Name', width: 150, headerClassName: 'grid-headers', editable: true,
@@ -378,12 +407,16 @@ export default function DivisionGrid(props) {
 				return value.split("|")[0];
 			}
 		  },
-		{ field: 'name', headerName: 'Division Name', width: 150, headerClassName: 'grid-headers', editable: true  },
+		{ field: 'name', headerName: 'Division Name', width: 150, headerClassName: 'grid-headers', 
+			preProcessEditCellProps,
+			editable: true  },
 		{ field: 'email', headerName: 'Email', width: 200, headerClassName: 'grid-headers', editable: true  },
 		{ field: 'address1', headerName: 'Address-1', width: 200, headerClassName: 'grid-headers', editable: true },
 		{ field: 'address2', headerName: 'Address-2', width: 200, headerClassName: 'grid-headers', editable: true },
 		{ field: 'city', headerName: 'City', width: 150, headerClassName: 'grid-headers', editable: true  },
-		{ field: 'state', headerName: 'State', width: 100, headerClassName: 'grid-headers', editable: true  },
+		{ field: 'state', headerName: 'State', width: 100, headerClassName: 'grid-headers', 
+			renderEditCell: renderSelectEditStateInputCell,
+			editable: true  },
 		{ field: 'zipcode', headerName: 'Zipcode', width: 100, headerClassName: 'grid-headers', editable: true },
 		{ field: 'isActive',
 			headerName: 'isActive',
@@ -488,7 +521,6 @@ export default function DivisionGrid(props) {
 			}
 			initialState={{ pagination: { paginationModel: { pageSize: 10} } }}
 			pageSizeOptions={[10, 20, 50, 100, { value: -1, label: 'All'}]}
-			checkboxSelection
 			onRowClick={handleRowClick}
 			onRowCountChange={handleRowChangeEvent}
 			onRowSelectionModelChange={handleRowSelection}

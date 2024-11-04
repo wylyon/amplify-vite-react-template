@@ -53,7 +53,9 @@ export default function PopupReview(props) {
           <DialogContentText id="alert-dialog-description"
             sx={{height: '500px', width: '650px'}}>
             <div className="startPreview" dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes)} /><br/><br/><br/>
-            {props.usePages ?
+            {props.filtered == null ?
+              <Typography variant="h4">No Preview Available</Typography>
+            : props.usePages ?
               <Stack spacing={2}>
                 <Typography variant="h6">
                   {props.name}
