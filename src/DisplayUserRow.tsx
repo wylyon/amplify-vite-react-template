@@ -54,6 +54,7 @@ export default function DisplayUserRow(props) {
       // On autofill we get a stringified value.
       typeof value === 'string' ? value.split(',') : value,
     );
+    props.onMultiDrop (event, props.question.id);
     props.onNextPage(true);
   };
 
@@ -65,13 +66,18 @@ export default function DisplayUserRow(props) {
 
   const handleOtherClose = () => {
     setOpen(false);
-    props.onSubmitChange(false);
+  };
+
+  const handleOther = (value) => {
+    setOpen(false);
+    props.onOtherChange(value, props.question.id);
   };
 
   const handleCapture = (target) => {
     if (target.files) {
       if (target.files.length !== 0) {
         const file = target.files[0];
+        props.onPicture(file, props.question.id);
         const newUrl = URL.createObjectURL(file);
         setSource(newUrl);
         props.onNextPage(true);
@@ -97,6 +103,7 @@ export default function DisplayUserRow(props) {
   const handleToggleChange = (event: React.MouseEvent<HTMLElement>, nextView: string) => {
     setView(nextView);
     props.onNextPage(true);
+    props.onChange(event);
     trigger_check(nextView);
   };
 
@@ -120,11 +127,12 @@ export default function DisplayUserRow(props) {
           component: 'form',
           onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
+            event.stopPropagation();
             const formData = new FormData(event.currentTarget);
             const formJson = Object.fromEntries((formData as any).entries());
             const otherAnimal = formJson.other;
             console.log(otherAnimal);
-            handleOtherClose();
+            handleOther(otherAnimal);
           },
         }}
       >
@@ -144,7 +152,7 @@ export default function DisplayUserRow(props) {
         </DialogContent>
         <DialogActions>
           <Button color="error" onClick={handleOtherClose}>Cancel</Button>
-          <Button color="success" onClick={handleOtherClose}>Ok</Button>
+          <Button type="submit" color="success">Ok</Button>
         </DialogActions>
       </Dialog>
     { props.questionType == 'toggle_button' ?
@@ -153,14 +161,21 @@ export default function DisplayUserRow(props) {
         <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
           <Typography variant="caption" gutterBottom>{props.preLoadAttributes}</Typography>
           <ToggleButtonGroup
+            key={'tbg_' + props.question.question_order}
+            aria-placeholder={'tbg_' + props.question.question_order}
             color="primary"
             value={view}
             exclusive
             onChange={handleToggleChange}
             orientation="vertical"
           >
-          {props.question.question_values.split("|").map(comp => 
-            <ToggleButton value={comp} aria-label={comp} sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
+          {props.question.question_values.split("|").map((comp, index) => 
+            <ToggleButton 
+              key={'tb_'+props.question.question_order+'_'+index} 
+              value={comp} 
+              aria-label={comp} 
+              aria-placeholder={props.question.id}
+              sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
           </ToggleButtonGroup>
         </Box>
       }
@@ -168,14 +183,21 @@ export default function DisplayUserRow(props) {
         <Box component="section"  sx={{ p: 2, border: '1px'}}>
           <Typography variant="caption" gutterBottom>{props.preLoadAttributes}</Typography>
           <ToggleButtonGroup
+            key={'tbg_' + props.question.question_order}
+            aria-placeholder={'tbg_' + props.question.question_order}
             color="primary"
             value={view}
             exclusive
             onChange={handleToggleChange}
             orientation="vertical"
           >
-          {props.question.question_values.split("|").map(comp => 
-            <ToggleButton value={comp} aria-label={comp} sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
+          {props.question.question_values.split("|").map((comp, index) => 
+            <ToggleButton 
+              key={'tb_'+props.question.question_order+'_'+index} 
+              value={comp} 
+              aria-label={comp} 
+              aria-placeholder={props.question.id}
+              sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
           </ToggleButtonGroup>
         </Box>
       }
@@ -184,13 +206,20 @@ export default function DisplayUserRow(props) {
             <Typography variant="caption" gutterBottom>{props.preLoadAttributes}</Typography>
             <ToggleButtonGroup
               color="primary"
+              aria-placeholder={'tbg_' + props.question.question_order}
+              key={'tbg_' + props.question.question_order}
               value={view}
               exclusive
               onChange={handleToggleChange}
               orientation="vertical"
             >
-            {props.question.question_values.split("|").map(comp => 
-              <ToggleButton value={comp} aria-label={comp} sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
+            {props.question.question_values.split("|").map((comp, index) => 
+              <ToggleButton 
+                key={'tb_'+props.question.question_order+'_'+index} 
+                value={comp} 
+                aria-label={comp} 
+                aria-placeholder={props.question.id}
+                sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
           </ToggleButtonGroup>
         </Box>
       }
@@ -259,6 +288,7 @@ export default function DisplayUserRow(props) {
                   labelId={"multiple-checkbox-label"+props.question.question_order}
                   id={"multiple-checkbox"+props.question.question_order}
                   multiple
+                  aria-placeholder={props.question.id}
                   value={comboName}
                   onChange={handleChangeMultiple}
                   onClose={handleCloseMultiple}

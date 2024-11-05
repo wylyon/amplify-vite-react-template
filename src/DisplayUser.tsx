@@ -18,6 +18,9 @@ import Typography from '@mui/material/Typography';
 import Pagination from '@mui/material/Pagination';
 import PaginationItem from '@mui/material/PaginationItem';
 import { disable } from "aws-amplify/analytics";
+import { v4 as uuidv4 } from 'uuid';
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 
 export default function DisplayUser(props) {
   const [isAlert, setIsAlert] = useState(false);
@@ -26,9 +29,38 @@ export default function DisplayUser(props) {
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const [results, setResults] = useState([]);
+
+  const client = generateClient<Schema>();
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
+  }
+
+  const setTally = () => {
+    var newTally = [];
+    props.templateQuestions.map(comp => newTally.push({id: comp.id, value: null, type: comp.question_type}));
+    setResults(newTally);
+  }
+
+  const setResultTally = (id, value, type) => {
+    var newTally = [];
+    const result = results.find(result => result.id === id);
+    if (result) {
+      for (var i = 0; i < results.length; i++) {
+        if (results[i].id === id) {
+           newTally.push({id: id, value: value, type: results[i].type});
+        } else {
+          newTally.push({id: results[i].id, value: results[i].value, type: results[i].type});
+        }
+      }
+    } else {
+      for (var i = 0; i < results.length; i++) {
+        newTally.push({id: results[i].id, value: results[i].value, type: results[i].type});
+      }
+      newTally.push({id: id, value: value, type: type});     
+    }
+    setResults(newTally);
   }
 
   const handleClose = () => {
@@ -41,8 +73,24 @@ export default function DisplayUser(props) {
     props.onSubmitChange(false);
   }
 
-  const handleOnSubmitOther = (e) => {
+  const handleOnSubmitOther = (value, id) => {
+    setResultTally(id, value, 'dialog_input');
+  }
 
+  const handleToggleChange = (e) => {
+    setResultTally(e.target.ariaPlaceholder, e.target.value, 'toggle_button');
+  }
+
+  const handleOnPicture = (file, id) => {
+    setResultTally(id, file.name, 'photo');
+  }
+
+  const handleOnMultiDrop = (e, id) => {
+    if (e.target.value == null) {
+      setResultTally(id, null, 'multiple_dropdown');
+    } else {
+      setResultTally(id, e.target.value.join("|"),'multiple_dropdown');
+    }
   }
 
   const handleNextPage = (e) => {
@@ -59,14 +107,34 @@ export default function DisplayUser(props) {
     setTheSeverity("error");
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const formJson = Object.fromEntries((formData as any).entries());
-    // get all name/value pairs
-    const nameValuePairs = Object.entries(formJson);
+  const saveResults = async(id, value, type) => {
+      const now = new Date();
+      const { errors, data: items } = await client.models.question_result.create({
+        id: uuidv4(),
+        template_question_id: id,
+        result_photo_value: type == 'photo' ? value : null,
+        result_option_value: type == 'photo' || type == 'datepicker' ? null : value,
+        result_option_value: type == 'datepicker' ? value : null,
+        gps_lat: null,
+        gps_long: null,
+        what2words: null,
+        created: now,
+        created_by: props.userId			
+      });
+      if (errors) {
+        setTheSeverity("error");
+        setAlertMessage(errors[0].message);
+        setIsAlert(true);
+      }
+  }
+  
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      const formJson = Object.fromEntries((formData as any).entries());
+      console.log(results);
+      results.map(comp => saveResults(comp.id, comp.value, comp.type));
     setOpen(true);
-    
   };
 
   function getNonDialogQuestion (index) {
@@ -92,6 +160,7 @@ export default function DisplayUser(props) {
   }
 
   useEffect(() => {
+    setTally();
 	}, []);
 
   function createMarkup(dirty) {
@@ -124,7 +193,8 @@ export default function DisplayUser(props) {
       {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
           </Alert>}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}
+      >
         { props.userData[0].usePagination==0 || (props.userData[0].usePagination==1 && props.templateQuestions.length < 1) ?
           props.templateQuestions.map((comp, index) => 
             comp.question_type != 'dialog_input' ?
@@ -136,7 +206,10 @@ export default function DisplayUser(props) {
               useBoxControls={props.userData[0].useBoxControls}
               useAutoSpacing={props.userData[0].useAutoSpacing}
               question={comp}
-              onSubmitChange={handleOnSubmitOther}
+              onOtherChange={handleOnSubmitOther}
+              onChange={handleToggleChange}
+              onPicture={handleOnPicture}
+              onMultiDrop={handleOnMultiDrop}
               onNextPage={handleNextPage}
               nextQuestion={index+1 < props.templateQuestions.length ? props.templateQuestions[index+1] : null}
             /> : null      
@@ -153,7 +226,10 @@ export default function DisplayUser(props) {
             useBoxControls={props.userData[0].useBoxControls}
             useAutoSpacing={props.userData[0].useAutoSpacing}
             question={getNonDialogQuestion(page - 1)}
-            onSubmitChange={handleOnSubmitOther}
+            onOtherChange={handleOnSubmitOther}
+            onChange={handleToggleChange}
+            onPicture={handleOnPicture}
+            onMultiDrop={handleOnMultiDrop}
             onNextPage={handleNextPage}
             nextQuestion={getNextQuestion(getNonDialogQuestion(page - 1))}
           />

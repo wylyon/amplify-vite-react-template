@@ -10,6 +10,6 @@ export const storage = defineStorage({
     'picture-submissions/*': [
       allow.authenticated.to(['read','write']),
       allow.guest.to(['read', 'write'])
-    ],
+    ]
   })
 });
