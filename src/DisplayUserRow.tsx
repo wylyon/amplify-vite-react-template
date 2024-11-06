@@ -131,7 +131,6 @@ export default function DisplayUserRow(props) {
             const formData = new FormData(event.currentTarget);
             const formJson = Object.fromEntries((formData as any).entries());
             const otherAnimal = formJson.other;
-            console.log(otherAnimal);
             handleOther(otherAnimal);
           },
         }}

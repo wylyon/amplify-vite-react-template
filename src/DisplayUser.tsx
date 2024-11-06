@@ -21,6 +21,8 @@ import { disable } from "aws-amplify/analytics";
 import { v4 as uuidv4 } from 'uuid';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
+import { uploadData } from "aws-amplify/storage";
+import { useGeolocated } from "react-geolocated";
 
 export default function DisplayUser(props) {
   const [isAlert, setIsAlert] = useState(false);
@@ -30,6 +32,7 @@ export default function DisplayUser(props) {
   const [page, setPage] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [results, setResults] = useState([]);
+  const [gps, setGPS] = useState<GeolocatedResult>({});
 
   const client = generateClient<Schema>();
 
@@ -37,28 +40,70 @@ export default function DisplayUser(props) {
     setPage(value);
   }
 
+  const { coords, 
+    isGeolocationAvailable, 
+    isGeolocationEnabled,
+    getPosition,
+    positionError } =
+      useGeolocated({
+          positionOptions: {
+              enableHighAccuracy: false,
+          },
+          userDecisionTimeout: 5000,
+          watchLocationPermissionChange: true,
+      });
+
+  const checkGPS = () => {
+    if (!isGeolocationAvailable) {
+      setAlertMessage('Your browser does not support Geolocation');
+      setTheSeverity("warning");
+      setIsAlert(true);
+    } else {
+      if (!isGeolocationEnabled) {
+        setAlertMessage('Geolocation is not enabled.');
+        setTheSeverity("warning");
+        setIsAlert(true);        
+      } else {
+        if (coords) {
+          setGPS(coords);
+        }
+      }
+    }
+  }
+
+  const getLatLongResults = (id, value, type, file) => {
+    getPosition();
+    checkGPS();
+    if (coords) {
+      setGPS(coords);
+      setResultTally(id, value, type, file, coords.latitude, coords.longitude);
+    } else {
+      setResultTally(id, value, type, file, gps.latitude, gps.longitude);
+    }
+  }
+
   const setTally = () => {
     var newTally = [];
-    props.templateQuestions.map(comp => newTally.push({id: comp.id, value: null, type: comp.question_type}));
+    props.templateQuestions.map(comp => newTally.push({id: comp.id, value: null, type: comp.question_type, file: null}));
     setResults(newTally);
   }
 
-  const setResultTally = (id, value, type) => {
+  const setResultTally = (id, value, type, file, lat, long) => {
     var newTally = [];
     const result = results.find(result => result.id === id);
     if (result) {
       for (var i = 0; i < results.length; i++) {
         if (results[i].id === id) {
-           newTally.push({id: id, value: value, type: results[i].type});
+           newTally.push({id: id, value: value, type: results[i].type, file: file, lat: lat, long: long});
         } else {
-          newTally.push({id: results[i].id, value: results[i].value, type: results[i].type});
+          newTally.push({id: results[i].id, value: results[i].value, type: results[i].type, file: results[i].file, lat: results[i].lat, long: results[i].long});
         }
       }
     } else {
       for (var i = 0; i < results.length; i++) {
-        newTally.push({id: results[i].id, value: results[i].value, type: results[i].type});
+        newTally.push({id: results[i].id, value: results[i].value, type: results[i].type, file: results[i].file, lat: results[i].lat, long: results[i].long});
       }
-      newTally.push({id: id, value: value, type: type});     
+      newTally.push({id: id, value: value, type: type, file: file, lat: lat, long: long});     
     }
     setResults(newTally);
   }
@@ -69,27 +114,26 @@ export default function DisplayUser(props) {
   };
   
   const handleCancel = (e) => {
-  
     props.onSubmitChange(false);
   }
 
   const handleOnSubmitOther = (value, id) => {
-    setResultTally(id, value, 'dialog_input');
+    getLatLongResults(id, value, 'dialog_input', null);
   }
 
   const handleToggleChange = (e) => {
-    setResultTally(e.target.ariaPlaceholder, e.target.value, 'toggle_button');
+    getLatLongResults(e.target.ariaPlaceholder, e.target.value, 'toggle_button', null);
   }
 
   const handleOnPicture = (file, id) => {
-    setResultTally(id, file.name, 'photo');
+    getLatLongResults(id, file.name, 'photo', file);
   }
 
   const handleOnMultiDrop = (e, id) => {
     if (e.target.value == null) {
-      setResultTally(id, null, 'multiple_dropdown');
+      getLatLongResults(id, null, 'multiple_dropdown', null);
     } else {
-      setResultTally(id, e.target.value.join("|"),'multiple_dropdown');
+      getLatLongResults(id, e.target.value.join("|"),'multiple_dropdown', null);
     }
   }
 
@@ -107,16 +151,28 @@ export default function DisplayUser(props) {
     setTheSeverity("error");
   }
 
-  const saveResults = async(id, value, type) => {
+  const saveResults = async(id, value, type, file, lat, long) => {
+    if (file != null) {
+      try {
+        uploadData({
+          path: `picture-submissions/${file.name}`,
+          data: file,
+        });
+      } catch (exception) {
+        setAlertMessage('Error trying to save photo..' + exception);
+        setTheSeverity("error");
+        setIsAlert(true);
+      }
+    }
       const now = new Date();
       const { errors, data: items } = await client.models.question_result.create({
         id: uuidv4(),
         template_question_id: id,
         result_photo_value: type == 'photo' ? value : null,
-        result_option_value: type == 'photo' || type == 'datepicker' ? null : value,
-        result_option_value: type == 'datepicker' ? value : null,
-        gps_lat: null,
-        gps_long: null,
+        result_option_value: type == 'toggle_button' || type == 'multiple_dropdown' ? value : null,
+        result_date_value: type == 'datepicker' ? value : null,
+        gps_lat: lat,
+        gps_long: long,
         what2words: null,
         created: now,
         created_by: props.userId			
@@ -133,7 +189,7 @@ export default function DisplayUser(props) {
       const formData = new FormData(event.currentTarget);
       const formJson = Object.fromEntries((formData as any).entries());
       console.log(results);
-      results.map(comp => saveResults(comp.id, comp.value, comp.type));
+      results.map(comp => saveResults(comp.id, comp.value, comp.type, comp.file, comp.lat, comp.long));
     setOpen(true);
   };
 
@@ -161,6 +217,7 @@ export default function DisplayUser(props) {
 
   useEffect(() => {
     setTally();
+    checkGPS();
 	}, []);
 
   function createMarkup(dirty) {
