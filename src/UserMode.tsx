@@ -12,6 +12,7 @@ import LogoDevIcon from '@mui/icons-material/LogoDev';
 import Tooltip from '@mui/material/Tooltip';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import usePagination from "@mui/material/usePagination/usePagination";
+import { v4 as uuidv4 } from 'uuid';
 
 export default function UserMode(props) {
 
@@ -228,9 +229,19 @@ export default function UserMode(props) {
 	  		</a>
 		</div>
 		{isMultiTemplates && <PopupTemplate theTemplates={templates} onSelectTemplate={handleOnTemplate}/> }
-	  {	!isDefaultPage && <DisplayUser userId={props.userId} templateId={tempId} userData={userData} templateQuestions={templateQuestion} 
+	  {	!isDefaultPage && <DisplayUser 
+	  		userId={props.userId} 
+			templateId={tempId} 
+			userData={userData} 
+			transaction={uuidv4()}
+			templateQuestions={templateQuestion} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
-		{!isDefaultPage2 && <DisplayUser userId={props.userId} templateId={tempId} userData={userData} templateQuestions={templateQuestion} 
+		{!isDefaultPage2 && <DisplayUser 
+			userId={props.userId} 
+			templateId={tempId} 
+			userData={userData} 
+			transaction={uuidv4()}
+			templateQuestions={templateQuestion} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
     </main> 
   );

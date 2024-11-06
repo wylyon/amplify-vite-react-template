@@ -23,6 +23,14 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import { uploadData } from "aws-amplify/storage";
 import { useGeolocated } from "react-geolocated";
+import what3words, {
+  ApiVersion,
+  ConvertTo3waOptions,
+  LocationJsonResponse,
+  Transport,
+  What3wordsService,
+  axiosTransport,
+} from '@what3words/api';
 
 export default function DisplayUser(props) {
   const [isAlert, setIsAlert] = useState(false);
@@ -33,8 +41,20 @@ export default function DisplayUser(props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [results, setResults] = useState([]);
   const [gps, setGPS] = useState<GeolocatedResult>({});
+  const [words, setWords] = useState('');
 
   const client = generateClient<Schema>();
+
+  const apiKey = 'F0BWUCO1';
+  const config: {
+    host: string;
+    apiVersion: ApiVersion;
+  } = {
+    host: 'https://api.what3words.com',
+    apiVersion: ApiVersion.Version3,
+  };
+  const transport: Transport = axiosTransport();
+  const w3wService: What3wordsService = what3words(apiKey, config, { transport });
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
@@ -53,6 +73,20 @@ export default function DisplayUser(props) {
           watchLocationPermissionChange: true,
       });
 
+  const postError = (error) => {
+    setAlertMessage('What3words: ' + error);
+    setTheSeverity("warning");
+    setIsAlert(true);   
+  }
+
+  const setGPSWhat3Words = () => {
+    setGPS(coords);
+    const options: ConvertTo3waOptions = {
+      coordinates: { lat: coords.latitude, lng: coords.longitude},
+    }
+    w3wService.convertTo3wa(options).then((res: LocationJsonResponse) => setWords(res.words)).catch(error => postError(error));
+  }
+
   const checkGPS = () => {
     if (!isGeolocationAvailable) {
       setAlertMessage('Your browser does not support Geolocation');
@@ -65,7 +99,7 @@ export default function DisplayUser(props) {
         setIsAlert(true);        
       } else {
         if (coords) {
-          setGPS(coords);
+          setGPSWhat3Words();
         }
       }
     }
@@ -75,35 +109,39 @@ export default function DisplayUser(props) {
     getPosition();
     checkGPS();
     if (coords) {
-      setGPS(coords);
-      setResultTally(id, value, type, file, coords.latitude, coords.longitude);
+      setGPSWhat3Words();
+      
+      setResultTally(id, value, type, file, coords.latitude, coords.longitude, words);
     } else {
-      setResultTally(id, value, type, file, gps.latitude, gps.longitude);
+      setResultTally(id, value, type, file, gps.latitude, gps.longitude, words);
     }
   }
 
   const setTally = () => {
     var newTally = [];
-    props.templateQuestions.map(comp => newTally.push({id: comp.id, value: null, type: comp.question_type, file: null}));
+    props.templateQuestions.map(comp => newTally.push({id: comp.id, value: null, type: comp.question_type, 
+      file: null, lat: null, long: null, what3words: null}));
     setResults(newTally);
   }
 
-  const setResultTally = (id, value, type, file, lat, long) => {
+  const setResultTally = (id, value, type, file, lat, long, what3words) => {
     var newTally = [];
     const result = results.find(result => result.id === id);
     if (result) {
       for (var i = 0; i < results.length; i++) {
         if (results[i].id === id) {
-           newTally.push({id: id, value: value, type: results[i].type, file: file, lat: lat, long: long});
+           newTally.push({id: id, value: value, type: results[i].type, file: file, lat: lat, long: long, what3words: what3words});
         } else {
-          newTally.push({id: results[i].id, value: results[i].value, type: results[i].type, file: results[i].file, lat: results[i].lat, long: results[i].long});
+          newTally.push({id: results[i].id, value: results[i].value, type: results[i].type, file: results[i].file, lat: results[i].lat, 
+            long: results[i].long, what3words: results[i].what3words});
         }
       }
     } else {
       for (var i = 0; i < results.length; i++) {
-        newTally.push({id: results[i].id, value: results[i].value, type: results[i].type, file: results[i].file, lat: results[i].lat, long: results[i].long});
+        newTally.push({id: results[i].id, value: results[i].value, type: results[i].type, file: results[i].file, lat: results[i].lat, 
+          long: results[i].long, what3words: results[i].what3words});
       }
-      newTally.push({id: id, value: value, type: type, file: file, lat: lat, long: long});     
+      newTally.push({id: id, value: value, type: type, file: file, lat: lat, long: long, what3words: what3words});     
     }
     setResults(newTally);
   }
@@ -151,7 +189,7 @@ export default function DisplayUser(props) {
     setTheSeverity("error");
   }
 
-  const saveResults = async(id, value, type, file, lat, long) => {
+  const saveResults = async(id, value, type, file, lat, long, what3words) => {
     if (file != null) {
       try {
         uploadData({
@@ -167,13 +205,14 @@ export default function DisplayUser(props) {
       const now = new Date();
       const { errors, data: items } = await client.models.question_result.create({
         id: uuidv4(),
+        transaction_id: props.transaction,
         template_question_id: id,
         result_photo_value: type == 'photo' ? value : null,
         result_option_value: type == 'toggle_button' || type == 'multiple_dropdown' ? value : null,
         result_date_value: type == 'datepicker' ? value : null,
         gps_lat: lat,
         gps_long: long,
-        what2words: null,
+        what3words: what3words,
         created: now,
         created_by: props.userId			
       });
@@ -188,8 +227,8 @@ export default function DisplayUser(props) {
       event.preventDefault();
       const formData = new FormData(event.currentTarget);
       const formJson = Object.fromEntries((formData as any).entries());
-      console.log(results);
-      results.map(comp => saveResults(comp.id, comp.value, comp.type, comp.file, comp.lat, comp.long));
+      //console.log(results);
+      results.map(comp => comp.type != 'dialog_input' ? saveResults(comp.id, comp.value, comp.type, comp.file, comp.lat, comp.long, comp.what3words) : null);
     setOpen(true);
   };
 

@@ -97,13 +97,14 @@ export const schema = configure({
     ]),
     "question_result": a.model({
         id: a.string().required(),
+        transaction_id: a.string().required(),
         template_question_id: a.string().required(),
         result_photo_value: a.string(),
         result_option_value: a.string(),
         result_date_value: a.datetime(),
         gps_lat: a.float(),
         gps_long: a.float(),
-        what2words: a.string(),
+        what3words: a.string(),
         created: a.datetime().required(),
         created_by: a.string().required()
     }).identifier([
