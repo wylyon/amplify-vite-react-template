@@ -118,9 +118,9 @@ export default function AdminSuper(props) {
 				value={hValue}
 				onChange={handleReportChange}
 				aria-label="Report tabs">
-				<Tab label="Detailed Report" {...a11yHProps(0)} />
-				<Tab label="Report-1" {...a11yHProps(1)} />
-				<Tab label="Report-2" {...a11yHProps(2)} />
+				<Tab label="Detailed Report By Template" {...a11yHProps(0)} />
+				<Tab label="Summary All Results" {...a11yHProps(1)} />
+				<Tab label="Summary By Template" {...a11yHProps(2)} />
 			</Tabs>
 			<CustomTabPanel value={hValue} index={0}>
 				Item One
