@@ -9,6 +9,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import { Hvac } from '@mui/icons-material';
 
 interface TabPanelProps {
 	children?: React.ReactNode;
@@ -42,13 +43,40 @@ interface TabPanelProps {
 	  'aria-controls': `vertical-tabpanel-${index}`,
 	};
   }
+  function CustomTabPanel(props: TabPanelProps) {
+	const { children, value, index, ...other } = props;
+  
+	return (
+	  <div
+		role="tabpanel"
+		hidden={value !== index}
+		id={`simple-tabpanel-${index}`}
+		aria-labelledby={`simple-tab-${index}`}
+		{...other}
+	  >
+		{value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+	  </div>
+	);
+  }
+  
+  function a11yHProps(index: number) {
+	return {
+	  id: `simple-tab-${index}`,
+	  'aria-controls': `simple-tabpanel-${index}`,
+	};
+  }
 
 export default function AdminSuper(props) {
 	const [value, setValue] = React.useState(0);
+	const [hValue, setHValue] = React.useState(0);
 
 	const handleChange = (event: React.SyntheticEvent, newValue: number) => {
 	  setValue(newValue);
 	};
+
+	const handleReportChange = (event: React.SyntheticEvent, newValue: number) => {
+		setHValue(newValue);
+	  };
 
   	const handleOnSignOut = (e) => {
     	props.onSubmitChange(false);
@@ -84,7 +112,25 @@ export default function AdminSuper(props) {
 			<UserGrid props={props} filter={null}/>
 		</TabPanel>
 		<TabPanel value={value} index={4}>
-			NOTE:   Reports not yet implemented.
+			<Tabs
+				orientation="horizontal"
+				variant="scrollable"
+				value={hValue}
+				onChange={handleReportChange}
+				aria-label="Report tabs">
+				<Tab label="Detailed Report" {...a11yHProps(0)} />
+				<Tab label="Report-1" {...a11yHProps(1)} />
+				<Tab label="Report-2" {...a11yHProps(2)} />
+			</Tabs>
+			<CustomTabPanel value={hValue} index={0}>
+				Item One
+			</CustomTabPanel>
+			<CustomTabPanel value={hValue} index={1}>
+				Item Two
+			</CustomTabPanel>
+			<CustomTabPanel value={hValue} index={2}>
+				Item Three
+			</CustomTabPanel>
 		</TabPanel>
 	</Box>
   );

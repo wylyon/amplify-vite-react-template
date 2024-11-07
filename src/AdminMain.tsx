@@ -48,8 +48,33 @@ interface TabPanelProps {
 	};
   }
 
+  function CustomTabPanel(props: TabPanelProps) {
+	const { children, value, index, ...other } = props;
+  
+	return (
+	  <div
+		role="tabpanel"
+		hidden={value !== index}
+		id={`simple-tabpanel-${index}`}
+		aria-labelledby={`simple-tab-${index}`}
+		{...other}
+	  >
+		{value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+	  </div>
+	);
+  }
+  
+  function a11yHProps(index: number) {
+	return {
+	  id: `simple-tab-${index}`,
+	  'aria-controls': `simple-tabpanel-${index}`,
+	};
+  }
+
 export default function AdminMain(props) {
 	const [value, setValue] = useState(0);
+	const [hValue, setHValue] = useState(0);
+
 	const [company, setCompany] = useState<Schema["company"]["type"][]>([]);
 
 	const client = generateClient<Schema>();
@@ -68,6 +93,11 @@ export default function AdminMain(props) {
 	const handleChange = (event: React.SyntheticEvent, newValue: number) => {
 	  setValue(newValue);
 	};
+
+	const handleReportChange = (event: React.SyntheticEvent, newValue: number) => {
+		setHValue(newValue);
+	  };
+
 
   	const handleOnSignOut = (e) => {
     	props.onSubmitChange(false);
@@ -106,7 +136,25 @@ export default function AdminMain(props) {
 			<DivisionGrid props={props} filter={company} />
 		</TabPanel>
 		<TabPanel value={value} index={3}>
-			NOTE:   Reports not yet implemented.
+			<Tabs
+				orientation="horizontal"
+				variant="scrollable"
+				value={hValue}
+				onChange={handleReportChange}
+				aria-label="Report tabs">
+				<Tab label="Detailed Report" {...a11yHProps(0)} />
+				<Tab label="Report-1" {...a11yHProps(1)} />
+				<Tab label="Report-2" {...a11yHProps(2)} />
+			</Tabs>
+			<CustomTabPanel value={hValue} index={0}>
+				Item One
+			</CustomTabPanel>
+			<CustomTabPanel value={hValue} index={1}>
+				Item Two
+			</CustomTabPanel>
+			<CustomTabPanel value={hValue} index={2}>
+				Item Three
+			</CustomTabPanel>
 		</TabPanel>
 		<TabPanel value={value} index={4}>
 			<InputCustCompany props={props} 

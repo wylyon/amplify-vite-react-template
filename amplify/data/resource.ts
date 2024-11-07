@@ -137,6 +137,38 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "SELECT d.id, d.company_id, c.name as company, d.name, d.email, d.address1, d.address2, d.city, d.state, d.zipcode, d.ref_department, d.notes, d.deactive_date, d.created, d.created_by " +
       "FROM logistics.division d join logistics.company c on c.id = d.company_id WHERE c.id = :companyId;"
     )).authorization(allow => allow.publicApiKey()),
+    listResultsByTemplateId: a.query()
+    .arguments({
+      templateId: a.string().required(),
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT c.name as company, c.id as company_id, d.id as division_id, d.name as division, t.title as template, t.id as template_id, r.transaction_id, q.title as question, " +
+      "case when q.question_type = 'photo' then r.result_photo_value when q.question_type = 'datepicker' then r.result_date_value else r.result_option_value end as result, " +
+      "r.gps_lat as lat, r.gps_long as lng, r.what3words, r.created, r.created_by FROM logistics.question_result r join logistics.template_question q on q.id = r.template_question_id " +
+      "join logistics.template t on t.id = q.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id " +
+      "WHERE q.question_type != 'dialog_input' and template_id = :templateId order by r.transaction_id, r.created;"
+    )).authorization(allow => allow.publicApiKey()),
+    summaryResultsByTemplateId: a.query()
+    .arguments({
+      templateId: a.string().required(),
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT c.name as company, c.id as company_id,  t.title, t.id as template_id, count(r.transaction_id) as num_questions, max(r.created) as created, max(what3words) as what3words, " +
+      "max(gps_lat) as lattitude, max(gps_long) as longitude FROM logistics.question_result r join logistics.template_question q on q.id = r.template_question_id " +
+      "join logistics.template t on t.id = q.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id where template_id = :templateId " +
+      "and q.question_type != 'dialog_input' group by c.name, c.id, t.title, t.id, r.transaction_id;"
+    )).authorization(allow => allow.publicApiKey()),
+    resultsTotals: a.query()
+    .arguments({})
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT company, company_id, title, template_id, count(transaction_id), created FROM " + 
+      "(SELECT c.name as company, c.id as company_id, t.title, t.id as template_id, r.transaction_id, r.created FROM " +
+      "logistics.question_result r join logistics.template_question q on q.id = r.template_question_id join logistics.template t on t.id = q.template_id " +
+      "join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id group by c.name, t.title, r.transaction_id) a;"
+    )).authorization(allow => allow.publicApiKey()),
     listDivisionByCompanyId: a.query()
     .arguments({
       companyId: a.string().required(),
