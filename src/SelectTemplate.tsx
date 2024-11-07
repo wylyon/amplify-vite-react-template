@@ -1,6 +1,10 @@
 // @ts-nocheck
 import { useState, useEffect  } from "react";
-
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 export default function SelectTemplate(props) {
 
   const [selectTemplate, setSelectTemplate] = useState('');
@@ -8,7 +12,8 @@ export default function SelectTemplate(props) {
 
   const handleSelectChange = (e) => {
     setSelectTemplate(e.target.value);
-    props.onSelectTemplate(e.target.value);
+    e.target.value.includes("!") ?
+    props.onSelectTemplate(arrayTemplates[e.target.value].split("!")[0]) : e.target.value;
   };
 
   useEffect(() => {
@@ -17,13 +22,21 @@ export default function SelectTemplate(props) {
 	}, []);
 
   return (
-      <div className="inputProgram">
-        <label htmlFor="templateToUse"><b>Program:</b></label>
-        <select name="templateToUse" id="templateToUse" onChange={handleSelectChange}> 
-          { arrayTemplates.map(comp => 
-            <option key={comp.split("!")[0]} value={comp.split("!")[0]}>{comp.split("!")[1]}</option>
+    <Box sx={{ minWidth: 120 }}>
+      <FormControl fullWidth>
+        <InputLabel id="demo-simple-select-label">Templates</InputLabel>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={0}
+          label="Templates"
+          onChange={handleSelectChange}
+        >
+          { arrayTemplates.map((comp, index) => 
+            <MenuItem key={index} value={index}>{comp.split("!")[1]}</MenuItem>
           )}
-        </select>
-      </div>
+        </Select>
+      </FormControl>
+    </Box>
   );
 }

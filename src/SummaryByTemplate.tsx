@@ -33,12 +33,16 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import CancelIcon from '@mui/icons-material/Close';
 import { v4 as uuidv4 } from 'uuid';
+import what3words from '@what3words/api';
+import SelectTemplate from '../src/SelectTemplate';
 
-export default function SummaryAllResults(props) {
+export default function SummaryByTemplate(props) {
 	const [loading, setLoading] = useState(true);
 	const [open, setOpen] = useState(false);
 	const [error, setError] = useState('');
 	const [deleteId, setDeleteId] = useState('');
+	const [allTemplates, setAllTemplates] = useState('');
+	const [needTemplate, setNeedTemplate] = useState(false);
 
 	const client = generateClient<Schema>();
 	const [userData, setUserData] = useState([{
@@ -47,9 +51,11 @@ export default function SummaryAllResults(props) {
 		companyId: '',
 		title: '',
 		templateId: '',
-		numTransactions: 0,
+		numQuestions: 0,
 		latestPosting: null,
-		earliestPosting: null, 
+		what3words: '',
+		lattitude: null,
+		longitude: null, 
 	  }]);
 
 	function getDate(value) {
@@ -66,9 +72,11 @@ export default function SummaryAllResults(props) {
 			companyId: item.company_id, 
 			title: item.title, 
 			templateId: item.template_id,
-			numTransactions: item.num_transactions,
-			latestPosting: getDate(item.latest_posting),
-			earliestPosting: getDate(item.earliest_posting),
+			numQuestions: item.num_questions,
+			latestPosting: getDate(item.created),
+			what3words: item.what3words,
+			lattitude: item.lattitude,
+			longitude: item.longitude,
 		  }];
 		for (var i=1; i < items.length; i++) {
 		  const item = JSON.parse(items[i]);
@@ -78,16 +86,20 @@ export default function SummaryAllResults(props) {
 				companyId: item.company_id, 
 				title: item.title, 
 				templateId: item.template_id,
-				numTransactions: item.num_transactions,
-				latestPosting: getDate(item.latest_posting),
-				earliestPosting: getDate(item.earliest_posting),}
+				numQuestions: item.num_questions,
+				latestPosting: getDate(item.created),
+				what3words: item.what3words,
+				lattitude: item.lattitude,
+				longitude: item.longitude,}
 		  );
 		}
 		return data;
 	  }
 
-	const allResults = async () => {
-		const { data: items, errors } = await client.queries.resultsTotals();
+	  const allResults = async (templateId) => {
+		const { data: items, errors } = await client.queries.summaryResultsByTemplateId({
+			templateId: templateId
+		});
 		if (errors) {
 			setError(errors[0].message);
 			setOpen(true);
@@ -99,11 +111,33 @@ export default function SummaryAllResults(props) {
 				setUserData(data);
 			  }
 		}
-		setLoading(false);
 	  }
 
+	const allResultTemplates = async () => {
+		const { data: items, errors } = await client.queries.resultsTotals();
+		if (errors) {
+			setError(errors[0].message);
+			setOpen(true);			
+		} else {
+			if (Array.isArray(items) && items.length > 0) {
+				const db = JSON.stringify(items);
+				const userItems = JSON.parse(db);
+				const item = JSON.parse(userItems[0]);
+				allResults(item.template_id);
+				var data = item.template_id + "!" + item.title;
+				for (var i=1; i < userItems.length; i++) {
+					const item = JSON.parse(userItems[i]);
+					data = data + "|" + item.template_id + "!" + item.title;
+				}
+				setAllTemplates(data);
+				setNeedTemplate(true);
+			  }			
+		}
+		setLoading(false);
+	}
+
 	useEffect(() => {
-		allResults();
+		allResultTemplates();
 	  }, []);
 
 	function handleRowClick (params, event, details) {
@@ -133,6 +167,10 @@ export default function SummaryAllResults(props) {
 	function handleRowClick (params, event, details) {
 	}
   
+	function onSelectedTemplate (id) {
+		allResults(id);
+	}
+
 	function handleRowSelection (rowSelectionModel, details) {
 	  // called on checkbox for row.   
 	  if (rowSelectionModel.length == 0) {
@@ -160,12 +198,14 @@ export default function SummaryAllResults(props) {
 		{ field: 'templateId',
 		  	headerName: 'Template Id',
 		  	width: 70 },
-		{ field: 'numTransactions',
-			headerName: 'Transactions',
+		{ field: 'numQuestions',
+			headerName: 'Answered',
 			width: 100, 
 		  	headerClassName: 'grid-headers' },
 		{ field: 'latestPosting', type: 'date', headerName: 'Latest', width: 100, headerClassName: 'grid-headers' },
-		{ field: 'earliestPosting', type: 'date', headerName: 'Earliest', width: 100, headerClassName: 'grid-headers' },
+		{ field: 'what3words', headerName: 'Earliest', width: 200, headerClassName: 'grid-headers' },
+		{ field: 'lattitude', headerName: 'Lattitude', width: 150, headerClassName: 'grid-headers' },
+		{ field: 'longitude', headerName: 'Longitude', width: 150, headerClassName: 'grid-headers' },
 	  ];
 
 	const handleClose = () => {
@@ -197,6 +237,7 @@ export default function SummaryAllResults(props) {
         </DialogActions>
       </Dialog>
 	<Stack>
+	{needTemplate && allTemplates.length > 0 && <SelectTemplate props={props} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} /> }
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
 				rows={userData}
