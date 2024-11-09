@@ -23,7 +23,7 @@ export default function SelectTemplate(props) {
 
   return (
     <Box sx={{ minWidth: 120 }}>
-      <FormControl fullWidth>
+      <FormControl >
         <InputLabel id="demo-simple-select-label">Templates</InputLabel>
         <Select
           labelId="demo-simple-select-label"

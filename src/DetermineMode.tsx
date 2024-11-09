@@ -54,6 +54,12 @@ export default function DetermineMode(props) {
       return true;
     }
   }
+  function isMobile () {
+    return (window.navigator.userAgent.match(/iPhone/i) || 
+      window.navigator.userAgent.match(/iPad/i) ||
+      window.navigator.userAgent.match(/Android/i)) ? true : false;
+  }
+
   const fetchAdmins = (emailId, items) => {
     if (items.length < 1 || isSuperAdmin || mode != 9) {
       return false;
@@ -77,6 +83,12 @@ export default function DetermineMode(props) {
     }
     if (getUser(emailId)) {
       // here we have an Admin who is also a template user
+      // check screen size...if mobile then default to company user vs admin.
+      if (isMobile()) {
+        setMode(1);
+        setIsSuperAdmin(false);
+        return false;
+      }
       setOpen(true);
     }
     setMode(0);

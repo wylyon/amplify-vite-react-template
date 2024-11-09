@@ -144,7 +144,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .returns(a.json().array())
     .handler(a.handler.inlineSql(
       "SELECT c.name as company, c.id as company_id, d.id as division_id, d.name as division, t.title as template, t.id as template_id, r.transaction_id, q.title as question, " +
-      "case when q.question_type = 'photo' then r.result_photo_value when q.question_type = 'datepicker' then r.result_date_value else r.result_option_value end as result, " +
+      "q.question_type, case when q.question_type = 'photo' then r.result_photo_value when q.question_type = 'datepicker' then r.result_date_value else r.result_option_value end as result, " +
       "r.gps_lat as lat, r.gps_long as lng, r.what3words, r.created, r.created_by FROM logistics.question_result r join logistics.template_question q on q.id = r.template_question_id " +
       "join logistics.template t on t.id = q.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id " +
       "WHERE q.question_type != 'dialog_input' and template_id = :templateId order by r.transaction_id, r.created;"
@@ -168,6 +168,17 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "(SELECT c.name as company, c.id as company_id, t.title, t.id as template_id, r.transaction_id, r.created FROM " +
       "logistics.question_result r join logistics.template_question q on q.id = r.template_question_id join logistics.template t on t.id = q.template_id " +
       "join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id group by c.name, t.title, r.transaction_id) a;"
+    )).authorization(allow => allow.publicApiKey()),
+    resultsTotalsByCompanyId: a.query()
+    .arguments({
+      companyId: a.string().required(),
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT company, company_id, title, template_id, count(transaction_id) as num_transactions, max(created) as latest_posting, min(created) as earliest_posting FROM " + 
+      "(SELECT c.name as company, c.id as company_id, t.title, t.id as template_id, r.transaction_id, r.created FROM " +
+      "logistics.question_result r join logistics.template_question q on q.id = r.template_question_id join logistics.template t on t.id = q.template_id " +
+      "join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id WHERE c.id = :companyId group by c.name, t.title, r.transaction_id) a;"
     )).authorization(allow => allow.publicApiKey()),
     listDivisionByCompanyId: a.query()
     .arguments({

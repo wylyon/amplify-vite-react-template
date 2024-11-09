@@ -203,8 +203,8 @@ export default function SummaryByTemplate(props) {
 			width: 100, 
 		  	headerClassName: 'grid-headers' },
 		{ field: 'latestPosting', type: 'date', headerName: 'Latest', width: 100, headerClassName: 'grid-headers' },
-		{ field: 'what3words', headerName: 'Earliest', width: 200, headerClassName: 'grid-headers' },
-		{ field: 'lattitude', headerName: 'Lattitude', width: 150, headerClassName: 'grid-headers' },
+		{ field: 'what3words', headerName: 'What3Words', width: 200, headerClassName: 'grid-headers' },
+		{ field: 'lattitude', headerName: 'Latitude', width: 150, headerClassName: 'grid-headers' },
 		{ field: 'longitude', headerName: 'Longitude', width: 150, headerClassName: 'grid-headers' },
 	  ];
 

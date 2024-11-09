@@ -6,6 +6,9 @@ import DivisionGrid from '../src/DivisionGrid';
 import TemplateGrid from '../src/TemplateGrid';
 import InputCustCompany from '../src/InputCustCompany';
 import UserGrid from '../src/UserGrid';
+import SummaryAllResults from '../src/SummaryAllResults';
+import SummaryByTemplate from '../src/SummaryByTemplate';
+import ResultsByTemplate from '../src/ResultsByTemplate';
 import * as React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -142,18 +145,18 @@ export default function AdminMain(props) {
 				value={hValue}
 				onChange={handleReportChange}
 				aria-label="Report tabs">
-				<Tab label="Detailed Report" {...a11yHProps(0)} />
-				<Tab label="Report-1" {...a11yHProps(1)} />
-				<Tab label="Report-2" {...a11yHProps(2)} />
+				<Tab label="Detailed Report By Template" {...a11yHProps(0)} />
+				<Tab label="Summary All Results" {...a11yHProps(1)} />
+				<Tab label="Summary By Template" {...a11yHProps(2)} />
 			</Tabs>
 			<CustomTabPanel value={hValue} index={0}>
-				Item One
+				<ResultsByTemplate props={props} filter={company} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={1}>
-				Item Two
+				<SummaryAllResults props={props} filter={company} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={2}>
-				Item Three
+				<SummaryByTemplate props={props} filter={company} />
 			</CustomTabPanel>
 		</TabPanel>
 		<TabPanel value={value} index={4}>
