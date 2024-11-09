@@ -114,7 +114,12 @@ export default function SummaryByTemplate(props) {
 	  }
 
 	const allResultTemplates = async () => {
-		const { data: items, errors } = await client.queries.resultsTotals();
+		const { data: items, errors } = 
+		props.filter == null ?
+			await client.queries.resultsTotals() :
+			await client.queries.resultsTotalsByCompanyId({
+				companyId: props.filter.id
+			})
 		if (errors) {
 			setError(errors[0].message);
 			setOpen(true);			

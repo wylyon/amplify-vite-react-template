@@ -65,6 +65,7 @@ export default function ResultsByTemplate(props) {
 		templateId: '',
 		transactionId: '',
 		question: '',
+		questionType: '',
 		result: '',
 		what3words: '',
 		lattitude: null,
@@ -91,6 +92,7 @@ export default function ResultsByTemplate(props) {
 			templateId: item.template_id,
 			transactionId: item.transaction_id,
 			question: item.question,
+			questionType: item.question_type,
 			result: item.result,
 			created: getDate(item.created),
 			what3words: item.what3words,
@@ -110,6 +112,7 @@ export default function ResultsByTemplate(props) {
 				templateId: item.template_id,
 				transactionId: item.transaction_id,
 				question: item.question,
+				questionType: item.question_type,
 				result: item.result,
 				created: getDate(item.created),
 				what3words: item.what3words,
@@ -139,7 +142,12 @@ export default function ResultsByTemplate(props) {
 	  }
 
 	const allResultTemplates = async () => {
-		const { data: items, errors } = await client.queries.resultsTotals();
+		const { data: items, errors } = 
+		props.filter == null ?
+			await client.queries.resultsTotals() :
+			await client.queries.resultsTotalsByCompanyId({
+				companyId: props.filter.id
+			})
 		if (errors) {
 			setError(errors[0].message);
 			setOpen(true);			
@@ -209,7 +217,7 @@ export default function ResultsByTemplate(props) {
 	}
 
 	const renderPhotoCell: GridColDef['renderCell'] = (params) => {
-		return checked && params.row.result.includes('.jpg') ? <StorageImage alt={params.value} path={"picture-submissions/" + params.value}/> : params.value;
+		return checked && params.row.questionType == 'photo' ? <StorageImage alt={params.value} path={"picture-submissions/" + params.value}/> : params.value;
 		};
 
 	const columns: GridColDef[] = [
