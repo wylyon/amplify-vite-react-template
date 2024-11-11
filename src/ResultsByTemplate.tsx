@@ -40,21 +40,28 @@ import what3words from '@what3words/api';
 import SelectTemplate from '../src/SelectTemplate';
 import { StorageImage } from '@aws-amplify/ui-react-storage';
 import '@aws-amplify/ui-react/styles.css';
+import MapIcon from '@mui/icons-material/Map';
+import MapWithGoogle from '../src/MapWithGoogle';
 
 export default function ResultsByTemplate(props) {
 	const [loading, setLoading] = useState(true);
 	const [open, setOpen] = useState(false);
+	const [openMap, setOpenMap] = useState(false);
 	const [error, setError] = useState('');
 	const [deleteId, setDeleteId] = useState('');
 	const [allTemplates, setAllTemplates] = useState('');
 	const [needTemplate, setNeedTemplate] = useState(false);
 	const [checked, setChecked] = useState(false);
+	const [lat, setLat] = useState('');
+	const [lng, setLng] = useState('');
+	const [mapKeyId, setMapKeyId] = useState('');
 
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 	  setChecked(event.target.checked);
 	};
 
 	const client = generateClient<Schema>();
+
 	const [userData, setUserData] = useState([{
 		id: '',
 		company: '',
@@ -217,8 +224,20 @@ export default function ResultsByTemplate(props) {
 	}
 
 	const renderPhotoCell: GridColDef['renderCell'] = (params) => {
-		return checked && params.row.questionType == 'photo' ? <StorageImage alt={params.value} path={"picture-submissions/" + params.value}/> : params.value;
+		const value = params.value.toString().replaceAll("|", " and ");
+		return checked && params.row.questionType == 'photo' ? <StorageImage alt={params.value} path={"picture-submissions/" + params.value}/> : 
+			value;
 		};
+
+	const handleMapIt = (id: GridRowId) => () => {
+		setLoading(true);
+		const row = userData.filter((row) => row.id == id);
+		setMapKeyId(id);
+		setLat(row[0].lattitude);
+		setLng(row[0].longitude);
+		setOpenMap(true);
+		setLoading(false);
+	}
 
 	const columns: GridColDef[] = [
 		{ field: 'id', headerName: 'Id'},
@@ -261,8 +280,19 @@ export default function ResultsByTemplate(props) {
 		{ field: 'what3words', headerName: 'What3words', width: 200, headerClassName: 'grid-headers' },
 		{ field: 'lattitude', headerName: 'Latitude', width: 150, headerClassName: 'grid-headers' },
 		{ field: 'longitude', headerName: 'Longitude', width: 150, headerClassName: 'grid-headers' },
-		{ field: 'created', type: 'date', headerName: 'Post Date', width: 100, headerClassName: 'grid-headers' },
+		{ field: 'created', type: 'dateTime', headerName: 'Post Date', width: 120, headerClassName: 'grid-headers' },
 		{ field: 'createdBy', headerName: 'Creator', width: 200, headerClassName: 'grid-headers' },
+		{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
+			type: 'actions',
+			width: 100,
+			getActions: ({ id }) => {
+				return [
+				<Tooltip title="View On Map">
+					<GridActionsCellItem icon={<MapIcon />} label="Map" color='success' onClick={handleMapIt(id)} />
+				</Tooltip>,
+				]
+			}
+		}
 	  ];
 
 	const handleClose = () => {
@@ -270,6 +300,15 @@ export default function ResultsByTemplate(props) {
 		setError('');
 		setDeleteId('');
 	};
+
+	const handleCloseMap = () => {
+		setOpenMap(false);
+		setLat(0);
+		setLng(0);
+	}
+
+	const locationImage =
+    "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png";
 
   return (
 	<React.Fragment>
@@ -289,6 +328,24 @@ export default function ResultsByTemplate(props) {
         </DialogContent>
         <DialogActions>
           <Button variant='contained' color='error' onClick={handleClose} autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openMap}
+        onClose={handleCloseMap}
+        aria-labelledby="map-dialog-title"
+        aria-describedby="map-dialog-description"
+      >
+        <DialogTitle id="map-dialog-title">
+          {"Map of " + lat + "," + lng}
+        </DialogTitle>
+        <DialogContent>
+			<MapWithGoogle props={props} lat={lat} lng={lng} mapKeyId={mapKeyId} />		
+        </DialogContent>
+        <DialogActions>
+          <Button variant='contained' color='error' onClick={handleCloseMap} autoFocus>
             Cancel
           </Button>
         </DialogActions>

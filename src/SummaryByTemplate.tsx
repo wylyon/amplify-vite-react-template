@@ -35,6 +35,8 @@ import CancelIcon from '@mui/icons-material/Close';
 import { v4 as uuidv4 } from 'uuid';
 import what3words from '@what3words/api';
 import SelectTemplate from '../src/SelectTemplate';
+import MapWithGoogle from '../src/MapWithGoogle';
+import MapIcon from '@mui/icons-material/Map';
 
 export default function SummaryByTemplate(props) {
 	const [loading, setLoading] = useState(true);
@@ -43,6 +45,10 @@ export default function SummaryByTemplate(props) {
 	const [deleteId, setDeleteId] = useState('');
 	const [allTemplates, setAllTemplates] = useState('');
 	const [needTemplate, setNeedTemplate] = useState(false);
+	const [lat, setLat] = useState('');
+	const [lng, setLng] = useState('');
+	const [mapKeyId, setMapKeyId] = useState('');
+	const [openMap, setOpenMap] = useState(false);
 
 	const client = generateClient<Schema>();
 	const [userData, setUserData] = useState([{
@@ -187,6 +193,16 @@ export default function SummaryByTemplate(props) {
 	  }
 	}
 
+	const handleMapIt = (id: GridRowId) => () => {
+		setLoading(true);
+		const row = userData.filter((row) => row.id == id);
+		setMapKeyId(id);
+		setLat(row[0].lattitude);
+		setLng(row[0].longitude);
+		setOpenMap(true);
+		setLoading(false);
+	}
+
 	const columns: GridColDef[] = [
 		{ field: 'id', headerName: 'Id'},
 		{ field: 'company', 
@@ -211,6 +227,17 @@ export default function SummaryByTemplate(props) {
 		{ field: 'what3words', headerName: 'What3Words', width: 200, headerClassName: 'grid-headers' },
 		{ field: 'lattitude', headerName: 'Latitude', width: 150, headerClassName: 'grid-headers' },
 		{ field: 'longitude', headerName: 'Longitude', width: 150, headerClassName: 'grid-headers' },
+		{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
+			type: 'actions',
+			width: 100,
+			getActions: ({ id }) => {
+				return [
+				<Tooltip title="View On Map">
+					<GridActionsCellItem icon={<MapIcon />} label="Map" color='success' onClick={handleMapIt(id)} />
+				</Tooltip>,
+				]
+			}
+		}
 	  ];
 
 	const handleClose = () => {
@@ -218,6 +245,12 @@ export default function SummaryByTemplate(props) {
 		setError('');
 		setDeleteId('');
 	};
+
+	const handleCloseMap = () => {
+		setOpenMap(false);
+		setLat(0);
+		setLng(0);
+	}
 
   return (
 	<React.Fragment>
@@ -237,6 +270,24 @@ export default function SummaryByTemplate(props) {
         </DialogContent>
         <DialogActions>
           <Button variant='contained' color='error' onClick={handleClose} autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openMap}
+        onClose={handleCloseMap}
+        aria-labelledby="map-dialog-title"
+        aria-describedby="map-dialog-description"
+      >
+        <DialogTitle id="map-dialog-title">
+          {"Map of " + lat + "," + lng}
+        </DialogTitle>
+        <DialogContent>
+			<MapWithGoogle props={props} lat={lat} lng={lng} mapKeyId={mapKeyId} />		
+        </DialogContent>
+        <DialogActions>
+          <Button variant='contained' color='error' onClick={handleCloseMap} autoFocus>
             Cancel
           </Button>
         </DialogActions>
