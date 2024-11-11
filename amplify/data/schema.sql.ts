@@ -110,6 +110,15 @@ export const schema = configure({
     }).identifier([
         "id"
     ]),
+    "setting": a.model({
+        id: a.string().required(),
+        code: a.string().required(),
+        value: a.string().required(),
+        created: a.datetime().required(),
+        created_by: a.string().required()
+    }).identifier([
+        "id"
+    ]),
     "template": a.model({
         id: a.string().required(),
         division_id: a.string().required(),
