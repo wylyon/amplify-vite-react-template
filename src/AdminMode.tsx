@@ -23,8 +23,8 @@ export default function AdminMode(props) {
 		</div>
 		<Stack>
 			<Typography variant="h4" sx={{textAlign: 'center', bgcolor: 'background.paper'}}>Log/Report Capture Tool</Typography>
-			{props.isSuperAdmin && <AdminSuper props={props} /> }
-			{!props.isSuperAdmin && <AdminMain props={props} companyId={props.companyId}/> }
+			{props.isSuperAdmin && <AdminSuper props={props} googleAPI={props.googleAPI} /> }
+			{!props.isSuperAdmin && <AdminMain props={props} googleAPI={props.googleAPI} companyId={props.companyId}/> }
 		</Stack>
     </main> 
   );

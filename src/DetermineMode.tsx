@@ -36,6 +36,8 @@ export default function DetermineMode(props) {
   const [disableMsg, setDisableMsg] = useState('');
   const [open, setOpen] = useState(false);
   const [isValidUser, setIsValidUser] = useState(false);
+  const [googleAPIKey, setGoogleAPIKey] = useState('');
+  const [what3WordsAPIKey, setWhat3WordsAPIKey] = useState('');
 
   const getUser = async (userId) => {
     const { data: items, errors } = await client.queries.listUserByEmail ({
@@ -60,6 +62,17 @@ export default function DetermineMode(props) {
       window.navigator.userAgent.match(/Android/i)) ? true : false;
   }
 
+  const getAppSettings = async() => {
+    const { data: items, errors } = await client.models.app_settings.list();
+    if (errors) {
+      alert(errors[0].message);
+    } else {
+      const googleAPI = items.filter(map => map.code.includes('GOOGLE_MAP_API_KEY'));
+      setGoogleAPIKey(googleAPI[0].value);
+      const what3wordsAPI = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY'));
+      setWhat3WordsAPIKey(what3wordsAPI[0].value);
+    }
+  }
   const fetchAdmins = (emailId, items) => {
     if (items.length < 1 || isSuperAdmin || mode != 9) {
       return false;
@@ -108,6 +121,7 @@ export default function DetermineMode(props) {
   }
 
   useEffect(() => {
+    getAppSettings();
     setUserEmail(props.userId);
     allAdmins();
   }, []);
@@ -160,9 +174,9 @@ export default function DetermineMode(props) {
       </List>
     </Dialog>
     {isDisabledUser && <DisableMode userId={props.userId} onSubmitChange={handleOnCancel} message={disableMsg} /> }
-    {!isDisabledUser && mode == 0 && <AdminMode userId={props.userId} onSubmitChange={handleOnCancel} 
+    {!isDisabledUser && mode == 0 && <AdminMode userId={props.userId} googleAPI={googleAPIKey} onSubmitChange={handleOnCancel} 
 	          companyId={filtered.length> 0 ? filtered[0].company_id : null} isSuperAdmin={isSuperAdmin} adminLength={admin.length} />}
-    {!isDisabledUser && mode == 1 && <UserMode userId={props.userId} onSubmitChange={handleOnCancel} />}        
+    {!isDisabledUser && mode == 1 && <UserMode userId={props.userId} what3words={what3WordsAPIKey} onSubmitChange={handleOnCancel} />}        
     </>
   );
 }

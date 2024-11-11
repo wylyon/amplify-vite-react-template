@@ -129,10 +129,10 @@ export default function AdminSuper(props) {
 				<SummaryAllResults props={props} filter={null} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={1}>
-				<ResultsByTemplate props={props} filter={null} />
+				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={2}>
-				<SummaryByTemplate props={props} filter={null} />
+				<SummaryByTemplate props={props} filter={null} googleAPI={props.googleAPI} />
 			</CustomTabPanel>
 		</TabPanel>
 	</Box>

@@ -77,7 +77,6 @@ interface TabPanelProps {
 export default function AdminMain(props) {
 	const [value, setValue] = useState(0);
 	const [hValue, setHValue] = useState(0);
-
 	const [company, setCompany] = useState<Schema["company"]["type"][]>([]);
 
 	const client = generateClient<Schema>();
@@ -153,10 +152,10 @@ export default function AdminMain(props) {
 				<SummaryAllResults props={props} filter={null} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={1}>
-				<ResultsByTemplate props={props} filter={null} />
+				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={2}>
-				<SummaryByTemplate props={props} filter={null} />
+				<SummaryByTemplate props={props} filter={null} googleAPI={props.googleAPI} />
 			</CustomTabPanel>
 		</TabPanel>
 		<TabPanel value={value} index={4}>

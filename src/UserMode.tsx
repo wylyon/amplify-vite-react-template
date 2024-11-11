@@ -234,6 +234,7 @@ export default function UserMode(props) {
 			templateId={tempId} 
 			userData={userData} 
 			transaction={uuidv4()}
+			what3wordsAPI={props.what3words}
 			templateQuestions={templateQuestion} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
 		{!isDefaultPage2 && <DisplayUser 
@@ -241,6 +242,7 @@ export default function UserMode(props) {
 			templateId={tempId} 
 			userData={userData} 
 			transaction={uuidv4()}
+			what3wordsAPI={props.what3words}
 			templateQuestions={templateQuestion} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
     </main> 

@@ -284,7 +284,7 @@ export default function SummaryByTemplate(props) {
           {"Map of " + lat + "," + lng}
         </DialogTitle>
         <DialogContent>
-			<MapWithGoogle props={props} lat={lat} lng={lng} mapKeyId={mapKeyId} />		
+			<MapWithGoogle props={props} lat={lat} lng={lng} mapKeyId={mapKeyId} googleAPI={props.googleAPI} />		
         </DialogContent>
         <DialogActions>
           <Button variant='contained' color='error' onClick={handleCloseMap} autoFocus>

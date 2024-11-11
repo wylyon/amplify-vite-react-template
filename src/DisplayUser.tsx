@@ -45,7 +45,7 @@ export default function DisplayUser(props) {
 
   const client = generateClient<Schema>();
 
-  const apiKey = 'F0BWUCO1';
+  const apiKey = props.what3wordsAPI;
   const config: {
     host: string;
     apiVersion: ApiVersion;

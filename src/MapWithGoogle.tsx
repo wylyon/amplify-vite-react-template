@@ -9,7 +9,7 @@ const containerStyle = {
 export default function MapWithGoogle(props) {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: 'AIzaSyBAO4pU2a3Xfqv4Hh6f7cCVvXwOfTaSuaE',
+    googleMapsApiKey: props.googleAPI,
   })
 
   const center = {

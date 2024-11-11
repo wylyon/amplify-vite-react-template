@@ -307,9 +307,6 @@ export default function ResultsByTemplate(props) {
 		setLng(0);
 	}
 
-	const locationImage =
-    "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png";
-
   return (
 	<React.Fragment>
       <Dialog
@@ -342,7 +339,7 @@ export default function ResultsByTemplate(props) {
           {"Map of " + lat + "," + lng}
         </DialogTitle>
         <DialogContent>
-			<MapWithGoogle props={props} lat={lat} lng={lng} mapKeyId={mapKeyId} />		
+			<MapWithGoogle props={props} lat={lat} lng={lng} mapKeyId={mapKeyId} googleAPI={props.googleAPI} />		
         </DialogContent>
         <DialogActions>
           <Button variant='contained' color='error' onClick={handleCloseMap} autoFocus>
