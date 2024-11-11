@@ -60,6 +60,15 @@ export const schema = configure({
     }).identifier([
         "id"
     ]),
+    "app_settings": a.model({
+        id: a.string().required(),
+        code: a.string().required(),
+        value: a.string().required(),
+        created: a.datetime().required(),
+        created_by: a.string().required()
+    }).identifier([
+        "id"
+    ]),
     "company": a.model({
         id: a.string().required(),
         name: a.string().required(),
@@ -105,15 +114,6 @@ export const schema = configure({
         gps_lat: a.float(),
         gps_long: a.float(),
         what3words: a.string(),
-        created: a.datetime().required(),
-        created_by: a.string().required()
-    }).identifier([
-        "id"
-    ]),
-    "setting": a.model({
-        id: a.string().required(),
-        code: a.string().required(),
-        value: a.string().required(),
         created: a.datetime().required(),
         created_by: a.string().required()
     }).identifier([
