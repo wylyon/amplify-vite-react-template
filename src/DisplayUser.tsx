@@ -136,16 +136,21 @@ export default function DisplayUser(props) {
   }
 
   const getLatLongResults = async(id, value, type, file, gpsLat, gpsLong, word) => {
-    getPosition();
-    checkGPS(false);
-    if (coords) {
-      setGPSWhat3Words();
-
-      setResultTally(id, value, type, file, coords.latitude, coords.longitude, words == '' ? word : words);
+    if (gpsLat == '') {
+      getPosition();
+      checkGPS(false);
+      if (coords) {
+        setGPSWhat3Words();
+  
+        setResultTally(id, value, type, file, coords.latitude, coords.longitude, words == '' ? word : words);
+      } else {
+        setGPSWhat3WordsNoCoords(gpsLat, gpsLong);
+        setResultTally(id, value, type, file, gpsLat, gpsLong, word);
+      }
     } else {
-      setGPSWhat3WordsNoCoords(gpsLat, gpsLong);
       setResultTally(id, value, type, file, gpsLat, gpsLong, word);
     }
+
   }
 
   const setTally = () => {
