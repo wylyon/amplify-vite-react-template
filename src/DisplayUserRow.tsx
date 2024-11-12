@@ -27,6 +27,14 @@ import FormControl from '@mui/material/FormControl';
 import ListItemText from '@mui/material/ListItemText';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
+import { useGeolocated } from "react-geolocated";
+import {
+  ConvertTo3waClient,
+  ConvertTo3waOptions,
+  FeatureCollectionResponse,
+  LocationGeoJsonResponse,
+  LocationJsonResponse,
+} from '@what3words/api';
 
 export default function DisplayUserRow(props) {
   const [source, setSource] = useState('');
@@ -35,6 +43,7 @@ export default function DisplayUserRow(props) {
   const [heading, setHeading] = useState('');
   const [title, setTitle] = useState('');
   const [comboName, setComboName] = useState<string[]>([]);
+  const [words, setWords] = useState('');
 
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
@@ -46,6 +55,23 @@ export default function DisplayUserRow(props) {
     },
   },
   };
+
+  const { coords, 
+    isGeolocationAvailable, 
+    isGeolocationEnabled,
+    getPosition,
+    positionError } =
+      useGeolocated({
+          positionOptions: {
+              enableHighAccuracy: false,
+          },
+          userDecisionTimeout: 5000,
+          watchLocationPermissionChange: true,
+      });
+
+  const API_KEY = props.what3wordsAPI;
+  const client: ConvertTo3waClient = ConvertTo3waClient.init(API_KEY);
+
   const handleChangeMultiple = (event: SelectChangeEvent<typeof comboName>) => {
     const {
       target: { value },
@@ -54,7 +80,18 @@ export default function DisplayUserRow(props) {
       // On autofill we get a stringified value.
       typeof value === 'string' ? value.split(',') : value,
     );
-    props.onMultiDrop (event, props.question.id);
+    if (coords) {
+      const options: ConvertTo3waOptions = {
+        coordinates: { lat: coords.latitude, lng: coords.longitude },
+      };
+      
+      client
+      .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
+      .then((res: LocationJsonResponse) => props.onMultiDrop (event, props.question.id, coords, res.words));
+    } else {
+      props.onMultiDrop (event, props.question.id, coords, '');
+    }
+
     props.onNextPage(true);
   };
 
@@ -70,14 +107,36 @@ export default function DisplayUserRow(props) {
 
   const handleOther = (value) => {
     setOpen(false);
-    props.onOtherChange(value, props.question.id);
+    if (coords) {
+      const options: ConvertTo3waOptions = {
+        coordinates: { lat: coords.latitude, lng: coords.longitude },
+      };
+      
+      client
+      .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
+      .then((res: LocationJsonResponse) => props.onOtherChange(value, props.question.id, coords, res.words));
+    } else {
+      props.onOtherChange(value, props.question.id, coords, '');
+    }
   };
 
   const handleCapture = (target) => {
     if (target.files) {
       if (target.files.length !== 0) {
         const file = target.files[0];
-        props.onPicture(file, props.question.id);
+      
+        if (coords) {
+          const options: ConvertTo3waOptions = {
+            coordinates: { lat: coords.latitude, lng: coords.longitude },
+          };
+
+          client
+          .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
+          .then((res: LocationJsonResponse) => props.onPicture(file, props.question.id, coords, res.words));
+        } else {
+          props.onPicture(file, props.question.id, coords, '');
+        }
+
         const newUrl = URL.createObjectURL(file);
         setSource(newUrl);
         props.onNextPage(true);
@@ -103,7 +162,17 @@ export default function DisplayUserRow(props) {
   const handleToggleChange = (event: React.MouseEvent<HTMLElement>, nextView: string) => {
     setView(nextView);
     props.onNextPage(true);
-    props.onChange(event);
+    if (coords) {
+      const options: ConvertTo3waOptions = {
+        coordinates: { lat: coords.latitude, lng: coords.longitude },
+      };
+      
+      client
+      .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
+      .then((res: LocationJsonResponse) => props.onChange(event, coords, res.words));
+    } else {
+      props.onChange(event, coords, '');
+    }
     trigger_check(nextView);
   };
 

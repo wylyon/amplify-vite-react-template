@@ -229,7 +229,7 @@ export default function UserMode(props) {
 	  		</a>
 		</div>
 		{isMultiTemplates && <PopupTemplate theTemplates={templates} onSelectTemplate={handleOnTemplate}/> }
-	  {	!isDefaultPage && <DisplayUser 
+	  {	!isDefaultPage && templateQuestion && templateQuestion.length > 0 && <DisplayUser 
 	  		userId={props.userId} 
 			templateId={tempId} 
 			userData={userData} 
@@ -237,7 +237,7 @@ export default function UserMode(props) {
 			what3wordsAPI={props.what3words}
 			templateQuestions={templateQuestion} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
-		{!isDefaultPage2 && <DisplayUser 
+		{!isDefaultPage2 && templateQuestion && templateQuestion.length > 0 && <DisplayUser 
 			userId={props.userId} 
 			templateId={tempId} 
 			userData={userData} 

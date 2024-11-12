@@ -34,6 +34,7 @@ import what3words, {
 
 export default function DisplayUser(props) {
   const [isAlert, setIsAlert] = useState(false);
+  const [wait, setWait] = useState(true);
   const [alertMessage, setAlertMessage] = useState('');
   const [theSeverity, setTheSeverity] = useState('error');
   const [open, setOpen] = useState(false);
@@ -87,41 +88,63 @@ export default function DisplayUser(props) {
     w3wService.convertTo3wa(options).then((res: LocationJsonResponse) => setWords(res.words)).catch(error => postError(error));
   }
 
-  const checkGPS = () => {
+  const setGPSWhat3WordsNoCoords = (gpsLat, gpsLong) => {
+
+    const options: ConvertTo3waOptions = {
+      coordinates: { lat: gpsLat, lng: gpsLong},
+    }
+    w3wService.convertTo3wa(options).then((res: LocationJsonResponse) => setWords(res.words)).catch(error => postError(error));
+  }
+
+  function timeout(delay: number) {
+    return new Promise( res => setTimeout(res, delay) );
+}
+
+  const checkGPS = (showMessage) => {
     if (!isGeolocationAvailable) {
-//      setAlertMessage('Your browser does not support Geolocation');
- //     setTheSeverity("warning");
- //     setIsAlert(true);
+      setAlertMessage('Your browser does not support Geolocation');
+      setTheSeverity("warning");
+      setIsAlert(true);
+      return false;
     } else {
       if (!isGeolocationEnabled) {
-//        setAlertMessage('Geolocation is not enabled.');
-//        setTheSeverity("warning");
-//        setIsAlert(true);        
+        if (showMessage) {
+          setAlertMessage('Geolocation is not enabled.');
+          setTheSeverity("warning");
+          setIsAlert(true);  
+        }      
+        return false;
       } else {
         if (coords) {
           setGPSWhat3Words();
+          return true;
         }
+        return false;
       }
     }
   }
 
-  const primeLatLongWhat3Words = () => {
+  const primeLatLongWhat3Words = async() => {
     getPosition();
-    checkGPS();
-    if (coords) {
-      setGPSWhat3Words();
+    if (checkGPS(false)) {
+      return;
     }
+    await timeout(3000);
+    getPosition();
+    checkGPS(false);
+    setWait(false);
   }
 
-  const getLatLongResults = (id, value, type, file) => {
+  const getLatLongResults = async(id, value, type, file, gpsLat, gpsLong, word) => {
     getPosition();
-    checkGPS();
+    checkGPS(false);
     if (coords) {
       setGPSWhat3Words();
-      
-      setResultTally(id, value, type, file, coords.latitude, coords.longitude, words);
+
+      setResultTally(id, value, type, file, coords.latitude, coords.longitude, words == '' ? word : words);
     } else {
-      setResultTally(id, value, type, file, gps.latitude, gps.longitude, words);
+      setGPSWhat3WordsNoCoords(gpsLat, gpsLong);
+      setResultTally(id, value, type, file, gpsLat, gpsLong, word);
     }
   }
 
@@ -163,23 +186,31 @@ export default function DisplayUser(props) {
     props.onSubmitChange(false);
   }
 
-  const handleOnSubmitOther = (value, id) => {
-    getLatLongResults(id, value, 'dialog_input', null);
+  const handleOnSubmitOther = (value, id, c, w) => {
+    setGPS(c);
+    setWords(w);
+    getLatLongResults(id, value, 'dialog_input', null, c.latitude, c.longitude, w);
   }
 
-  const handleToggleChange = (e) => {
-    getLatLongResults(e.target.ariaPlaceholder, e.target.value, 'toggle_button', null);
+  const handleToggleChange = (e, c, w) => {
+    setGPS(c);
+    setWords(w);
+    getLatLongResults(e.target.ariaPlaceholder, e.target.value, 'toggle_button', null, c.latitude, c.longitude, w);
   }
 
-  const handleOnPicture = (file, id) => {
-    getLatLongResults(id, file.name, 'photo', file);
+  const handleOnPicture = (file, id, c, w) => {
+    setGPS(c);
+    setWords(w);
+    getLatLongResults(id, file.name, 'photo', file, c.latitude, c.longitude, w);
   }
 
-  const handleOnMultiDrop = (e, id) => {
+  const handleOnMultiDrop = (e, id, c, w) => {
+    setGPS(c);
+    setWords(w);
     if (e.target.value == null) {
-      getLatLongResults(id, null, 'multiple_dropdown', null);
+      getLatLongResults(id, null, 'multiple_dropdown', null, c.latitude, c.longitude, w);
     } else {
-      getLatLongResults(id, e.target.value.join("|"),'multiple_dropdown', null);
+      getLatLongResults(id, e.target.value.join("|"),'multiple_dropdown', null, c.latitude, c.longitude, w);
     }
   }
 
@@ -297,7 +328,7 @@ export default function DisplayUser(props) {
       {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
           </Alert>}
-      <form onSubmit={handleSubmit}
+      {!wait && <form onSubmit={handleSubmit}
       >
         { props.userData[0].usePagination==0 || (props.userData[0].usePagination==1 && props.templateQuestions.length < 1) ?
           props.templateQuestions.map((comp, index) => 
@@ -310,6 +341,7 @@ export default function DisplayUser(props) {
               useBoxControls={props.userData[0].useBoxControls}
               useAutoSpacing={props.userData[0].useAutoSpacing}
               question={comp}
+              what3wordsAPI={props.what3wordsAPI}
               onOtherChange={handleOnSubmitOther}
               onChange={handleToggleChange}
               onPicture={handleOnPicture}
@@ -329,6 +361,7 @@ export default function DisplayUser(props) {
             questionOrder={getNonDialogQuestion(page - 1).question_order}
             useBoxControls={props.userData[0].useBoxControls}
             useAutoSpacing={props.userData[0].useAutoSpacing}
+            what3wordsAPI={props.what3wordsAPI}
             question={getNonDialogQuestion(page - 1)}
             onOtherChange={handleOnSubmitOther}
             onChange={handleToggleChange}
@@ -352,7 +385,7 @@ export default function DisplayUser(props) {
             type="submit">Save</Button>
           <Button variant="contained" color="error" onClick={handleCancel}>Cancel</Button>
         </Stack>
-      </form>
+      </form> }
       <div key="postLoadAttributes" dangerouslySetInnerHTML={createMarkup(props.postLoadAttributes)} />
     </React.Fragment>
   );
