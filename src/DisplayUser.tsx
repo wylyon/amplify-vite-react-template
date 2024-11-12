@@ -89,14 +89,14 @@ export default function DisplayUser(props) {
 
   const checkGPS = () => {
     if (!isGeolocationAvailable) {
-      setAlertMessage('Your browser does not support Geolocation');
-      setTheSeverity("warning");
-      setIsAlert(true);
+//      setAlertMessage('Your browser does not support Geolocation');
+ //     setTheSeverity("warning");
+ //     setIsAlert(true);
     } else {
       if (!isGeolocationEnabled) {
-        setAlertMessage('Geolocation is not enabled.');
-        setTheSeverity("warning");
-        setIsAlert(true);        
+//        setAlertMessage('Geolocation is not enabled.');
+//        setTheSeverity("warning");
+//        setIsAlert(true);        
       } else {
         if (coords) {
           setGPSWhat3Words();
