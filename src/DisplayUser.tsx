@@ -105,6 +105,14 @@ export default function DisplayUser(props) {
     }
   }
 
+  const primeLatLongWhat3Words = () => {
+    getPosition();
+    checkGPS();
+    if (coords) {
+      setGPSWhat3Words();
+    }
+  }
+
   const getLatLongResults = (id, value, type, file) => {
     getPosition();
     checkGPS();
@@ -256,7 +264,7 @@ export default function DisplayUser(props) {
 
   useEffect(() => {
     setTally();
-    checkGPS();
+    primeLatLongWhat3Words();
 	}, []);
 
   function createMarkup(dirty) {
