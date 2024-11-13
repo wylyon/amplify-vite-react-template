@@ -558,27 +558,27 @@ export default function TemplateGrid(props) {
 	const columns: GridColDef[] = [
 		{ field: 'id', headerName: 'Id', width: 70 },
 		{ field: 'divisionId', headerName: 'DivisionId', width: 70 },
-		{ field: 'company', headerName: 'Company Name', width: 150, headerClassName: 'grid-headers',
+		{ field: 'company', headerName: 'Company Name', width: 100, headerClassName: 'grid-headers',
 			valueGetter: (value, row) => {
 				return row.isNew ? "--" : value;
 			}
 		 },
-		{ field: 'divisionName', headerName: 'Division Name', width: 150, headerClassName: 'grid-headers',
+		{ field: 'divisionName', headerName: 'Division Name', width: 100, headerClassName: 'grid-headers',
 			renderEditCell: renderSelectEditInputCell,
 			valueGetter: (value) => {
 				return value.split("|")[0];
 		  }, editable: true 
 		 },
-		{ field: 'title', headerName: 'Template Title', width: 150, headerClassName: 'grid-headers', 
+		{ field: 'title', headerName: 'Template Title', width: 160, headerClassName: 'grid-headers', 
 			preProcessEditCellProps,
 			editable: true  },
 		{ field: 'description', headerName: 'Description', width: 200, headerClassName: 'grid-headers', editable: true  },
-		{ field: 'notes', headerName: 'Notes', headerClassName: 'grid-headers', width: 150, editable: true  },
-		{ field: 'liveDate', type: 'date', headerName: 'Live', width: 100, headerClassName: 'grid-headers', editable: true },
-		{ field: 'prodDate', headerName: 'Prod', type: 'date', width: 100, headerClassName: 'grid-headers', editable: true  },
+		{ field: 'notes', headerName: 'Notes', headerClassName: 'grid-headers', width: 100, editable: true  },
+		{ field: 'liveDate', type: 'date', headerName: 'Live', width: 90, headerClassName: 'grid-headers', editable: true },
+		{ field: 'prodDate', headerName: 'Prod', type: 'date', width: 90, headerClassName: 'grid-headers', editable: true  },
 		{ field: 'isActive',
 			headerName: 'isActive',
-			width: 100,
+			width: 70,
 			type: 'boolean',
 			headerClassName: 'grid-headers',
 			valueGetter: (value, row) => {
@@ -591,12 +591,12 @@ export default function TemplateGrid(props) {
 				return 'grid-alert';
 			},
 			editable: false  },
-		{ field: 'usePagination', headerName: 'Paging', type: 'boolean', width: 70, headerClassName: 'grid-headers', editable: true  },
-		{ field: 'useAutoSpace', headerName: 'Spacing', type: 'boolean', width: 70, headerClassName: 'grid-headers', editable: true },
-		{ field: 'useBoxControls', headerName: 'Boxing', type: 'boolean', width: 70, headerClassName: 'grid-headers', editable: true },
+		{ field: 'usePagination', headerName: 'Pages', type: 'boolean', width: 70, headerClassName: 'grid-headers', editable: true  },
+		{ field: 'useAutoSpace', headerName: 'Space', type: 'boolean', width: 70, headerClassName: 'grid-headers', editable: true },
+		{ field: 'useBoxControls', headerName: 'Box', type: 'boolean', width: 70, headerClassName: 'grid-headers', editable: true },
 		{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
 			type: 'actions',
-			width: 130,
+			width: 100,
 			getActions: ({ id }) => {
 				const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
 		
@@ -624,10 +624,8 @@ export default function TemplateGrid(props) {
 				<Tooltip title="Preview Template">
 					<GridActionsCellItem icon={<PreviewIcon />} label="Preview" color='success' onClick={handlePreviewClick(id)} />
 				</Tooltip>,
-				<Tooltip title="Pre-Post HTML Attributes">
-					<GridActionsCellItem icon={<HtmlIcon />} label="html" color='success' onClick={handlePrePostHtmlAttributes(id)} />
-				</Tooltip>,
 				<GridActionsCellItem icon={<EditIcon />} label="Edit" color='primary' onClick={handleEditClick(id)} />,
+				<GridActionsCellItem icon={<HtmlIcon />} label="html" color='success' onClick={handlePrePostHtmlAttributes(id)} showInMenu/>,
 				<GridActionsCellItem icon={<PersonAddAltIcon />} label='Associate Users' onClick={handleAssociations(id)} showInMenu/>,
 				<GridActionsCellItem icon={<BuildIcon />} label='Build Template' onClick={handleBuild(id)} showInMenu/>,
 				<GridActionsCellItem icon={<DeleteOutlineIcon />} label="Deactivate" onClick={handleDeactivate(id)} showInMenu/>,

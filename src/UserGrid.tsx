@@ -519,19 +519,19 @@ export default function UserGrid(props) {
 	const columns: GridColDef[] = [
 		{ field: 'id', headerName: 'Id', width: 70 },
 		{ field: 'divisionId', headerName: 'DivisionId', width: 70 },
-		isAdmin ? { field: 'company', headerName: 'Company Name', width: 200, headerClassName: 'grid-headers', editable: true,
+		isAdmin ? { field: 'company', headerName: 'Company Name', width: 150, headerClassName: 'grid-headers', editable: true,
 			renderEditCell: renderSelectEditInputCell,
 			valueGetter: (value) => {
 				return value == null ? null : value.split("|")[0];
 			}
 		  } :
-		  { field: 'company', headerName: 'Company Name', width: 200, headerClassName: 'grid-headers', editable: true,
+		  { field: 'company', headerName: 'Company Name', width: 150, headerClassName: 'grid-headers', editable: true,
 			valueGetter: (value, row) => {
 				return row.isNew ? "--" : value;
 			}
 		   },
 		  isAdmin ? { field: 'companyId', headerName: 'CompanyId', width: 70 } : 
-		  { field: 'division', headerName: 'Division Name', width: 200, headerClassName: 'grid-headers',
+		  { field: 'division', headerName: 'Division Name', width: 150, headerClassName: 'grid-headers',
 			renderEditCell: renderSelectDivisionEditInputCell,
 			valueGetter: (value) => {
 				return value == null ? null : value.split("|")[0];
@@ -542,8 +542,8 @@ export default function UserGrid(props) {
 			editable: true  },
 		{ field: 'firstName', headerName: 'First Name', width: 150, headerClassName: 'grid-headers', editable: true },
 		{ field: 'lastName', headerName: 'Last Name', width: 150, headerClassName: 'grid-headers', editable: true  },
-		{ field: 'middleName', headerName: 'Middle', width: 100, headerClassName: 'grid-headers', editable: true  },
-		!isAdmin ? { field: 'notes', headerName: 'Notes', width: 200, headerClassName: 'grid-headers', editable: true  } :
+		{ field: 'middleName', headerName: 'Middle', width: 80, headerClassName: 'grid-headers', editable: true  },
+		!isAdmin ? { field: 'notes', headerName: 'Notes', width: 150, headerClassName: 'grid-headers', editable: true  } :
 		  { field: 'isSuperAdmin', headerName: 'isSuperAdmin', width: 120, type: 'boolean', headerClassName: 'grid-headers',
 			valueGetter: (value, row) => {
 				return row.companyId == null;
@@ -552,7 +552,7 @@ export default function UserGrid(props) {
 		{ field: 'activeDate', type: 'date', headerName: 'Active Date', width: 100, headerClassName: 'grid-headers', editable: true},
 		{ field: 'isActive',
 			headerName: 'isEnabled',
-			width: 100,
+			width: 80,
 			type: 'boolean',
 			headerClassName: 'grid-headers',
 			valueGetter: (value, row) => {

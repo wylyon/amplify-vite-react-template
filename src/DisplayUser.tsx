@@ -129,7 +129,6 @@ export default function DisplayUser(props) {
     if (checkGPS(false)) {
       return;
     }
-    await timeout(3000);
     getPosition();
     checkGPS(false);
     setWait(false);

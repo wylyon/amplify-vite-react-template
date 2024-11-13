@@ -233,6 +233,7 @@ export default function DisplayUserRow(props) {
             aria-placeholder={'tbg_' + props.question.question_order}
             color="primary"
             value={view}
+            size="small"
             exclusive
             onChange={handleToggleChange}
             orientation="vertical"
@@ -241,6 +242,7 @@ export default function DisplayUserRow(props) {
             <ToggleButton 
               key={'tb_'+props.question.question_order+'_'+index} 
               value={comp} 
+              size="small"
               aria-label={comp} 
               aria-placeholder={props.question.id}
               sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
@@ -255,6 +257,7 @@ export default function DisplayUserRow(props) {
             aria-placeholder={'tbg_' + props.question.question_order}
             color="primary"
             value={view}
+            size="small"
             exclusive
             onChange={handleToggleChange}
             orientation="vertical"
@@ -264,6 +267,7 @@ export default function DisplayUserRow(props) {
               key={'tb_'+props.question.question_order+'_'+index} 
               value={comp} 
               aria-label={comp} 
+              size="small"
               aria-placeholder={props.question.id}
               sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
           </ToggleButtonGroup>
@@ -277,6 +281,7 @@ export default function DisplayUserRow(props) {
               aria-placeholder={'tbg_' + props.question.question_order}
               key={'tbg_' + props.question.question_order}
               value={view}
+              size="small"
               exclusive
               onChange={handleToggleChange}
               orientation="vertical"
@@ -285,6 +290,7 @@ export default function DisplayUserRow(props) {
               <ToggleButton 
                 key={'tb_'+props.question.question_order+'_'+index} 
                 value={comp} 
+                size="small"
                 aria-label={comp} 
                 aria-placeholder={props.question.id}
                 sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
