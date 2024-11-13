@@ -120,6 +120,8 @@ export default function SummaryAllResults(props) {
 
 	  } else {
 		if (rowSelectionModel.length == 1) {
+			const row = userData.filter((row) => row.id == rowSelectionModel[0]);
+			props.onRowSelect(row[0].templateId);
 		} else {
 		}
 	  }
@@ -136,17 +138,6 @@ export default function SummaryAllResults(props) {
     });
 
 	function handleRowClick (params, event, details) {
-	}
-  
-	function handleRowSelection (rowSelectionModel, details) {
-	  // called on checkbox for row.   
-	  if (rowSelectionModel.length == 0) {
-
-	  } else {
-		if (rowSelectionModel.length == 1) {
-		} else {
-		}
-	  }
 	}
 
 	const columns: GridColDef[] = [

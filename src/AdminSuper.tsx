@@ -72,18 +72,25 @@ interface TabPanelProps {
 export default function AdminSuper(props) {
 	const [value, setValue] = React.useState(0);
 	const [hValue, setHValue] = React.useState(0);
+	const [templateId, setTemplateId] = React.useState(null);
 
 	const handleChange = (event: React.SyntheticEvent, newValue: number) => {
 	  setValue(newValue);
 	};
 
 	const handleReportChange = (event: React.SyntheticEvent, newValue: number) => {
+		setTemplateId(null);
 		setHValue(newValue);
 	  };
 
   	const handleOnSignOut = (e) => {
     	props.onSubmitChange(false);
   	};
+
+	const handleOnRowSelectSummaryAll = (id) => {
+		setTemplateId(id);
+		setHValue(1);
+	}
 
   return (
 	<Box
@@ -122,17 +129,17 @@ export default function AdminSuper(props) {
 				onChange={handleReportChange}
 				aria-label="Report tabs">
 				<Tab label="Summary All Results" {...a11yHProps(0)} />
-				<Tab label="Detailed Report By Template" {...a11yHProps(1)} />
-				<Tab label="Summary By Template" {...a11yHProps(2)} />
+				<Tab label="Summary By Template" {...a11yHProps(1)} />
+				<Tab label="Detailed Report By Template" {...a11yHProps(2)} />
 			</Tabs>
 			<CustomTabPanel value={hValue} index={0}>
-				<SummaryAllResults props={props} filter={null} />
+				<SummaryAllResults props={props} filter={null} onRowSelect={handleOnRowSelectSummaryAll} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={1}>
-				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} />
+				<SummaryByTemplate props={props} filter={null} googleAPI={props.googleAPI} templateId={templateId} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={2}>
-				<SummaryByTemplate props={props} filter={null} googleAPI={props.googleAPI} />
+				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} />
 			</CustomTabPanel>
 		</TabPanel>
 	</Box>

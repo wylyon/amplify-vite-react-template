@@ -117,6 +117,9 @@ export default function SummaryByTemplate(props) {
 				setUserData(data);
 			  }
 		}
+		if (props.templateId != null) {
+			setLoading(false);
+		}
 	  }
 
 	const allResultTemplates = async () => {
@@ -148,7 +151,8 @@ export default function SummaryByTemplate(props) {
 	}
 
 	useEffect(() => {
-		allResultTemplates();
+		props.templateId == null ?
+		allResultTemplates() : allResults(props.templateId);
 	  }, []);
 
 	function handleRowClick (params, event, details) {
@@ -180,17 +184,6 @@ export default function SummaryByTemplate(props) {
   
 	function onSelectedTemplate (id) {
 		allResults(id);
-	}
-
-	function handleRowSelection (rowSelectionModel, details) {
-	  // called on checkbox for row.   
-	  if (rowSelectionModel.length == 0) {
-
-	  } else {
-		if (rowSelectionModel.length == 1) {
-		} else {
-		}
-	  }
 	}
 
 	const handleMapIt = (id: GridRowId) => () => {
@@ -293,7 +286,7 @@ export default function SummaryByTemplate(props) {
         </DialogActions>
       </Dialog>
 	<Stack>
-	{needTemplate && allTemplates.length > 0 && <SelectTemplate props={props} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} /> }
+		{props.templateId == null && needTemplate && allTemplates.length > 0 && <SelectTemplate props={props} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} /> }
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
 				rows={userData}

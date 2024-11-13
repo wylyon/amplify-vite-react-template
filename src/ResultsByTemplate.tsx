@@ -42,23 +42,21 @@ import { StorageImage } from '@aws-amplify/ui-react-storage';
 import '@aws-amplify/ui-react/styles.css';
 import MapIcon from '@mui/icons-material/Map';
 import MapWithGoogle from '../src/MapWithGoogle';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
 export default function ResultsByTemplate(props) {
 	const [loading, setLoading] = useState(true);
 	const [open, setOpen] = useState(false);
 	const [openMap, setOpenMap] = useState(false);
+	const [openPhoto, setOpenPhoto] = useState(false);
 	const [error, setError] = useState('');
 	const [deleteId, setDeleteId] = useState('');
 	const [allTemplates, setAllTemplates] = useState('');
 	const [needTemplate, setNeedTemplate] = useState(false);
-	const [checked, setChecked] = useState(false);
 	const [lat, setLat] = useState('');
 	const [lng, setLng] = useState('');
 	const [mapKeyId, setMapKeyId] = useState('');
-
-	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-	  setChecked(event.target.checked);
-	};
+	const [photo, setPhoto] = useState('');
 
 	const client = generateClient<Schema>();
 
@@ -213,20 +211,9 @@ export default function ResultsByTemplate(props) {
 		allResults(id);
 	}
 
-	function handleRowSelection (rowSelectionModel, details) {
-	  // called on checkbox for row.   
-	  if (rowSelectionModel.length == 0) {
-
-	  } else {
-		if (rowSelectionModel.length == 1) {
-		} else {
-		}
-	  }
-	}
-
 	const renderPhotoCell: GridColDef['renderCell'] = (params) => {
 		const value = params.value.toString().replaceAll("|", " and ");
-		return checked && params.row.questionType == 'photo' ? <StorageImage alt={params.value} path={"picture-submissions/" + params.value}/> : 
+		return params.row.questionType == 'photo' ? <StorageImage alt={params.value} path={"picture-submissions/" + params.value}/> : 
 			value;
 		};
 
@@ -238,6 +225,13 @@ export default function ResultsByTemplate(props) {
 		setLng(row[0].longitude);
 		setOpenMap(true);
 		setLoading(false);
+	}
+
+	const handlePhoto = (id: GridRowId) => () => {
+		const row = userData.filter((row) => row.id == id);
+		setPhoto(row[0].questionType == 'photo' ? row[0].result : '');
+		setError(row[0].question);
+		setOpenPhoto(true);
 	}
 
 	const columns: GridColDef[] = [
@@ -276,7 +270,6 @@ export default function ResultsByTemplate(props) {
 		{ field: 'result',
 			headerName: 'Result',
 			width: 180, 
-			renderCell: renderPhotoCell,
 			headerClassName: 'grid-headers' },
 		{ field: 'what3words', headerName: 'What3words', width: 150, headerClassName: 'grid-headers' },
 		{ field: 'lattitude', headerName: 'Latitude', width: 110, headerClassName: 'grid-headers' },
@@ -287,9 +280,13 @@ export default function ResultsByTemplate(props) {
 			type: 'actions',
 			width: 80,
 			getActions: ({ id }) => {
+				const row = userData.filter((row) => row.id == id);
 				return [
 				<Tooltip title="View On Map">
 					<GridActionsCellItem icon={<MapIcon />} label="Map" color='success' onClick={handleMapIt(id)} />
+				</Tooltip>,
+				<Tooltip title="View On Map">
+					<GridActionsCellItem icon={<PhotoCameraIcon />} label="Photo" color='success' disabled={row[0].questionType=='photo' ? false : true} onClick={handlePhoto(id)} />
 				</Tooltip>,
 				]
 			}
@@ -306,6 +303,11 @@ export default function ResultsByTemplate(props) {
 		setOpenMap(false);
 		setLat(0);
 		setLng(0);
+	}
+
+	const handleClosePhoto = () => {
+		setOpenPhoto(false);
+		setPhoto('');
 	}
 
   return (
@@ -331,6 +333,27 @@ export default function ResultsByTemplate(props) {
         </DialogActions>
       </Dialog>
       <Dialog
+        open={openPhoto}
+        onClose={handleClosePhoto}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Photo"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+			{error}
+          </DialogContentText>
+		  {photo != '' ? <StorageImage alt={photo} path={"picture-submissions/" + photo}/> : "<< No Photo Available >>" }
+        </DialogContent>
+        <DialogActions>
+          <Button variant='contained' color='error' onClick={handleClosePhoto} autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
         open={openMap}
         onClose={handleCloseMap}
         aria-labelledby="map-dialog-title"
@@ -351,9 +374,6 @@ export default function ResultsByTemplate(props) {
 	<Stack>
 		<Stack direction="row" spacing={2} >
 			{needTemplate && allTemplates.length > 0 && <SelectTemplate props={props} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} /> }
-      		<FormControlLabel control={
-				<Switch checked={checked}
-				onChange={handleChange} />} label="Show Photos" />
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
