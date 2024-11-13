@@ -738,7 +738,6 @@ export default function TemplateGrid(props) {
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
 			rows={rows}
-			slots={{ toolbar: GridToolbar}}
 			loading={loading}
 			columns={columns}
 			editMode='row'
