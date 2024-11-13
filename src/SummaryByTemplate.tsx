@@ -57,6 +57,7 @@ export default function SummaryByTemplate(props) {
 		companyId: '',
 		title: '',
 		templateId: '',
+		transactionId: '',
 		numQuestions: 0,
 		latestPosting: null,
 		what3words: '',
@@ -78,6 +79,7 @@ export default function SummaryByTemplate(props) {
 			companyId: item.company_id, 
 			title: item.title, 
 			templateId: item.template_id,
+			transactionId: item.transaction_id,
 			numQuestions: item.num_questions,
 			latestPosting: getDate(item.created),
 			what3words: item.what3words,
@@ -92,6 +94,7 @@ export default function SummaryByTemplate(props) {
 				companyId: item.company_id, 
 				title: item.title, 
 				templateId: item.template_id,
+				transactionId: item.transaction_id,
 				numQuestions: item.num_questions,
 				latestPosting: getDate(item.created),
 				what3words: item.what3words,
@@ -164,6 +167,8 @@ export default function SummaryByTemplate(props) {
 
 	  } else {
 		if (rowSelectionModel.length == 1) {
+			const row = userData.filter((row) => row.id == rowSelectionModel[0]);
+			props.onRowSelect(row[0].transactionId);
 		} else {
 		}
 	  }
@@ -177,6 +182,7 @@ export default function SummaryByTemplate(props) {
 		id: false,
       companyId: false,
 	  templateId: false,
+	  transactionId: false,
     });
 
 	function handleRowClick (params, event, details) {
@@ -212,6 +218,9 @@ export default function SummaryByTemplate(props) {
 		{ field: 'templateId',
 		  	headerName: 'Template Id',
 		  	width: 70 },
+		{ field: 'transactionId',
+			headerName: 'Transaction Id',
+			width: 70 },
 		{ field: 'numQuestions',
 			headerName: 'Answered',
 			width: 100, 

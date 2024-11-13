@@ -78,6 +78,7 @@ export default function AdminMain(props) {
 	const [value, setValue] = useState(0);
 	const [hValue, setHValue] = useState(0);
 	const [company, setCompany] = useState<Schema["company"]["type"][]>([]);
+	const [templateId, setTemplateId] = React.useState(null);
 
 	const client = generateClient<Schema>();
 
@@ -97,6 +98,7 @@ export default function AdminMain(props) {
 	};
 
 	const handleReportChange = (event: React.SyntheticEvent, newValue: number) => {
+		setTemplateId(null);
 		setHValue(newValue);
 	  };
 
@@ -104,6 +106,16 @@ export default function AdminMain(props) {
   	const handleOnSignOut = (e) => {
     	props.onSubmitChange(false);
   	};
+
+	const handleOnRowSelectSummaryAll = (id) => {
+		setTemplateId(id);
+		setHValue(1);
+	}
+
+	const handleOnRowSelectSummaryTemplate = (id) => {
+		setTemplateId(id);
+		setHValue(2);
+	}
 
 	useEffect(() => {
 		getCompanyById(props.companyId);
@@ -145,17 +157,17 @@ export default function AdminMain(props) {
 				onChange={handleReportChange}
 				aria-label="Report tabs">
 				<Tab label="Summary All Results" {...a11yHProps(0)} />
-				<Tab label="Detailed Report By Template" {...a11yHProps(1)} />
-				<Tab label="Summary By Template" {...a11yHProps(2)} />
+				<Tab label="Summary By Template" {...a11yHProps(1)} />
+				<Tab label="Detailed Report By Template" {...a11yHProps(2)} />
 			</Tabs>
 			<CustomTabPanel value={hValue} index={0}>
-				<SummaryAllResults props={props} filter={null} />
+				<SummaryAllResults props={props} filter={null} onRowSelect={handleOnRowSelectSummaryAll} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={1}>
-				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} />
+				<SummaryByTemplate props={props} filter={null} googleAPI={props.googleAPI} templateId={templateId} onRowSelect={handleOnRowSelectSummaryTemplate} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={2}>
-				<SummaryByTemplate props={props} filter={null} googleAPI={props.googleAPI} />
+				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} transactionId={templateId} />
 			</CustomTabPanel>
 		</TabPanel>
 		<TabPanel value={value} index={4}>

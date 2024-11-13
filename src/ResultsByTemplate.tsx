@@ -129,10 +129,15 @@ export default function ResultsByTemplate(props) {
 		return data;
 	  }
 
-	  const allResults = async (templateId) => {
-		const { data: items, errors } = await client.queries.listResultsByTemplateId({
-			templateId: templateId
-		});
+	  const allResults = async (id) => {
+		const { data: items, errors } = 
+		props.transactionId == null ?
+			await client.queries.listResultsByTemplateId({
+				templateId: id
+			}) :
+			await client.queries.listResultsByTransactionId({
+				transactionId: id
+			});
 		if (errors) {
 			setError(errors[0].message);
 			setOpen(true);
@@ -143,6 +148,9 @@ export default function ResultsByTemplate(props) {
 				const data = translateUserTemplates(userItems);
 				setUserData(data);
 			  }
+		}
+		if (props.transactionId != null) {
+			setLoading(false);
 		}
 	  }
 
@@ -175,7 +183,8 @@ export default function ResultsByTemplate(props) {
 	}
 
 	useEffect(() => {
-		allResultTemplates();
+		props.transactionId == null ?
+		allResultTemplates() : allResults(props.transactionId)
 	  }, []);
 
 	function handleRowClick (params, event, details) {
@@ -373,7 +382,7 @@ export default function ResultsByTemplate(props) {
       </Dialog>
 	<Stack>
 		<Stack direction="row" spacing={2} >
-			{needTemplate && allTemplates.length > 0 && <SelectTemplate props={props} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} /> }
+			{props.transactionId == null && needTemplate && allTemplates.length > 0 && <SelectTemplate props={props} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} /> }
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
