@@ -170,7 +170,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "SELECT c.name as company, c.id as company_id,  t.title, t.id as template_id, r.transaction_id, count(r.transaction_id) as num_questions, max(r.created) as created, max(what3words) as what3words, " +
       "max(gps_lat) as lattitude, max(gps_long) as longitude, max(r.created_by) as created_by FROM logistics.question_result r join logistics.template_question q on q.id = r.template_question_id " +
       "join logistics.template t on t.id = q.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id where template_id = :templateId " +
-      "and q.question_type != 'dialog_input' group by c.name, c.id, t.title, t.id, r.transaction_id;"
+      "and q.question_type != 'dialog_input' group by c.name, c.id, t.title, t.id, r.transaction_id order by c.name, c.id, t.title, t.id, r.created;"
     )).authorization(allow => allow.publicApiKey()),
     resultsTotals: a.query()
     .arguments({})

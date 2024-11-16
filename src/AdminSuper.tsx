@@ -136,6 +136,7 @@ export default function AdminSuper(props) {
 				<Tab label="Summary All Results" {...a11yHProps(0)} />
 				<Tab label="Summary By Template" {...a11yHProps(1)} />
 				<Tab label="Detailed Report By Template" {...a11yHProps(2)} />
+				<Tab label="Other Analytics" {...a11yHProps(3)} />
 			</Tabs>
 			<CustomTabPanel value={hValue} index={0}>
 				<SummaryAllResults props={props} filter={null} onRowSelect={handleOnRowSelectSummaryAll} />
@@ -145,6 +146,8 @@ export default function AdminSuper(props) {
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={2}>
 				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} transactionId={templateId} />
+			</CustomTabPanel>
+			<CustomTabPanel value={hValue} index={3}>
 			</CustomTabPanel>
 		</TabPanel>
 	</Box>

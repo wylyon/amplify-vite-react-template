@@ -36,6 +36,60 @@ import {
   LocationJsonResponse,
 } from '@what3words/api';
 
+export function DisplayAttributes(props) {
+  const [numberLinesBefore, setNumberLinesBefore] = useState(0);
+
+  const handleParsingTabsLines = (html) => {
+    if (html == null || html == '') {
+      return;
+    }
+    const lineArr = html.split("<br>");
+    var numLinesBefore = 0;
+    var numTabBefore = 0;
+    var filteredValue;
+
+    for (var i = 0; i < lineArr.length; i++) {
+      if (lineArr[i] == null || lineArr[i] == '') {
+        numLinesBefore = numLinesBefore + 1;
+      } else {
+        filteredValue = lineArr[i];
+      }
+    }
+
+    const tabArr = filteredValue.split("&emsp;");
+    for (var i = 0; i < tabArr.length; i++) {
+      if (tabArr[i] == null || tabArr[i] == '') {
+        numTabBefore = numTabBefore + 1;
+      } else {
+        filteredValue = tabArr[i];
+      }
+    }
+
+    props.onParsing(filteredValue, numTabBefore);
+    setNumberLinesBefore(numLinesBefore);
+  }
+
+  useEffect(() => {
+    handleParsingTabsLines(props.props.preLoadAttributes)
+	});
+
+  return (
+    <div>
+      { numberLinesBefore > 5 ? 
+        <><br /><br /><br /><br /><br /></> : 
+        numberLinesBefore == 4 ?
+        <><br /><br /><br /><br /></> : 
+        numberLinesBefore == 3 ?
+        <><br /><br /><br /></> : 
+        numberLinesBefore == 2 ?
+        <><br /><br /></> : 
+        numberLinesBefore == 1 ?
+        <br /> : null
+      }
+    </div>
+  );
+}
+
 export default function DisplayUserRow(props) {
   const [source, setSource] = useState('');
   const [view, setView] = useState('list');
@@ -43,7 +97,10 @@ export default function DisplayUserRow(props) {
   const [heading, setHeading] = useState('');
   const [title, setTitle] = useState('');
   const [comboName, setComboName] = useState<string[]>([]);
+  const [dropDownValue, setDropDownValue] = useState('');
   const [words, setWords] = useState('');
+  const [value, setValue] = useState('');
+  const [attributes, setAttributes] = useState('');
 
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
@@ -94,6 +151,24 @@ export default function DisplayUserRow(props) {
 
     props.onNextPage(true);
   };
+
+  const handleDropDown = (event: SelectChangeEvent) => {
+    const ddValue = event.target.value as string;
+    setDropDownValue(ddValue);
+    if (coords) {
+      const options: ConvertTo3waOptions = {
+        coordinates: { lat: coords.latitude, lng: coords.longitude },
+      };
+      
+      client
+      .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
+      .then((res: LocationJsonResponse) => props.onDrop (ddValue, props.question.id, coords, res.words));
+    } else {
+      props.onDrop (ddValue, props.question.id, coords, '');
+    }
+
+    props.onNextPage(true);
+  }
 
   const handleCloseMultiple = (event) => {
     if (Array.isArray(comboName) && comboName.length > 0) {
@@ -176,6 +251,16 @@ export default function DisplayUserRow(props) {
     trigger_check(nextView);
   };
 
+  const handleAttribute = (v, t) => {
+    const adjustValue = t == 0 ? v :
+      t == 1 ? "    " + v :
+      t == 2 ? "        " + v :
+      t == 3 ? "            " + v :
+      t == 4 ? "                " + v : "                    " + v;
+
+    setValue(adjustValue);
+  }
+
   const clickPhoto = (id) => {
     document.getElementById(id).click();
   }
@@ -225,9 +310,11 @@ export default function DisplayUserRow(props) {
       </Dialog>
     { props.questionType == 'toggle_button' ?
       <div>
-      {props.useBoxControls==1 &&
-        <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
-          <Typography variant="caption" gutterBottom>{props.preLoadAttributes}</Typography>
+        <DisplayAttributes props={props} onParsing={handleAttribute}/>
+        <Box component="section"  sx={
+          props.useBoxControls==1 || props.useAutoSpacing==1 ?
+          { p: 2, border: props.useAutoSpacing==0 ? '1px dashed grey' : '1px'} : {}}>
+          <Typography variant="caption" gutterBottom>{value}</Typography>
           <ToggleButtonGroup
             key={'tbg_' + props.question.question_order}
             aria-placeholder={'tbg_' + props.question.question_order}
@@ -238,73 +325,26 @@ export default function DisplayUserRow(props) {
             onChange={handleToggleChange}
             orientation="vertical"
           >
-          {props.question.question_values.split("|").map((comp, index) => 
-            <ToggleButton 
-              key={'tb_'+props.question.question_order+'_'+index} 
-              value={comp} 
-              size="small"
-              aria-label={comp} 
-              aria-placeholder={props.question.id}
-              sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
-          </ToggleButtonGroup>
-        </Box>
-      }
-      {props.useBoxControls==0 && props.useAutoSpacing==1 &&
-        <Box component="section"  sx={{ p: 2, border: '1px'}}>
-          <Typography variant="caption" gutterBottom>{props.preLoadAttributes}</Typography>
-          <ToggleButtonGroup
-            key={'tbg_' + props.question.question_order}
-            aria-placeholder={'tbg_' + props.question.question_order}
-            color="primary"
-            value={view}
-            size="small"
-            exclusive
-            onChange={handleToggleChange}
-            orientation="vertical"
-          >
-          {props.question.question_values.split("|").map((comp, index) => 
-            <ToggleButton 
-              key={'tb_'+props.question.question_order+'_'+index} 
-              value={comp} 
-              aria-label={comp} 
-              size="small"
-              aria-placeholder={props.question.id}
-              sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
-          </ToggleButtonGroup>
-        </Box>
-      }
-      {props.useBoxControls==0 && props.useAutoSpacing==0 &&
-          <Box component="section">
-            <Typography variant="caption" gutterBottom>{props.preLoadAttributes}</Typography>
-            <ToggleButtonGroup
-              color="primary"
-              aria-placeholder={'tbg_' + props.question.question_order}
-              key={'tbg_' + props.question.question_order}
-              value={view}
-              size="small"
-              exclusive
-              onChange={handleToggleChange}
-              orientation="vertical"
-            >
             {props.question.question_values.split("|").map((comp, index) => 
-              <ToggleButton 
-                key={'tb_'+props.question.question_order+'_'+index} 
-                value={comp} 
-                size="small"
-                aria-label={comp} 
-                aria-placeholder={props.question.id}
-                sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
+            <ToggleButton 
+              key={'tb_'+props.question.question_order+'_'+index} 
+              value={comp} 
+              size="small"
+              aria-label={comp} 
+              aria-placeholder={props.question.id}
+              sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
           </ToggleButtonGroup>
         </Box>
-      }
       </div>
     : props.questionType == 'photo' ?
-      <div><br/><br/>
-      {props.useBoxControls==1 && 
-        <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
+      <div>
+        <DisplayAttributes props={props} onParsing={handleAttribute} />
+        <Box component="section" sx={
+          props.useBoxControls==1 || props.useAutoSpacing==1 ?
+          { p: 2, border: props.useAutoSpacing==0 ? '1px dashed grey' : '1px'} : {}}>
           <Stack direction="row" spacing={2} >
             <Paper elevation={2}>
-              <Typography variant="caption" gutterBottom>{props.preLoadAttributes}</Typography>
+              <Typography variant="caption" gutterBottom>{value}</Typography>
               <IconButton aria-label="upload picture" onClick={() => clickPhoto(props.questionType + props.questionOrder)}> 
                 <CameraAltIcon fontSize="large"/>
               </IconButton>
@@ -317,70 +357,54 @@ export default function DisplayUserRow(props) {
               </Box> 
             </Paper> }
           </Stack>
-        </Box>}
-        {props.useBoxControls==0 && props.useAutoSpacing==0 &&
-          <Stack direction="row" spacing={2} >
-            <Paper elevation={2}>
-              <Typography variant="caption" gutterBottom>{props.preLoadAttributes}</Typography>
-              <IconButton aria-label="upload picture" onClick={() => clickPhoto(props.questionType + props.questionOrder)}> 
-                <CameraAltIcon fontSize="large"/>
-              </IconButton>
-              <input type="file" id={props.questionType + props.questionOrder} name={"icon-button-photo" + props.questionOrder} 
-                capture="environment" style={{ display: "none"}} onChange={(e) => handleCapture(e.target)}/>
-            </Paper>
-            {source && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
-              <Box sx={{ width: 100, height: 100, borderRadius: 1}}>
-                <img src={source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}}></img>
-              </Box> 
-            </Paper> }
-          </Stack>}
-          {props.useBoxControls==0 && props.useAutoSpacing==1 &&
-          <Box component="section"  sx={{ p: 2, border: '1px'}}>
-            <Stack direction="row" spacing={2} >
-            <Paper elevation={2}>
-              <Typography variant="caption" gutterBottom>{props.preLoadAttributes}</Typography>
-              <IconButton aria-label="upload picture" onClick={() => clickPhoto(props.questionType + props.questionOrder)}> 
-                <CameraAltIcon fontSize="large"/>
-              </IconButton>
-              <input type="file" id={props.questionType + props.questionOrder} name={"icon-button-photo" + props.questionOrder} 
-                capture="environment" style={{ display: "none"}} onChange={(e) => handleCapture(e.target)}/>
-            </Paper>
-            {source && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
-              <Box sx={{ width: 100, height: 100, borderRadius: 1}}>
-                <img src={source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}}></img>
-              </Box> 
-            </Paper> }
-            </Stack>
-          </Box> 
-          }
-          </div>
-          : props.questionType == 'multiple_dropdown' ?
-            <div>
-              <FormControl sx={{ m: 1, width: 300 }}>
-                <InputLabel id={"multiple-checkbox-label"+props.question.question_order}>{props.preLoadAttributes}</InputLabel>
-                <Select
-                  labelId={"multiple-checkbox-label"+props.question.question_order}
-                  id={"multiple-checkbox"+props.question.question_order}
-                  multiple
-                  aria-placeholder={props.question.id}
-                  value={comboName}
-                  onChange={handleChangeMultiple}
-                  onClose={handleCloseMultiple}
-                  input={<OutlinedInput label="Values" />}
-                  renderValue={(selected) => selected.join(', ')}
-                  MenuProps={MenuProps}
-                >
-                  {props.question.question_values.split("|").map((name) => (
-                    <MenuItem key={name} value={name}>
-                      <Checkbox checked={comboName.includes(name)} />
-                      <ListItemText primary={name} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-          :
-          <DisplayQuestion props={props} question = {props.question} isPreview={false} useBox={props.useBoxControls} useSpacing={props.useAutoSpacing} /> }
+        </Box>
+      </div>
+    : props.questionType == 'multiple_dropdown' ?
+      <div>
+        <DisplayAttributes props={props} onParsing={handleAttribute} />
+        <FormControl sx={{ m: 1, width: 300 }}>
+          <InputLabel id={"multiple-checkbox-label"+props.question.question_order}>{value}</InputLabel>
+          <Select
+            labelId={"multiple-checkbox-label"+props.question.question_order}
+            id={"multiple-checkbox"+props.question.question_order}
+            multiple
+            aria-placeholder={props.question.id}
+            value={comboName}
+            onChange={handleChangeMultiple}
+            onClose={handleCloseMultiple}
+            input={<OutlinedInput label="Values" />}
+            renderValue={(selected) => selected.join(', ')}
+            MenuProps={MenuProps}
+          >
+            {props.question.question_values.split("|").map((name) => (
+              <MenuItem key={name} value={name}>
+                <Checkbox checked={comboName.includes(name)} />
+                <ListItemText primary={name} />
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
+    : props.questionType == 'dropdown' ?
+      <div>
+        <DisplayAttributes props={props} onParsing={handleAttribute} />
+        <FormControl sx={{ m: 1, width: 300 }}>
+          <InputLabel id={"simple-select-label"+props.question.question_order}>{value}</InputLabel>
+          <Select
+            labelId={"simple-select-label"+props.question.question_order}
+            id={"simple-select"+props.question.question_order}
+            value={dropDownValue}
+            onChange={handleDropDown}
+            input={<OutlinedInput label="Values" />}
+          >
+            {props.question.question_values.split("|").map((name) => (
+              <MenuItem key={name} value={name}>{name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
+    :
+      <DisplayQuestion props={props} question = {props.question} isPreview={false} useBox={props.useBoxControls} useSpacing={props.useAutoSpacing} /> }
     </React.Fragment>
   );
 }

@@ -218,6 +218,16 @@ export default function DisplayUser(props) {
     }
   }
 
+  const handleOnDrop = (v, id, c, w) => {
+    setGPS(c);
+    setWords(w);
+    if (v == null) {
+      getLatLongResults(id, null, 'dropdown', null, c.latitude, c.longitude, w);
+    } else {
+      getLatLongResults(id, v,'dropdown', null, c.latitude, c.longitude, w);
+    }
+  }
+
   const handleNextPage = (e) => {
     if (currentPage < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length) {
       if (page <= currentPage) {
@@ -350,6 +360,7 @@ export default function DisplayUser(props) {
               onChange={handleToggleChange}
               onPicture={handleOnPicture}
               onMultiDrop={handleOnMultiDrop}
+              onDrop={handleOnDrop}
               onNextPage={handleNextPage}
               nextQuestion={index+1 < props.templateQuestions.length ? props.templateQuestions[index+1] : null}
             /> : null      
@@ -371,6 +382,7 @@ export default function DisplayUser(props) {
             onChange={handleToggleChange}
             onPicture={handleOnPicture}
             onMultiDrop={handleOnMultiDrop}
+            onDrop={handleOnDrop}
             onNextPage={handleNextPage}
             nextQuestion={getNextQuestion(getNonDialogQuestion(page - 1))}
           />

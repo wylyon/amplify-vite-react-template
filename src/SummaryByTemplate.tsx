@@ -11,6 +11,14 @@ import { DataGrid,
 	GridRowModes,
 	GridToolbar, 
 	GridToolbarContainer,
+	GridToolbarColumnsButton,
+	GridToolbarQuickFilter,
+	GridToolbarDensitySelector,
+	GridToolbarExport,
+	GridPrintExportMenuItem,
+	GridToolbarFilterButton,
+	GridCsvExportMenuItem,
+	GridToolbarExportContainer,
 	GridColumnVisibilityModel, 
 	GridActionsCellItem,
 	GridEventListener,
@@ -33,10 +41,13 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import CancelIcon from '@mui/icons-material/Close';
 import { v4 as uuidv4 } from 'uuid';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 import what3words from '@what3words/api';
 import SelectTemplate from '../src/SelectTemplate';
 import MapWithGoogle from '../src/MapWithGoogle';
 import MapIcon from '@mui/icons-material/Map';
+import { MenuItem } from '@mui/material';
 
 export default function SummaryByTemplate(props) {
 	const [loading, setLoading] = useState(true);
@@ -63,6 +74,7 @@ export default function SummaryByTemplate(props) {
 		what3words: '',
 		lattitude: null,
 		longitude: null, 
+		whoPosted: null,
 	  }]);
 
 	function getDate(value) {
@@ -85,6 +97,7 @@ export default function SummaryByTemplate(props) {
 			what3words: item.what3words,
 			lattitude: item.lattitude,
 			longitude: item.longitude,
+			whoPosted: item.created_by,
 		  }];
 		for (var i=1; i < items.length; i++) {
 		  const item = JSON.parse(items[i]);
@@ -99,7 +112,9 @@ export default function SummaryByTemplate(props) {
 				latestPosting: getDate(item.created),
 				what3words: item.what3words,
 				lattitude: item.lattitude,
-				longitude: item.longitude,}
+				longitude: item.longitude,
+				whoPosted: item.created_by,
+			}
 		  );
 		}
 		return data;
@@ -192,6 +207,18 @@ export default function SummaryByTemplate(props) {
 		allResults(id);
 	}
 
+	const exportToExcel = () => {
+		const worksheet = XLSX.utils.json_to_sheet(userData);
+		const workbook = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+	
+		// Buffer to store the generated Excel file
+		const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+		const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+	
+		saveAs(blob, "Log Tool Summary By Template.xlsx");
+		};
+
 	const handleMapIt = (id: GridRowId) => () => {
 		setLoading(true);
 		const row = userData.filter((row) => row.id == id);
@@ -229,6 +256,7 @@ export default function SummaryByTemplate(props) {
 		{ field: 'what3words', headerName: 'What3Words', width: 200, headerClassName: 'grid-headers' },
 		{ field: 'lattitude', headerName: 'Latitude', width: 150, headerClassName: 'grid-headers' },
 		{ field: 'longitude', headerName: 'Longitude', width: 150, headerClassName: 'grid-headers' },
+		{ field: 'whoPosted', headerName: 'Posted By', width: 150, headerClassName: 'grid-headers' },
 		{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
 			type: 'actions',
 			width: 100,
@@ -252,6 +280,24 @@ export default function SummaryByTemplate(props) {
 		setOpenMap(false);
 		setLat(0);
 		setLng(0);
+	}
+
+	function CustomToolbar() {
+		return (
+			<GridToolbarContainer>
+				<GridToolbarColumnsButton />
+				<GridToolbarFilterButton />
+				<GridToolbarDensitySelector />
+				<GridToolbarExportContainer>
+					<GridCsvExportMenuItem />
+					<MenuItem
+						onClick={exportToExcel} >
+						Export Excel Spreadsheet
+					</MenuItem>
+					<GridPrintExportMenuItem />
+				</GridToolbarExportContainer>
+			</GridToolbarContainer>
+		);
 	}
 
   return (
@@ -299,7 +345,7 @@ export default function SummaryByTemplate(props) {
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
 				rows={userData}
-				slots={{ toolbar: GridToolbar}}
+				slots={{ toolbar: CustomToolbar}}
 				loading={loading}
 				columns={columns}
 				columnVisibilityModel={columnVisibilityModel}

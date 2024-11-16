@@ -427,7 +427,6 @@ export default function SetupQuestion(props) {
             const label = formJson.labelValue;
             const lines = formJson.linesValue;
             const tabs = formJson.tabValue;
-            const tabsAfter = formJson.tabValueAfter;
             if (label == "" && lines == "0" && tabs == "0") {
               // case where nothing was entered.
               setPreAttributes("");
@@ -436,7 +435,6 @@ export default function SetupQuestion(props) {
               var preAttributes = "";
               const numLines = Number(lines);
               const numTabs = Number(tabs);
-              const numTabsAfter = Number(tabsAfter);
               // lets do lines first
               for (var i = 0; i < numLines; i++) {
                 preAttributes = preAttributes + "<br>";
@@ -447,9 +445,6 @@ export default function SetupQuestion(props) {
               }    
               if (label != "") {
                 preAttributes = preAttributes + label;
-                for (var i = 0; i < numTabsAfter; i++) {
-                  preAttributes = preAttributes + "&emsp;";
-                }   
               }       
               setPreAttributes(preAttributes);  
             }
@@ -487,17 +482,6 @@ export default function SetupQuestion(props) {
             defaultValue={dialogControls.tabs}
             getAriaValueText={valuetext}
             name="tabValue"
-            step={1}
-            marks={marks}
-            valueLabelDisplay="auto"
-            min={0}
-            max={10}
-          />
-          <Typography variant="caption" gutterBottom>Number Tabs after label</Typography>
-          <Slider aria-label="Always visible"
-            defaultValue={dialogControls.tabsAfter}
-            getAriaValueText={valuetext}
-            name="tabValueAfter"
             step={1}
             marks={marks}
             valueLabelDisplay="auto"

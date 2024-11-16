@@ -11,6 +11,14 @@ import { DataGrid,
 	GridRowModes,
 	GridToolbar, 
 	GridToolbarContainer,
+	GridToolbarColumnsButton,
+	GridToolbarQuickFilter,
+	GridToolbarDensitySelector,
+	GridToolbarExport,
+	GridPrintExportMenuItem,
+	GridToolbarFilterButton,
+	GridCsvExportMenuItem,
+	GridToolbarExportContainer,
 	GridColumnVisibilityModel, 
 	GridActionsCellItem,
 	GridEventListener,
@@ -33,6 +41,9 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import CancelIcon from '@mui/icons-material/Close';
 import { v4 as uuidv4 } from 'uuid';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { MenuItem } from '@mui/material';
 
 export default function SummaryAllResults(props) {
 	const [loading, setLoading] = useState(true);
@@ -140,6 +151,20 @@ export default function SummaryAllResults(props) {
 	function handleRowClick (params, event, details) {
 	}
 
+
+	const exportToExcel = () => {
+		const worksheet = XLSX.utils.json_to_sheet(userData);
+		const workbook = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+	
+		// Buffer to store the generated Excel file
+		const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+		const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+	
+		saveAs(blob, "Log Tool Summary Results.xlsx");
+		};
+
+
 	const columns: GridColDef[] = [
 		{ field: 'id', headerName: 'Id'},
 		{ field: 'company', 
@@ -170,6 +195,24 @@ export default function SummaryAllResults(props) {
 		setDeleteId('');
 	};
 
+	function CustomToolbar() {
+		return (
+			<GridToolbarContainer>
+				<GridToolbarColumnsButton />
+				<GridToolbarFilterButton />
+				<GridToolbarDensitySelector />
+				<GridToolbarExportContainer>
+					<GridCsvExportMenuItem />
+					<MenuItem
+						onClick={exportToExcel} >
+						Export Excel Spreadsheet
+					</MenuItem>
+					<GridPrintExportMenuItem />
+				</GridToolbarExportContainer>
+			</GridToolbarContainer>
+		);
+	}
+
   return (
 	<React.Fragment>
       <Dialog
@@ -196,7 +239,7 @@ export default function SummaryAllResults(props) {
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
 				rows={userData}
-				slots={{ toolbar: GridToolbar}}
+				slots={{ toolbar: CustomToolbar}}
 				loading={loading}
 				columns={columns}
 				columnVisibilityModel={columnVisibilityModel}

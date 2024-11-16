@@ -55,7 +55,7 @@ import MapWithGoogle from '../src/MapWithGoogle';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { MenuItem } from '@mui/material';
 
-export default function ResultsByTemplate(props) {
+export default function ResultSummary(props) {
 	const [loading, setLoading] = useState(true);
 	const [open, setOpen] = useState(false);
 	const [openMap, setOpenMap] = useState(false);
@@ -90,6 +90,12 @@ export default function ResultsByTemplate(props) {
 		createdBy: '',
 	  }]);
 
+	const [summaryData, setSummaryData] = useState([{
+		question: '',
+		result: '',
+		count: 0
+	}]);
+
 	function getDate(value) {
 		if (value == null) {
 			return null
@@ -97,6 +103,20 @@ export default function ResultsByTemplate(props) {
 		return new Date(value);
 	  }
 	
+	function summarizeData (result, question) {
+		var isFound = false;
+
+		if (result == null) {
+			return;
+		}
+		const resultArr = result.split("|");
+		resultArr.map(rslt => {
+			summaryData.map(item => 
+				item.question.includes(question) && item.result.includes(rslt) ?
+			null : null)
+		});
+	}
+
 	  function translateUserTemplates (items) {
 		const item = JSON.parse(items[0]);
 		var data = [{id: uuidv4(),
