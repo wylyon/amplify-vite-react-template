@@ -194,6 +194,7 @@ export default function DisplayUser(props) {
   };
   
   const handleCancel = (e) => {
+    resetState();
     props.onSubmitChange(false);
   }
 
@@ -312,6 +313,7 @@ export default function DisplayUser(props) {
       const formData = new FormData(event.currentTarget);
       const formJson = Object.fromEntries((formData as any).entries());
       results.map(comp => comp.type != 'dialog_input' ? saveResults(comp.id, comp.value, comp.type, comp.file, comp.lat, comp.long, comp.what3words) : null);
+      resetState();
     setOpen(true);
   };
 
@@ -338,10 +340,9 @@ export default function DisplayUser(props) {
   }
 
   useEffect(() => {
-    resetState();
     setTally();
     primeLatLongWhat3Words();
-	});
+	}, []);
 
   function createMarkup(dirty) {
 	return { __html: dirty };
