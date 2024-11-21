@@ -62,6 +62,12 @@ export default function DisplayUser(props) {
     setPage(value);
   }
 
+  const resetState = () => {
+    setSource('');
+    setPage(1);
+    setResults([]);
+  }
+
   const { coords, 
     isGeolocationAvailable, 
     isGeolocationEnabled,
@@ -305,7 +311,6 @@ export default function DisplayUser(props) {
       event.preventDefault();
       const formData = new FormData(event.currentTarget);
       const formJson = Object.fromEntries((formData as any).entries());
-      //console.log(results);
       results.map(comp => comp.type != 'dialog_input' ? saveResults(comp.id, comp.value, comp.type, comp.file, comp.lat, comp.long, comp.what3words) : null);
     setOpen(true);
   };
@@ -333,9 +338,10 @@ export default function DisplayUser(props) {
   }
 
   useEffect(() => {
+    resetState();
     setTally();
     primeLatLongWhat3Words();
-	}, []);
+	});
 
   function createMarkup(dirty) {
 	return { __html: dirty };
