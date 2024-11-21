@@ -73,8 +73,10 @@ export default function AdminSuper(props) {
 	const [value, setValue] = React.useState(0);
 	const [hValue, setHValue] = React.useState(0);
 	const [templateId, setTemplateId] = React.useState(null);
+	const [id, setId] = React.useState(null);
 
 	const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+	  setId(null);
 	  setValue(newValue);
 	};
 
@@ -86,6 +88,16 @@ export default function AdminSuper(props) {
   	const handleOnSignOut = (e) => {
     	props.onSubmitChange(false);
   	};
+
+	const handleOnRowSelectCompany = (id) => {
+		setId(id);
+		setValue(1);
+	}
+
+	const handleOnRowSelectDivision = (id) => {
+		setId(id);
+		setValue(2);
+	}
 
 	const handleOnRowSelectSummaryAll = (id) => {
 		setTemplateId(id);
@@ -115,13 +127,13 @@ export default function AdminSuper(props) {
 			<Tab label="Reports" {...a11yProps(4)} />
 		</Tabs>
 		<TabPanel value={value} index={0}>
-			<CompanyGrid props={props} />
+			<CompanyGrid props={props} onRowSelect={handleOnRowSelectCompany}/>
 		</TabPanel>
 		<TabPanel value={value} index={1}>
-			<DivisionGrid props={props} filter={null} />
+			<DivisionGrid props={props} filter={null} id={id} onRowSelect={handleOnRowSelectDivision}/>
 		</TabPanel>
 		<TabPanel value={value} index={2}>
-			<TemplateGrid props={props}  filter={null}/>
+			<TemplateGrid props={props}  filter={null} id={id}/>
 		</TabPanel>
 		<TabPanel value={value} index={3}>
 			<UserGrid props={props} filter={null}/>

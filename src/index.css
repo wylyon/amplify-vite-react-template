@@ -4,7 +4,6 @@
       margin: 0px;
     }
     body {
-   	background: linear-gradient(180deg, rgb(117, 81, 194), rgb(255, 255, 255));
   	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
       	transform: perspective(1400px) matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
       	transform-style: preserve-3d;

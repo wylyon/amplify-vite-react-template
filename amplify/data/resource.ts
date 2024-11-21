@@ -70,7 +70,16 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "t.use_pagination, t.auto_space, t.box_controls " +
       " FROM logistics.template t JOIN logistics.division d on d.id = t.division_id JOIN logistics.company c on c.id = d.company_id and c.id = :companyId;"
     )).authorization(allow => allow.publicApiKey()),
-
+    listAllTemplatesByDivisionId: a.query()
+    .arguments({
+      divisionId: a.string().required(),
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT t.id, t.division_id, d.name as division, c.name as company, t.title, t.description, t.pre_load_page_attributes, t.post_load_page_attributes, t.live_date, t.prod_date, t.deactive_date, t.notes, t.created, t.created_by, " +
+      "t.use_pagination, t.auto_space, t.box_controls " +
+      " FROM logistics.template t JOIN logistics.division d on d.id = t.division_id JOIN logistics.company c on c.id = d.company_id WHERE d.id = :divisionId;"
+    )).authorization(allow => allow.publicApiKey()),
     listTemplateByDivisionId: a.query()
     .arguments({
       divisionId: a.string().required(),

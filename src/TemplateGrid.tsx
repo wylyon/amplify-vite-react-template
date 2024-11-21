@@ -168,7 +168,11 @@ export default function TemplateGrid(props) {
 
 	  const allDivisions = async () => {
 		  const { data: items, errors } = 
-		  props.filter == null ?
+		  props.id != null ?
+		  	await client.models.division.get({
+				id: props.id
+			})
+		    : props.filter == null ?
 		  	await client.models.division.list() :
 			await client.queries.listDivisionByCompanyId({
 				companyId: props.filter.id
@@ -258,7 +262,11 @@ export default function TemplateGrid(props) {
 
 	  const getTemplates = async (isLoading) => {
 		const { data: items, errors } = 
-		props.filter == null ?
+		props.id != null ?
+			await client.queries.listAllTemplatesByCompanyId({
+				companyId: props.id
+			})
+			: props.filter == null ?
 			await client.queries.listAllTemplates({
 			}) :
 			await client.queries.listAllTemplatesByCompanyId({

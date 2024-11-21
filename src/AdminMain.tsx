@@ -79,6 +79,7 @@ export default function AdminMain(props) {
 	const [hValue, setHValue] = useState(0);
 	const [company, setCompany] = useState<Schema["company"]["type"][]>([]);
 	const [templateId, setTemplateId] = React.useState(null);
+	const [id, setId] = React.useState(null);
 
 	const client = generateClient<Schema>();
 
@@ -94,6 +95,7 @@ export default function AdminMain(props) {
 	  };
 
 	const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+	  setId(null);
 	  setValue(newValue);
 	};
 
@@ -106,6 +108,16 @@ export default function AdminMain(props) {
   	const handleOnSignOut = (e) => {
     	props.onSubmitChange(false);
   	};
+
+	  const handleOnRowSelectCompany = (id) => {
+		setId(id);
+		setValue(1);
+	}
+
+	const handleOnRowSelectDivision = (id) => {
+		setId(id);
+		setValue(0);
+	}
 
 	const handleOnRowSelectSummaryAll = (id) => {
 		setTemplateId(id);
@@ -141,13 +153,13 @@ export default function AdminMain(props) {
 			<Tab label="Profile" {...a11yProps(4)} />
 		</Tabs>
 		<TabPanel value={value} index={0}>
-			{ company && company.id != null && <TemplateGrid props={props} filter={company} /> }
+			{ company && company.id != null && <TemplateGrid props={props} filter={company} id={id}/> }
 		</TabPanel>
 		<TabPanel value={value} index={1}>
 			<UserGrid props={props} filter={company}/>
 		</TabPanel>
 		<TabPanel value={value} index={2}>
-			<DivisionGrid props={props} filter={company} />
+			<DivisionGrid props={props} filter={company} id={id} onRowSelect={handleOnRowSelectDivision}/>
 		</TabPanel>
 		<TabPanel value={value} index={3}>
 			<Tabs

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import DisplayQuestion from '../src/DisplayQuestion';
+import DisplayAttributes from "../src/DisplayAttributes";
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -24,9 +25,17 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import FormLabel from '@mui/material/FormLabel';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
 import ListItemText from '@mui/material/ListItemText';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useGeolocated } from "react-geolocated";
 import {
   ConvertTo3waClient,
@@ -36,60 +45,6 @@ import {
   LocationJsonResponse,
 } from '@what3words/api';
 
-export function DisplayAttributes(props) {
-  const [numberLinesBefore, setNumberLinesBefore] = useState(0);
-
-  const handleParsingTabsLines = (html) => {
-    if (html == null || html == '') {
-      return;
-    }
-    const lineArr = html.split("<br>");
-    var numLinesBefore = 0;
-    var numTabBefore = 0;
-    var filteredValue;
-
-    for (var i = 0; i < lineArr.length; i++) {
-      if (lineArr[i] == null || lineArr[i] == '') {
-        numLinesBefore = numLinesBefore + 1;
-      } else {
-        filteredValue = lineArr[i];
-      }
-    }
-
-    const tabArr = filteredValue.split("&emsp;");
-    for (var i = 0; i < tabArr.length; i++) {
-      if (tabArr[i] == null || tabArr[i] == '') {
-        numTabBefore = numTabBefore + 1;
-      } else {
-        filteredValue = tabArr[i];
-      }
-    }
-
-    props.onParsing(filteredValue, numTabBefore);
-    setNumberLinesBefore(numLinesBefore);
-  }
-
-  useEffect(() => {
-    handleParsingTabsLines(props.props.preLoadAttributes)
-	});
-
-  return (
-    <div>
-      { numberLinesBefore > 5 ? 
-        <><br /><br /><br /><br /><br /></> : 
-        numberLinesBefore == 4 ?
-        <><br /><br /><br /><br /></> : 
-        numberLinesBefore == 3 ?
-        <><br /><br /><br /></> : 
-        numberLinesBefore == 2 ?
-        <><br /><br /></> : 
-        numberLinesBefore == 1 ?
-        <br /> : null
-      }
-    </div>
-  );
-}
-
 export default function DisplayUserRow(props) {
   const [source, setSource] = useState('');
   const [view, setView] = useState('list');
@@ -98,9 +53,13 @@ export default function DisplayUserRow(props) {
   const [title, setTitle] = useState('');
   const [comboName, setComboName] = useState<string[]>([]);
   const [dropDownValue, setDropDownValue] = useState('');
+  const [radioValue, setRadioValue] = useState('');
+  const [textValue, setTextValue] = useState('');
+  const [dateValue, setDateValue] = useState(null);
   const [words, setWords] = useState('');
   const [value, setValue] = useState('');
   const [attributes, setAttributes] = useState('');
+  const [checked, setChecked] = useState(false);
 
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
@@ -199,6 +158,7 @@ export default function DisplayUserRow(props) {
     if (target.files) {
       if (target.files.length !== 0) {
         const file = target.files[0];
+        const newUrl = URL.createObjectURL(file);
       
         if (coords) {
           const options: ConvertTo3waOptions = {
@@ -207,13 +167,14 @@ export default function DisplayUserRow(props) {
 
           client
           .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-          .then((res: LocationJsonResponse) => props.onPicture(file, props.question.id, coords, res.words));
+          .then((res: LocationJsonResponse) => props.onPicture(file, props.question.id, coords, res.words, newUrl ));
         } else {
-          props.onPicture(file, props.question.id, coords, '');
+          props.onPicture(file, props.question.id, coords, '', newUrl);
         }
 
-        const newUrl = URL.createObjectURL(file);
-        setSource(newUrl);
+        if (props.props.userData[0].usePagination==0) {
+          setSource(newUrl);
+        } 
         props.onNextPage(true);
       }
     }
@@ -251,6 +212,87 @@ export default function DisplayUserRow(props) {
     trigger_check(nextView);
   };
 
+  const handleRadioGroup = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const rValue = (event.target as HTMLInputElement).value;
+    setRadioValue(rValue);
+    if (coords) {
+      const options: ConvertTo3waOptions = {
+        coordinates: { lat: coords.latitude, lng: coords.longitude },
+      };
+      
+      client
+      .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
+      .then((res: LocationJsonResponse) => props.onRadio (rValue, props.question.id, coords, res.words));
+    } else {
+      props.onRadio (rValue, props.question.id, coords, '');
+    }
+
+    props.onNextPage(true);
+  };
+
+  const handleText = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const tValue = (event.target as HTMLInputElement).value;
+    setTextValue(tValue);
+    
+    if (coords) {
+      const options: ConvertTo3waOptions = {
+        coordinates: { lat: coords.latitude, lng: coords.longitude },
+      };
+    } 
+    props.onText (tValue, props.question.id, coords, '', props.question.question_type);
+    props.onNextPage(true);
+  }
+
+  const handleDate = (event) => {
+    const rValue = event.toString();
+    setRadioValue(rValue);
+    if (coords) {
+      const options: ConvertTo3waOptions = {
+        coordinates: { lat: coords.latitude, lng: coords.longitude },
+      };
+      
+      client
+      .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
+      .then((res: LocationJsonResponse) => props.onDate (rValue, props.question.id, coords, res.words));
+    } else {
+      props.onDate (rValue, props.question.id, coords, '');
+    }
+
+    props.onNextPage(true);
+  };
+
+  const handleButtonClick = () => {
+    const value = props.question.question_values.includes("|") ? props.question.question_values.split("|")[1] : props.question.question_values;
+    if (coords) {
+      const options: ConvertTo3waOptions = {
+        coordinates: { lat: coords.latitude, lng: coords.longitude },
+      };
+      client
+      .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
+      .then((res: LocationJsonResponse) => props.onButton (value, props.question.id, props.question.question_type, coords, res.words));
+    } else {
+      props.onButton (value, props.question.id, props.question.question_type, coords, '');
+    }      
+
+    props.onNextPage(true);
+  }
+
+  const handleSwitch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setChecked(event.target.checked);
+    if (coords) {
+      const options: ConvertTo3waOptions = {
+        coordinates: { lat: coords.latitude, lng: coords.longitude },
+      };
+      
+      client
+      .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
+      .then((res: LocationJsonResponse) => props.onSwitch (event.target.checked.toString(), props.question.id, coords, res.words));
+    } else {
+      props.onSwitch (event.target.checked.toString(), props.question.id, coords, '');
+    }
+
+    props.onNextPage(true);
+  }
   const handleAttribute = (v, t) => {
     const adjustValue = t == 0 ? v :
       t == 1 ? "    " + v :
@@ -362,7 +404,7 @@ export default function DisplayUserRow(props) {
     : props.questionType == 'multiple_dropdown' ?
       <div>
         <DisplayAttributes props={props} onParsing={handleAttribute} />
-        <FormControl sx={{ m: 1, width: 300 }}>
+        <FormControl sx={{ m: 1, width: 200 }}>
           <InputLabel id={"multiple-checkbox-label"+props.question.question_order}>{value}</InputLabel>
           <Select
             labelId={"multiple-checkbox-label"+props.question.question_order}
@@ -397,14 +439,63 @@ export default function DisplayUserRow(props) {
             onChange={handleDropDown}
             input={<OutlinedInput label="Values" />}
           >
-            {props.question.question_values.split("|").map((name) => (
-              <MenuItem key={name} value={name}>{name}</MenuItem>
+            {props.question.question_values.split("|").map((name, index) => (
+              <MenuItem key={"select"+index+"_"+props.question.question_order} value={name}>{name}</MenuItem>
             ))}
           </Select>
         </FormControl>
       </div>
-    :
-      <DisplayQuestion props={props} question = {props.question} isPreview={false} useBox={props.useBoxControls} useSpacing={props.useAutoSpacing} /> }
+    : props.questionType == 'radiobox' ?
+      <div>
+        <DisplayAttributes props={props} onParsing={handleAttribute} />
+        <FormControl sx={{ m: 1, width: 300 }}>
+          <FormLabel id={"radio-buttons-group-label"+props.question.question_order}>{value}</FormLabel>
+          <RadioGroup
+            aria-labelledby={"radio-buttons-group-label"+props.question.question_order}
+            value={radioValue}
+            onChange={handleRadioGroup}
+            name="radio-buttons-group">
+            {props.question.question_values.split("|").map((name, index) => (
+              <FormControlLabel key={"radio-button"+index+"_"+props.question.question_order} value={name} control={<Radio />} label={name} />
+            ))}
+          </RadioGroup>
+        </FormControl>
+      </div>
+    : props.questionType == 'input' || props.questionType == 'text' ?
+      <div>
+        <DisplayAttributes props={props} onParsing={handleAttribute} />
+        {props.questionType == 'input' ?
+            <TextField id={"input-field-"+props.question.question_order} label={value} variant="outlined" onChange={handleText} value={textValue}/>
+        :   <TextField id={"input-field-"+props.question.question_order} label={value} multiline maxRows={4} variant="outlined" onChange={handleText} value={textValue}/> }
+      </div>
+    : props.questionType == 'datepicker' ?
+      <div>
+        <DisplayAttributes props={props} onParsing={handleAttribute} />
+        <Typography variant="caption" gutterBottom>{value}</Typography>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker onChange={handleDate} value={dateValue} />
+        </LocalizationProvider>
+      </div>
+    : props.questionType == 'button' || props.questionType == 'contained_button_color' ?
+      <div>
+        <DisplayAttributes props={props} onParsing={handleAttribute} />
+        <Typography variant="caption" gutterBottom>{value}</Typography>
+        {props.questionType == 'button' ? <Button variant="outlined" onClick={handleButtonClick}>{props.question.question_values}</Button> :
+         props.questionType == 'contained_button_color' && props.question.question_values.includes("|") ? 
+          <Button variant="contained" onClick={handleButtonClick} 
+            sx={{ backgroundColor: props.question.question_values.split("|")[0]}}>{props.question.question_values.split("|")[1]}</Button> :
+          <Button variant="contained" onClick={handleButtonClick}>{props.question.question_values}</Button>
+        }
+      </div>
+    : props.questionType == 'switch' ?
+      <div>
+        <DisplayAttributes props={props} onParsing={handleAttribute} />
+        {value == '' ?
+          <Switch checked={checked} onChange={handleSwitch} inputProps={{ 'aria-label': 'controlled'}} /> :
+          <FormControlLabel control={<Switch checked={checked} onChange={handleSwitch} />} label={value} />
+        }
+      </div>
+    : <DisplayQuestion props={props} question = {props.question} isPreview={false} useBox={props.useBoxControls} useSpacing={props.useAutoSpacing} /> }
     </React.Fragment>
   );
 }

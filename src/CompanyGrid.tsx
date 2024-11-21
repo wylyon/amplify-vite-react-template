@@ -128,6 +128,8 @@ export default function CompanyGrid(props) {
 
 	  } else {
 		if (rowSelectionModel.length == 1) {
+			const row = rows.filter((row) => row.id == rowSelectionModel[0]);
+			props.onRowSelect(row[0].id);
 		} else {
 		}
 	  }

@@ -125,7 +125,11 @@ export default function DivisionGrid(props) {
 
 	const allCompanies = async () => {
 		const { data: items, errors } = 
-		props.filter == null ?
+		props.id != null ?
+			await client.models.company.get({
+				id: props.id
+			})
+			: props.filter == null ?
 			await client.models.company.list() :
 			await client.models.company.get({
 				id: props.filter.id
@@ -180,9 +184,13 @@ export default function DivisionGrid(props) {
 
 	  const getDivisions = async () => {
 		const { data: items, errors } = 
-		props.filter == null ?
+		props.id != null ?
+			await client.queries.listAllDivisionsByCompanyId({
+				companyId: props.id
+			})
+		: props.filter == null ?
 			await client.queries.listAllDivisions({
-		}) :
+			}) :
 			await client.queries.listAllDivisionsByCompanyId({
 				companyId: props.filter.id
 			});
@@ -193,6 +201,8 @@ export default function DivisionGrid(props) {
 		  setUserData(data);
 		  setRows(data);
 		  setLoading(false);
+		} else {
+			setLoading(false);
 		}
 	  };
 
@@ -210,6 +220,8 @@ export default function DivisionGrid(props) {
 
 	  } else {
 		if (rowSelectionModel.length == 1) {
+			const row = rows.filter((row) => row.id == rowSelectionModel[0]);
+			props.onRowSelect(row[0].id);
 		} else {
 		}
 	  }

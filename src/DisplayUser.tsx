@@ -6,7 +6,7 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Alert from '@mui/material/Alert';
-import { Box } from "@mui/material";
+import { Box, Paper } from "@mui/material";
 import { Label } from "@mui/icons-material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -33,6 +33,7 @@ import what3words, {
 } from '@what3words/api';
 
 export default function DisplayUser(props) {
+  const [source, setSource] = useState('');
   const [isAlert, setIsAlert] = useState(false);
   const [wait, setWait] = useState(true);
   const [alertMessage, setAlertMessage] = useState('');
@@ -190,42 +191,59 @@ export default function DisplayUser(props) {
     props.onSubmitChange(false);
   }
 
+  const handleGPSWordsandResults = (id, value, type, file, c, w ) => {
+    const lat = c == undefined ? gps.latitude : c.latitude;
+    const long = c == undefined ? gps.longitude : c.longitude;
+    if (c) {
+      setGPS(c);
+    }
+    if (w && w != '') {
+      setWords(w);
+    }
+    getLatLongResults(id, value, type, file, lat, long, w==undefined || w=='' ? words : w);
+  }
+
   const handleOnSubmitOther = (value, id, c, w) => {
-    setGPS(c);
-    setWords(w);
-    getLatLongResults(id, value, 'dialog_input', null, c.latitude, c.longitude, w);
+    handleGPSWordsandResults(id, value, 'dialog_input', null, c, w);
   }
 
   const handleToggleChange = (e, c, w) => {
-    setGPS(c);
-    setWords(w);
-    getLatLongResults(e.target.ariaPlaceholder, e.target.value, 'toggle_button', null, c.latitude, c.longitude, w);
+    handleGPSWordsandResults(e.target.ariaPlaceholder, e.target.value, 'toggle_button', null, c, w);
   }
 
-  const handleOnPicture = (file, id, c, w) => {
-    setGPS(c);
-    setWords(w);
-    getLatLongResults(id, file.name, 'photo', file, c.latitude, c.longitude, w);
+  const handleOnPicture = (file, id, c, w, s) => {
+    if (props.userData[0].usePagination==1) {
+      setSource(s);
+    }
+    handleGPSWordsandResults(id, file.name, 'photo', file, c, w);
   }
 
   const handleOnMultiDrop = (e, id, c, w) => {
-    setGPS(c);
-    setWords(w);
-    if (e.target.value == null) {
-      getLatLongResults(id, null, 'multiple_dropdown', null, c.latitude, c.longitude, w);
-    } else {
-      getLatLongResults(id, e.target.value.join("|"),'multiple_dropdown', null, c.latitude, c.longitude, w);
-    }
+    e.target.value == null ? handleGPSWordsandResults(id, null, 'multiple_dropdown', null, c, w) : handleGPSWordsandResults(id, e.target.value.join("|"),'multiple_dropdown', null, c, w);
   }
 
   const handleOnDrop = (v, id, c, w) => {
-    setGPS(c);
-    setWords(w);
-    if (v == null) {
-      getLatLongResults(id, null, 'dropdown', null, c.latitude, c.longitude, w);
-    } else {
-      getLatLongResults(id, v,'dropdown', null, c.latitude, c.longitude, w);
-    }
+    v == null ? handleGPSWordsandResults(id, null, 'dropdown', null, c, w) : handleGPSWordsandResults(id, v, 'dropdown', null, c, w);
+  }
+
+  const handleOnRadio = (v, id, c, w) => {
+    v == null ? handleGPSWordsandResults(id, null, 'radiobox', null, c, w) : handleGPSWordsandResults(id, v, 'radiobox', null, c, w);
+  }
+
+  const handleOnText = (v, id, c, w, t) => {
+    v == null ? handleGPSWordsandResults(id, null, t, null, c, w) : handleGPSWordsandResults(id, v, t, null, c, w);
+  }
+
+  const handleOnDate = (v, id, c, w) => {
+    v == null ? handleGPSWordsandResults(id, null, 'datepicker', null, c, w) : handleGPSWordsandResults(id, v, 'datepicker', null, c, w);
+  }
+
+  const handleOnButton = (v, id, t, c, w) => {
+    handleGPSWordsandResults(id, v, t , null, c, w);
+  }
+
+  const handleOnSwitch = (v, id, c, w) => {
+    handleGPSWordsandResults(id, v, 'switch', null, c, w);
   }
 
   const handleNextPage = (e) => {
@@ -261,7 +279,14 @@ export default function DisplayUser(props) {
         transaction_id: props.transaction,
         template_question_id: id,
         result_photo_value: type == 'photo' ? value : null,
-        result_option_value: type == 'toggle_button' || type == 'multiple_dropdown' ? value : null,
+        result_option_value: 
+          type == 'toggle_button' || 
+          type == 'multiple_dropdown' || 
+          type == 'dropdown' || 
+          type == 'radiobox' || 
+          type == 'input' || type == 'text' ||
+          type == 'button' || type == 'contained_button_color' ||
+          type == 'switch' ? value : null,
         result_date_value: type == 'datepicker' ? value : null,
         gps_lat: lat,
         gps_long: long,
@@ -342,8 +367,9 @@ export default function DisplayUser(props) {
       {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
           </Alert>}
-      {!wait && <form onSubmit={handleSubmit}
-      >
+      <Paper>
+      {!wait && <form onSubmit={handleSubmit} >
+        <Stack spacing={2}>
         { props.userData[0].usePagination==0 || (props.userData[0].usePagination==1 && props.templateQuestions.length < 1) ?
           props.templateQuestions.map((comp, index) => 
             comp.question_type != 'dialog_input' ?
@@ -361,47 +387,67 @@ export default function DisplayUser(props) {
               onPicture={handleOnPicture}
               onMultiDrop={handleOnMultiDrop}
               onDrop={handleOnDrop}
+              onRadio={handleOnRadio}
+              onText={handleOnText}
+              onDate={handleOnDate}
+              onButton={handleOnButton}
+              onSwitch={handleOnSwitch}
               onNextPage={handleNextPage}
               nextQuestion={index+1 < props.templateQuestions.length ? props.templateQuestions[index+1] : null}
             /> : null      
           ) :
-        <Stack spacing={2}>
-          <Typography variant="h6">
-            {props.userData[0].title}<div className="rightText">Page: {page} of {props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length}</div>
-          </Typography>
-          <DisplayUserRow  
-            props={props} 
-            questionType={getNonDialogQuestion(page - 1).question_type} 
-            preLoadAttributes={getNonDialogQuestion(page - 1).pre_load_attributes}
-            questionOrder={getNonDialogQuestion(page - 1).question_order}
-            useBoxControls={props.userData[0].useBoxControls}
-            useAutoSpacing={props.userData[0].useAutoSpacing}
-            what3wordsAPI={props.what3wordsAPI}
-            question={getNonDialogQuestion(page - 1)}
-            onOtherChange={handleOnSubmitOther}
-            onChange={handleToggleChange}
-            onPicture={handleOnPicture}
-            onMultiDrop={handleOnMultiDrop}
-            onDrop={handleOnDrop}
-            onNextPage={handleNextPage}
-            nextQuestion={getNextQuestion(getNonDialogQuestion(page - 1))}
-          />
-          <Pagination count={currentPage} 
-            page={page} 
-            onChange={handlePageChange} 
-            color="primary"
-            size="large"
-          />
-        </Stack>
+        <Box sx={{width: 'auto', height: 'auto', overflow: 'auto'}}>
+          <Stack direction="row" >
+            <Stack spacing={2}>
+              <Box sx={{width: props.templateQuestions.filter(comp => comp.question_type.includes('photo')).length>0 ? '250px' : 'auto', maxHeight: '500px', overflow: 'auto'}}>
+                <Typography variant="h6">{props.userData[0].title}</Typography>
+                <DisplayUserRow  
+                  props={props} 
+                  questionType={getNonDialogQuestion(page - 1).question_type} 
+                  preLoadAttributes={getNonDialogQuestion(page - 1).pre_load_attributes}
+                  questionOrder={getNonDialogQuestion(page - 1).question_order}
+                  useBoxControls={props.userData[0].useBoxControls}
+                  useAutoSpacing={props.userData[0].useAutoSpacing}
+                  what3wordsAPI={props.what3wordsAPI}
+                  question={getNonDialogQuestion(page - 1)}
+                  onOtherChange={handleOnSubmitOther}
+                  onChange={handleToggleChange}
+                  onPicture={handleOnPicture}
+                  onMultiDrop={handleOnMultiDrop}
+                  onDrop={handleOnDrop}
+                  onRadio={handleOnRadio}
+                  onText={handleOnText}
+                  onDate={handleOnDate}
+                  onButton={handleOnButton}
+                  onSwitch={handleOnSwitch}
+                  onNextPage={handleNextPage}
+                  nextQuestion={getNextQuestion(getNonDialogQuestion(page - 1))}
+                />
+              </Box>
+              <Pagination count={currentPage} 
+                page={page} 
+                onChange={handlePageChange} 
+                color="primary"
+                size="large"
+              />
+            </Stack>
+            {source && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
+              <Box sx={{ width: 100, height: 100, borderRadius: 1}}>
+                <img src={source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}}></img>
+              </Box> 
+            </Paper> }
+          </Stack>
+        </Box>
         }
-        <br/><br/>
         <Stack spacing={2} direction="row">
           <Button variant="contained" 
             disabled={props.userData[0].usePagination==0 ? false : page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? true : false} 
             type="submit">Save</Button>
           <Button variant="contained" color="error" onClick={handleCancel}>Cancel</Button>
         </Stack>
+        </Stack>
       </form> }
+      </Paper>
       <div key="postLoadAttributes" dangerouslySetInnerHTML={createMarkup(props.postLoadAttributes)} />
     </React.Fragment>
   );
