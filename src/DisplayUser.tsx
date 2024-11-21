@@ -267,6 +267,13 @@ export default function DisplayUser(props) {
     setTheSeverity("error");
   }
 
+  function getDate(value) {
+		if (value == null) {
+			return null
+		}
+		return new Date(value);
+	  }
+
   const saveResults = async(id, value, type, file, lat, long, what3words) => {
     if (file != null) {
       try {
@@ -294,7 +301,7 @@ export default function DisplayUser(props) {
           type == 'input' || type == 'text' ||
           type == 'button' || type == 'contained_button_color' ||
           type == 'switch' ? value : null,
-        result_date_value: type == 'datepicker' ? value : null,
+        result_date_value: type == 'datepicker' ? getDate(value) : null,
         gps_lat: lat,
         gps_long: long,
         what3words: what3words,
@@ -312,7 +319,10 @@ export default function DisplayUser(props) {
       event.preventDefault();
       const formData = new FormData(event.currentTarget);
       const formJson = Object.fromEntries((formData as any).entries());
-      results.map(comp => comp.type != 'dialog_input' ? saveResults(comp.id, comp.value, comp.type, comp.file, comp.lat, comp.long, comp.what3words) : null);
+      results.map(comp => 
+        comp.type != 'dialog_input' ? 
+          (comp.value != null ?
+          saveResults(comp.id, comp.value, comp.type, comp.file, comp.lat, comp.long, comp.what3words) : null) : null);
       resetState();
     setOpen(true);
   };
