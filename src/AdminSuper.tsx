@@ -7,6 +7,7 @@ import UserGrid from '../src/UserGrid';
 import SummaryAllResults from '../src/SummaryAllResults';
 import SummaryByTemplate from '../src/SummaryByTemplate';
 import ResultsByTemplate from '../src/ResultsByTemplate';
+import ResultSummary from '../src/ResultSummary';
 import * as React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -160,6 +161,7 @@ export default function AdminSuper(props) {
 				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} transactionId={templateId} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={3}>
+				<ResultSummary props={props} filter={null} />
 			</CustomTabPanel>
 		</TabPanel>
 	</Box>

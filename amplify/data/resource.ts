@@ -188,7 +188,8 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "SELECT company, company_id, title, template_id, count(transaction_id) as num_transactions, max(created) as latest_posting, min(created) as earliest_posting FROM " + 
       "(SELECT c.name as company, c.id as company_id, t.title, t.id as template_id, r.transaction_id, r.created FROM " +
       "logistics.question_result r join logistics.template_question q on q.id = r.template_question_id join logistics.template t on t.id = q.template_id " +
-      "join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id group by c.name, t.title, r.transaction_id) a;"
+      "join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id group by c.name, t.title, r.transaction_id) a " +
+      "group by company, company_id, title, template_id;"
     )).authorization(allow => allow.publicApiKey()),
     resultsTotalsByCompanyId: a.query()
     .arguments({
@@ -199,7 +200,8 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "SELECT company, company_id, title, template_id, count(transaction_id) as num_transactions, max(created) as latest_posting, min(created) as earliest_posting FROM " + 
       "(SELECT c.name as company, c.id as company_id, t.title, t.id as template_id, r.transaction_id, r.created FROM " +
       "logistics.question_result r join logistics.template_question q on q.id = r.template_question_id join logistics.template t on t.id = q.template_id " +
-      "join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id WHERE c.id = :companyId group by c.name, t.title, r.transaction_id) a;"
+      "join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id WHERE c.id = :companyId group by c.name, t.title, r.transaction_id) a " +
+      "group by company, company_id, title, template_id;"
     )).authorization(allow => allow.publicApiKey()),
     listDivisionByCompanyId: a.query()
     .arguments({

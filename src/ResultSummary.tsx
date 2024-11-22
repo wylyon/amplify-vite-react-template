@@ -79,15 +79,9 @@ export default function ResultSummary(props) {
 		division: '',
 		template: '',
 		templateId: '',
-		transactionId: '',
 		question: '',
-		questionType: '',
 		result: '',
-		what3words: '',
-		lattitude: null,
-		longitude: null, 
-		created: null,
-		createdBy: '',
+		count: 0,
 	  }]);
 
 	const [summaryData, setSummaryData] = useState([{
@@ -103,6 +97,16 @@ export default function ResultSummary(props) {
 		return new Date(value);
 	  }
 	
+	const updateElement = (index, newValue) => {
+		setSummaryData(prevArray => prevArray.map((item, i) => {
+			if (i === index) {
+				return newValue;
+			} else {
+				return item;
+			}
+		}));
+	}
+
 	function summarizeData (result, question) {
 		var isFound = false;
 
@@ -111,33 +115,38 @@ export default function ResultSummary(props) {
 		}
 		const resultArr = result.split("|");
 		resultArr.map(rslt => {
-			summaryData.map(item => 
-				item.question.includes(question) && item.result.includes(rslt) ?
-			null : null)
+			const existing = summaryData.filter(item => item.question.includes(question) && item.result.includes(rslt));
+			if (existing && existing.length > 0) {
+				summaryData.map((item, index) => 
+					item.question.includes(question) && item.result.includes(rslt) ?
+					updateElement(index, 
+						{ 
+							question: item.question,
+							result: item.result,
+							count: item.count+1
+						}) : null)
+			} else {
+				setSummaryData([...summarizeData, 
+					{ question: question,
+						result: rslt,
+						count: 1
+					}
+				]);
+			}
+
 		});
+		
 	}
 
 	  function translateUserTemplates (items) {
-		const item = JSON.parse(items[0]);
-		var data = [{id: uuidv4(),
-			company: item.company, 
-			companyId: item.company_id, 
-			divisionId: item.division_id,
-			division: item.division,
-			template: item.template,
-			templateId: item.template_id,
-			transactionId: item.transaction_id,
-			question: item.question,
-			questionType: item.question_type,
-			result: item.result,
-			created: getDate(item.created),
-			what3words: item.what3words,
-			lattitude: item.lat,
-			longitude: item.lng,
-			createdBy: item.created_by,
-		  }];
-		for (var i=1; i < items.length; i++) {
+
+		for (var i=0; i < items.length; i++) {
 		  const item = JSON.parse(items[i]);
+		  summarizeData(item.result, item.question);
+		}
+		const item = JSON.parse(items[0]);
+		var data = [];
+		for (var i=0; i < summaryData.length; i++) {
 		  data.push(
 			{id: uuidv4(),
 				company: item.company, 
@@ -146,15 +155,9 @@ export default function ResultSummary(props) {
 				division: item.division,
 				template: item.template,
 				templateId: item.template_id,
-				transactionId: item.transaction_id,
-				question: item.question,
-				questionType: item.question_type,
-				result: item.result,
-				created: getDate(item.created),
-				what3words: item.what3words,
-				lattitude: item.lat,
-				longitude: item.lng,
-				createdBy: item.created_by,}
+				question: summaryData[i].question,
+				result: summaryData[i].result,
+				count: summaryData[i].count}
 		  );
 		}
 		return data;
@@ -309,46 +312,15 @@ export default function ResultSummary(props) {
 			headerName: 'Template', 
 			width: 150, 
 			headerClassName: 'grid-headers' },
-		{ field: 'transactionId', 
-			headerName: 'Transaction Id', 
-			valueGetter: (value) => {
-				return value.substring(1, 4) + "..."; },
-			width: 80, 
-			headerClassName: 'grid-headers' },
 		{ field: 'question',
 			headerName: 'Question',
 			width: 180, 
 		  	headerClassName: 'grid-headers' },
 		{ field: 'result',
 			headerName: 'Result',
-			valueGetter: (value) => {
-				if (value == null) {
-					return null;
-				}
-				const valueParsed = value.toString().replaceAll("|", " and ");
-				return valueParsed },
 			width: 180, 
 			headerClassName: 'grid-headers' },
-		{ field: 'what3words', headerName: 'What3words', width: 150, headerClassName: 'grid-headers' },
-		{ field: 'lattitude', headerName: 'Latitude', width: 110, headerClassName: 'grid-headers' },
-		{ field: 'longitude', headerName: 'Longitude', width: 110, headerClassName: 'grid-headers' },
-		{ field: 'created', type: 'dateTime', headerName: 'Post Date', width: 120, headerClassName: 'grid-headers' },
-		{ field: 'createdBy', headerName: 'Creator', width: 150, headerClassName: 'grid-headers' },
-		{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
-			type: 'actions',
-			width: 80,
-			getActions: ({ id }) => {
-				const row = userData.filter((row) => row.id == id);
-				return [
-				<Tooltip title="View On Map">
-					<GridActionsCellItem icon={<MapIcon />} label="Map" color='success' onClick={handleMapIt(id)} />
-				</Tooltip>,
-				<Tooltip title="View Photo">
-					<GridActionsCellItem icon={<PhotoCameraIcon />} label="Photo" color='success' disabled={row[0].questionType=='photo' ? false : true} onClick={handlePhoto(id)} />
-				</Tooltip>,
-				]
-			}
-		}
+		{ field: 'count', headerName: 'Count', width: 150, headerClassName: 'grid-headers' },
 	  ];
 
 	const handleClose = () => {
