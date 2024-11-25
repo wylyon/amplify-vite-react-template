@@ -180,7 +180,11 @@ export default function ResultSummary(props) {
 	const allResultTemplates = async () => {
 		const { data: items, errors } = 
 		props.filter == null ?
+			props.templateId == null ?
 			await client.queries.resultsTotals() :
+			await client.queries.resultsTotalsByTemplateId({
+				templateId: props.templateId
+			}) :
 			await client.queries.resultsTotalsByCompanyId({
 				companyId: props.filter.id
 			})
@@ -199,7 +203,7 @@ export default function ResultSummary(props) {
 					data = data + "|" + item.template_id + "!" + item.title;
 				}
 				setAllTemplates(data);
-				setNeedTemplate(true);
+				setNeedTemplate(props.templateId == null);
 			  }			
 		}
 		setLoading(false);

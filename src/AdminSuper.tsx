@@ -110,6 +110,11 @@ export default function AdminSuper(props) {
 		setHValue(2);
 	}
 
+	const handleOnRowSelectResults = (id) => {
+		setTemplateId(id);
+		setHValue(3);
+	}
+	
   return (
 	<Box
 		sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex', height: 1000 }}>
@@ -158,10 +163,10 @@ export default function AdminSuper(props) {
 				<SummaryByTemplate props={props} filter={null} googleAPI={props.googleAPI} templateId={templateId} onRowSelect={handleOnRowSelectSummaryTemplate} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={2}>
-				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} transactionId={templateId} />
+				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} transactionId={templateId}  onRowSelect={handleOnRowSelectResults} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={3}>
-				<ResultSummary props={props} filter={null} />
+				<ResultSummary props={props} filter={null} templateId={templateId}/>
 			</CustomTabPanel>
 		</TabPanel>
 	</Box>
