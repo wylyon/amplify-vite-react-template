@@ -9,6 +9,7 @@ import UserGrid from '../src/UserGrid';
 import SummaryAllResults from '../src/SummaryAllResults';
 import SummaryByTemplate from '../src/SummaryByTemplate';
 import ResultsByTemplate from '../src/ResultsByTemplate';
+import ResultSummary from '../src/ResultSummary';
 import * as React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -129,6 +130,11 @@ export default function AdminMain(props) {
 		setHValue(2);
 	}
 
+	const handleOnRowSelectResults = (id) => {
+		setTemplateId(id);
+		setHValue(3);
+	}
+
 	useEffect(() => {
 		getCompanyById(props.companyId);
 	}, []);
@@ -171,6 +177,7 @@ export default function AdminMain(props) {
 				<Tab label="Summary All Results" {...a11yHProps(0)} />
 				<Tab label="Summary By Template" {...a11yHProps(1)} />
 				<Tab label="Detailed Report By Template" {...a11yHProps(2)} />
+				<Tab label="Other Analytics" {...a11yHProps(3)} />
 			</Tabs>
 			<CustomTabPanel value={hValue} index={0}>
 				<SummaryAllResults props={props} filter={null} onRowSelect={handleOnRowSelectSummaryAll} />
@@ -179,7 +186,10 @@ export default function AdminMain(props) {
 				<SummaryByTemplate props={props} filter={null} googleAPI={props.googleAPI} templateId={templateId} onRowSelect={handleOnRowSelectSummaryTemplate} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={2}>
-				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} transactionId={templateId} />
+				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} transactionId={templateId} onRowSelect={handleOnRowSelectResults} />
+			</CustomTabPanel>
+			<CustomTabPanel value={hValue} index={3}>
+				<ResultSummary props={props} filter={null} templateId={templateId} />
 			</CustomTabPanel>
 		</TabPanel>
 		<TabPanel value={value} index={4}>

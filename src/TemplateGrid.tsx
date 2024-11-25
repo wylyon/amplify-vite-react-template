@@ -302,17 +302,6 @@ export default function TemplateGrid(props) {
 
 	  function handleRowClick (params, event, details) {
 	}
-  
-	function handleRowSelection (rowSelectionModel, details) {
-	  // called on checkbox for row.   
-	  if (rowSelectionModel.length == 0) {
-
-	  } else {
-		if (rowSelectionModel.length == 1) {
-		} else {
-		}
-	  }
-	}
 
 	const handleRowChangeEvent: GridEventListener<'rowCountChange'> = (params, event, details) => {
 	}
@@ -547,6 +536,24 @@ export default function TemplateGrid(props) {
 		setHtmlId('');
 		setUsePages(false);
 	}
+
+	function handleRowSelection (rowSelectionModel, details) {
+		// called on checkbox for row.   
+		if (rowSelectionModel.length == 0) {
+  
+		} else {
+		  if (rowSelectionModel.length == 1) {
+			const id = rowSelectionModel[0];
+			const row = rows.filter((row) => row.id == id);
+			setHtmlId(id);
+			setPreHtml(row[0].title);
+			setPostHtml(row[0].divisionId);
+			setUsePages(row[0].usePagination);
+			setIsSetupTemplate(true);
+		  } else {
+		  }
+		}
+	  }
 
 	const preProcessEditCellProps = (params: GridPreProcessEditCellProps) => {
 		if (!params.hasChanged) {

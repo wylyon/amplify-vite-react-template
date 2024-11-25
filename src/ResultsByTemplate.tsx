@@ -207,6 +207,8 @@ export default function ResultsByTemplate(props) {
 
 	  } else {
 		if (rowSelectionModel.length == 1) {
+			const row = userData.filter((row) => row.id == rowSelectionModel[0]);
+			props.onRowSelect(row[0].templateId);
 		} else {
 		}
 	  }
@@ -287,7 +289,7 @@ export default function ResultsByTemplate(props) {
 			width: 70 },
 		{ field: 'template', 
 			headerName: 'Template', 
-			width: 150, 
+			width: 140, 
 			headerClassName: 'grid-headers' },
 		{ field: 'transactionId', 
 			headerName: 'Transaction Id', 
@@ -297,7 +299,7 @@ export default function ResultsByTemplate(props) {
 			headerClassName: 'grid-headers' },
 		{ field: 'question',
 			headerName: 'Question',
-			width: 180, 
+			width: 170, 
 		  	headerClassName: 'grid-headers' },
 		{ field: 'result',
 			headerName: 'Result',
@@ -307,12 +309,12 @@ export default function ResultsByTemplate(props) {
 				}
 				const valueParsed = value.toString().replaceAll("|", " and ");
 				return valueParsed },
-			width: 180, 
+			width: 170, 
 			headerClassName: 'grid-headers' },
 		{ field: 'what3words', headerName: 'What3words', width: 150, headerClassName: 'grid-headers' },
 		{ field: 'lattitude', headerName: 'Latitude', width: 110, headerClassName: 'grid-headers' },
 		{ field: 'longitude', headerName: 'Longitude', width: 110, headerClassName: 'grid-headers' },
-		{ field: 'created', type: 'dateTime', headerName: 'Post Date', width: 120, headerClassName: 'grid-headers' },
+		{ field: 'created', type: 'dateTime', headerName: 'Post Date', width: 100, headerClassName: 'grid-headers' },
 		{ field: 'createdBy', headerName: 'Creator', width: 150, headerClassName: 'grid-headers' },
 		{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
 			type: 'actions',
@@ -429,7 +431,7 @@ function CustomToolbar() {
       </Dialog>
 	<Stack>
 		<Stack direction="row" spacing={2} >
-			{props.transactionId == null && needTemplate && allTemplates.length > 0 && <SelectTemplate props={props} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} /> }
+			{props.transactionId == null && needTemplate && allTemplates.length > 0 && <SelectTemplate props={props} templateName={userData.length > 0 ? userData[0].template : null} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} /> }
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid

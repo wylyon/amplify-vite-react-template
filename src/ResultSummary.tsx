@@ -51,23 +51,24 @@ import SelectTemplate from '../src/SelectTemplate';
 import { StorageImage } from '@aws-amplify/ui-react-storage';
 import '@aws-amplify/ui-react/styles.css';
 import MapIcon from '@mui/icons-material/Map';
-import MapWithGoogle from '../src/MapWithGoogle';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { MenuItem } from '@mui/material';
+import { BarChart } from '@mui/x-charts/BarChart';
+import { PieChart } from '@mui/x-charts/PieChart';
 
 export default function ResultSummary(props) {
 	const [loading, setLoading] = useState(true);
 	const [open, setOpen] = useState(false);
-	const [openMap, setOpenMap] = useState(false);
-	const [openPhoto, setOpenPhoto] = useState(false);
+	const [openGraph, setOpenGraph] = useState(false);
+	const [openChoice, setOpenChoice] = useState(false);
+	const [id, setId] = useState('');
+	const [isBarChart, setIsBarChart] = useState(true);
 	const [error, setError] = useState('');
-	const [deleteId, setDeleteId] = useState('');
 	const [allTemplates, setAllTemplates] = useState('');
 	const [needTemplate, setNeedTemplate] = useState(false);
-	const [lat, setLat] = useState('');
-	const [lng, setLng] = useState('');
-	const [mapKeyId, setMapKeyId] = useState('');
-	const [photo, setPhoto] = useState('');
+	const [graphTopic, setGraphTopic] = useState('');
+	const [graphXAxis, setGraphXAxis] = useState([]);
+	const [graphSeries, setGraphSeries] = useState([]);
 
 	const client = generateClient<Schema>();
 
@@ -84,69 +85,59 @@ export default function ResultSummary(props) {
 		count: 0,
 	  }]);
 
-	const [summaryData, setSummaryData] = useState([{
-		question: '',
-		result: '',
-		count: 0
-	}]);
-
 	function getDate(value) {
 		if (value == null) {
 			return null
 		}
 		return new Date(value);
 	  }
-	
-	const updateElement = (index, newValue) => {
-		setSummaryData(prevArray => prevArray.map((item, i) => {
-			if (i === index) {
-				return newValue;
-			} else {
-				return item;
-			}
-		}));
-	}
 
-	function summarizeData (result, question) {
-		var isFound = false;
-
+	function summarizeData (result, question, sumData) {
 		if (result == null) {
-			return;
+			return [];
 		}
+		var newArr = [...sumData];
 		const resultArr = result.split("|");
 		resultArr.map(rslt => {
-			const existing = summaryData.filter(item => item.question.includes(question) && item.result.includes(rslt));
+			const existing = newArr.filter(item => item.question.includes(question) && item.result.includes(rslt));
 			if (existing && existing.length > 0) {
-				summaryData.map((item, index) => 
+				newArr.map((item, index) => 
 					item.question.includes(question) && item.result.includes(rslt) ?
-					updateElement(index, 
-						{ 
-							question: item.question,
-							result: item.result,
-							count: item.count+1
-						}) : null)
+					newArr[index].count = newArr[index].count+1 : null)
 			} else {
-				setSummaryData([...summarizeData, 
-					{ question: question,
-						result: rslt,
-						count: 1
-					}
-				]);
+				newArr.push({ question: question,
+					result: rslt,
+					count: 1
+				});
 			}
-
 		});
-		
+		return newArr;
 	}
 
 	  function translateUserTemplates (items) {
-
+		var sumData = [];
 		for (var i=0; i < items.length; i++) {
 		  const item = JSON.parse(items[i]);
-		  summarizeData(item.result, item.question);
+		  if (item.question_type != 'photo' && item.result != null) {
+			const resultArr = item.result.split("|");
+			resultArr.map(rslt => {
+				const existing = sumData.filter(comp => comp.question.includes(item.question) && comp.result.includes(rslt));
+				if (existing.length > 0) {
+					sumData.map((comp, index) => 
+						comp.question.includes(item.question) && comp.result.includes(rslt) ?
+					sumData[index].count = sumData[index].count+1 : null)
+				} else {
+					sumData.push({ question: item.question,
+						result: rslt,
+						count: 1
+					});
+				}
+			});
+		  }
 		}
 		const item = JSON.parse(items[0]);
 		var data = [];
-		for (var i=0; i < summaryData.length; i++) {
+		for (var i=0; i < sumData.length; i++) {
 		  data.push(
 			{id: uuidv4(),
 				company: item.company, 
@@ -155,9 +146,9 @@ export default function ResultSummary(props) {
 				division: item.division,
 				template: item.template,
 				templateId: item.template_id,
-				question: summaryData[i].question,
-				result: summaryData[i].result,
-				count: summaryData[i].count}
+				question: sumData[i].question,
+				result: sumData[i].result,
+				count: sumData[i].count}
 		  );
 		}
 		return data;
@@ -183,9 +174,7 @@ export default function ResultSummary(props) {
 				setUserData(data);
 			  }
 		}
-		if (props.transactionId != null) {
-			setLoading(false);
-		}
+		setLoading(false);
 	  }
 
 	const allResultTemplates = async () => {
@@ -224,12 +213,47 @@ export default function ResultSummary(props) {
 	function handleRowClick (params, event, details) {
 	}
   
+	function handleBarChart () {
+		const row = userData.filter((row) => row.id == id);
+		var xAxis = [];
+		var series = [];
+		userData.map(comp => comp.question.includes(row[0].question) ?
+			xAxis.push(comp.result) : null
+		);
+		userData.map(comp => comp.question.includes(row[0].question) ?
+			series.push({ data: [ comp.count ]}, ) : null
+		);
+		setIsBarChart(true);
+		setOpenChoice(false);
+		setGraphTopic(row[0].question);
+		setGraphXAxis([{ scaleType: 'band', data: [xAxis]}]);
+		setGraphSeries(series);
+		setOpenGraph(true);
+	}
+
+	function handlePieChart () {
+		const row = userData.filter((row) => row.id == id);
+		var series = [];
+		var indx = 0;
+		userData.map(comp => comp.question.includes(row[0].question) ?
+				series.push({ id: indx++, value: comp.count, label: comp.result}, )
+			 : null
+		);
+		setIsBarChart(false);
+		setOpenChoice(false);
+		setGraphTopic(row[0].question);
+		setGraphSeries(series);
+		setOpenGraph(true);
+	}
+
 	function handleRowSelection (rowSelectionModel, details) {
 	  // called on checkbox for row.   
 	  if (rowSelectionModel.length == 0) {
 
 	  } else {
 		if (rowSelectionModel.length == 1) {
+			setId(rowSelectionModel[0]);
+			setOpenChoice(true);
 		} else {
 		}
 	  }
@@ -251,14 +275,9 @@ export default function ResultSummary(props) {
 	}
   
 	function onSelectedTemplate (id) {
+		setLoading(true);
 		allResults(id);
 	}
-
-	const renderPhotoCell: GridColDef['renderCell'] = (params) => {
-		const value = params.value.toString().replaceAll("|", " and ");
-		return params.row.questionType == 'photo' ? <StorageImage alt={params.value} path={"picture-submissions/" + params.value}/> : 
-			value;
-		};
 
 	const exportToExcel = () => {
 		const worksheet = XLSX.utils.json_to_sheet(userData);
@@ -269,25 +288,8 @@ export default function ResultSummary(props) {
 		const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
 		const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
 	
-		saveAs(blob, "Log Tool Results By Template.xlsx");
+		saveAs(blob, "Summary Results By Template.xlsx");
 		};
-
-	const handleMapIt = (id: GridRowId) => () => {
-		setLoading(true);
-		const row = userData.filter((row) => row.id == id);
-		setMapKeyId(id);
-		setLat(row[0].lattitude);
-		setLng(row[0].longitude);
-		setOpenMap(true);
-		setLoading(false);
-	}
-
-	const handlePhoto = (id: GridRowId) => () => {
-		const row = userData.filter((row) => row.id == id);
-		setPhoto(row[0].questionType == 'photo' ? row[0].result : '');
-		setError(row[0].question);
-		setOpenPhoto(true);
-	}
 
 	const columns: GridColDef[] = [
 		{ field: 'id', headerName: 'Id'},
@@ -314,30 +316,26 @@ export default function ResultSummary(props) {
 			headerClassName: 'grid-headers' },
 		{ field: 'question',
 			headerName: 'Question',
-			width: 180, 
+			width: 150, 
 		  	headerClassName: 'grid-headers' },
 		{ field: 'result',
 			headerName: 'Result',
-			width: 180, 
+			width: 100, 
 			headerClassName: 'grid-headers' },
-		{ field: 'count', headerName: 'Count', width: 150, headerClassName: 'grid-headers' },
+		{ field: 'count', headerName: 'Count', width: 80, headerClassName: 'grid-headers' },
 	  ];
 
 	const handleClose = () => {
 		setOpen(false);
 		setError('');
-		setDeleteId('');
 	};
 
-	const handleCloseMap = () => {
-		setOpenMap(false);
-		setLat(0);
-		setLng(0);
+	const handleCloseGraph = () => {
+		setOpenGraph(false);
 	}
 
-	const handleClosePhoto = () => {
-		setOpenPhoto(false);
-		setPhoto('');
+	const handleCloseChoice = () => {
+		setOpenChoice(false);
 	}
 
 function CustomToolbar() {
@@ -381,47 +379,65 @@ function CustomToolbar() {
         </DialogActions>
       </Dialog>
       <Dialog
-        open={openPhoto}
-        onClose={handleClosePhoto}
+        open={openChoice}
+        onClose={handleCloseChoice}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"Photo"}
+          Which Type of Charting?
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-			{error}
+			<Button variant='contained' color='info' onClick={handleBarChart}>Bar Chart</Button>
+			<Button variant='contained' color='info' onClick={handlePieChart}>Pie Chart</Button>
           </DialogContentText>
-		  {photo != '' ? <StorageImage alt={photo} path={"picture-submissions/" + photo}/> : "<< No Photo Available >>" }
         </DialogContent>
         <DialogActions>
-          <Button variant='contained' color='error' onClick={handleClosePhoto} autoFocus>
+          <Button variant='contained' color='error' onClick={handleCloseChoice} autoFocus>
             Cancel
           </Button>
         </DialogActions>
       </Dialog>
       <Dialog
-        open={openMap}
-        onClose={handleCloseMap}
-        aria-labelledby="map-dialog-title"
-        aria-describedby="map-dialog-description"
+        open={openGraph}
+        onClose={handleCloseGraph}
+		maxWidth="lg"
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="map-dialog-title">
-          {"Map of " + lat + "," + lng}
+        <DialogTitle id="alert-dialog-title">
+          {graphTopic}
         </DialogTitle>
         <DialogContent>
-			<MapWithGoogle props={props} lat={lat} lng={lng} mapKeyId={mapKeyId} googleAPI={props.googleAPI} />		
+          <DialogContentText id="alert-dialog-description">
+		  	{isBarChart ? <BarChart
+				xAxis={graphXAxis}
+				series={ graphSeries }
+				width={900}
+				height={400}
+		  	/> :
+			 <PieChart
+				series={[
+					{
+						data: graphSeries
+					}
+				]}
+				width={800}
+				height={400}
+				/>
+			}
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button variant='contained' color='error' onClick={handleCloseMap} autoFocus>
+          <Button variant='contained' color='error' onClick={handleCloseGraph} autoFocus>
             Cancel
           </Button>
         </DialogActions>
       </Dialog>
 	<Stack>
 		<Stack direction="row" spacing={2} >
-			{props.transactionId == null && needTemplate && allTemplates.length > 0 && <SelectTemplate props={props} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} /> }
+			{props.transactionId == null && needTemplate && allTemplates.length > 0 && <SelectTemplate props={props} templateName={userData.length > 0 ? userData[0].template : null} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} /> }
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
