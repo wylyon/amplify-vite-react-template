@@ -69,8 +69,8 @@ export default function DetermineMode(props) {
     } else {
       const googleAPI = items.filter(map => map.code.includes('GOOGLE_MAP_API_KEY'));
       setGoogleAPIKey(googleAPI[0].value);
-      const what3wordsAPI = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY'));
-      setWhat3WordsAPIKey(what3wordsAPI[0].value);
+      const what3wordsAPI = items.filter(map => map.code == 'WHAT3WORDS_API_KEY');
+      setWhat3WordsAPIKey(what3wordsAPI == null || what3wordsAPI.length < 1 ? null : what3wordsAPI[0].value);
     }
   }
   const fetchAdmins = (emailId, items) => {

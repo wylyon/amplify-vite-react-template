@@ -56,7 +56,7 @@ export default function DisplayUser(props) {
     apiVersion: ApiVersion.Version3,
   };
   const transport: Transport = axiosTransport();
-  const w3wService: What3wordsService = what3words(apiKey, config, { transport });
+  const w3wService: What3wordsService = apiKey == null ? null : what3words(apiKey, config, { transport });
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
@@ -89,6 +89,10 @@ export default function DisplayUser(props) {
 
   const setGPSWhat3Words = () => {
     setGPS(coords);
+    if (apiKey == null) {
+      setWords('');
+      return;
+    }
     const options: ConvertTo3waOptions = {
       coordinates: { lat: coords.latitude, lng: coords.longitude},
     }
@@ -96,7 +100,10 @@ export default function DisplayUser(props) {
   }
 
   const setGPSWhat3WordsNoCoords = (gpsLat, gpsLong) => {
-
+    if (apiKey == null) {
+      setWords('');
+      return;
+    }
     const options: ConvertTo3waOptions = {
       coordinates: { lat: gpsLat, lng: gpsLong},
     }

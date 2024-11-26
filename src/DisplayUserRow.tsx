@@ -86,7 +86,7 @@ export default function DisplayUserRow(props) {
       });
 
   const API_KEY = props.what3wordsAPI;
-  const client: ConvertTo3waClient = ConvertTo3waClient.init(API_KEY);
+  const client: ConvertTo3waClient =API_KEY == null ? null : ConvertTo3waClient.init(API_KEY);
 
   const handleChangeMultiple = (event: SelectChangeEvent<typeof comboName>) => {
     const {
@@ -96,11 +96,11 @@ export default function DisplayUserRow(props) {
       // On autofill we get a stringified value.
       typeof value === 'string' ? value.split(',') : value,
     );
-    if (coords) {
+    if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
-      
+
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
       .then((res: LocationJsonResponse) => props.onMultiDrop (event, props.question.id, coords, res.words));
@@ -114,7 +114,7 @@ export default function DisplayUserRow(props) {
   const handleDropDown = (event: SelectChangeEvent) => {
     const ddValue = event.target.value as string;
     setDropDownValue(ddValue);
-    if (coords) {
+    if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
@@ -141,7 +141,7 @@ export default function DisplayUserRow(props) {
 
   const handleOther = (value) => {
     setOpen(false);
-    if (coords) {
+    if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
@@ -160,7 +160,7 @@ export default function DisplayUserRow(props) {
         const file = target.files[0];
         const newUrl = URL.createObjectURL(file);
       
-        if (coords) {
+        if (coords && API_KEY != null) {
           const options: ConvertTo3waOptions = {
             coordinates: { lat: coords.latitude, lng: coords.longitude },
           };
@@ -198,7 +198,7 @@ export default function DisplayUserRow(props) {
   const handleToggleChange = (event: React.MouseEvent<HTMLElement>, nextView: string) => {
     setView(nextView);
     props.onNextPage(true);
-    if (coords) {
+    if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
@@ -215,7 +215,7 @@ export default function DisplayUserRow(props) {
   const handleRadioGroup = (event: React.ChangeEvent<HTMLInputElement>) => {
     const rValue = (event.target as HTMLInputElement).value;
     setRadioValue(rValue);
-    if (coords) {
+    if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
@@ -234,7 +234,7 @@ export default function DisplayUserRow(props) {
     const tValue = (event.target as HTMLInputElement).value;
     setTextValue(tValue);
     
-    if (coords) {
+    if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
@@ -246,7 +246,7 @@ export default function DisplayUserRow(props) {
   const handleDate = (event) => {
     const rValue = event.toString();
     setRadioValue(rValue);
-    if (coords) {
+    if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
@@ -263,7 +263,7 @@ export default function DisplayUserRow(props) {
 
   const handleButtonClick = () => {
     const value = props.question.question_values.includes("|") ? props.question.question_values.split("|")[1] : props.question.question_values;
-    if (coords) {
+    if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
@@ -279,7 +279,7 @@ export default function DisplayUserRow(props) {
 
   const handleSwitch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
-    if (coords) {
+    if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
