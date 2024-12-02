@@ -356,7 +356,8 @@ export default function DisplayUserRow(props) {
         <Box component="section"  sx={
           props.useBoxControls==1 || props.useAutoSpacing==1 ?
           { p: 2, border: props.useAutoSpacing==0 ? '1px dashed grey' : '1px'} : {}}>
-          <Typography variant="caption" gutterBottom>{value}</Typography>
+          { props.props.userData[0].usePagination==1 ? <p>{value}</p> :
+          <Typography variant="caption" gutterBottom>{value}</Typography> }
           <ToggleButtonGroup
             key={'tbg_' + props.question.question_order}
             aria-placeholder={'tbg_' + props.question.question_order}
