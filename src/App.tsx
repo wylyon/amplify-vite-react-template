@@ -44,7 +44,7 @@ function App() {
   return (
     <>
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
-    {!isAccessDisabled && <Authenticator  hideSignUp >
+    {!isAccessDisabled && <Authenticator >
       {({ signOut, user }) => (
         <DetermineMode userId={user.signInDetails.loginId} onSubmitChange={signOut}/>
       )}

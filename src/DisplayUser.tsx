@@ -264,8 +264,12 @@ export default function DisplayUser(props) {
     if (currentPage < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length) {
       if (page <= currentPage) {
         setCurrentPage(currentPage+1);
+        setPage(page+1);
       }
     }
+  }
+
+  const handleNextPageNoPaging = (e) => {
   }
 
   const handleOnAlert = (e) => {
@@ -416,7 +420,7 @@ export default function DisplayUser(props) {
               onDate={handleOnDate}
               onButton={handleOnButton}
               onSwitch={handleOnSwitch}
-              onNextPage={handleNextPage}
+              onNextPage={handleNextPageNoPaging}
               nextQuestion={index+1 < props.templateQuestions.length ? props.templateQuestions[index+1] : null}
             /> : null      
           ) :
