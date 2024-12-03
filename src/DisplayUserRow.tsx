@@ -60,6 +60,9 @@ export default function DisplayUserRow(props) {
   const [value, setValue] = useState('');
   const [attributes, setAttributes] = useState('');
   const [checked, setChecked] = useState(false);
+  const [isAlert, setIsAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [theSeverity, setTheSeverity] = useState('error');
 
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
@@ -88,6 +91,30 @@ export default function DisplayUserRow(props) {
   const API_KEY = props.what3wordsAPI;
   const client: ConvertTo3waClient =API_KEY == null ? null : ConvertTo3waClient.init(API_KEY);
 
+  const checkGPS = (showMessage) => {
+    getPosition();
+    if (!isGeolocationAvailable) {
+      setAlertMessage('Your browser does not support Geolocation');
+      setTheSeverity("warning");
+      setIsAlert(true);
+      return false;
+    } else {
+      if (!isGeolocationEnabled) {
+        if (showMessage) {
+          setAlertMessage('Geolocation is not enabled.');
+          setTheSeverity("warning");
+          setIsAlert(true);  
+        }      
+        return false;
+      } else {
+        if (coords) {
+          return true;
+        }
+        return false;
+      }
+    }
+  }
+
   const handleChangeMultiple = (event: SelectChangeEvent<typeof comboName>) => {
     const {
       target: { value },
@@ -96,6 +123,7 @@ export default function DisplayUserRow(props) {
       // On autofill we get a stringified value.
       typeof value === 'string' ? value.split(',') : value,
     );
+    checkGPS(false);
     if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
@@ -114,6 +142,7 @@ export default function DisplayUserRow(props) {
   const handleDropDown = (event: SelectChangeEvent) => {
     const ddValue = event.target.value as string;
     setDropDownValue(ddValue);
+    checkGPS(false);
     if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
@@ -141,6 +170,7 @@ export default function DisplayUserRow(props) {
 
   const handleOther = (value) => {
     setOpen(false);
+    checkGPS(false);
     if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
@@ -159,7 +189,7 @@ export default function DisplayUserRow(props) {
       if (target.files.length !== 0) {
         const file = target.files[0];
         const newUrl = URL.createObjectURL(file);
-      
+        checkGPS(false);
         if (coords && API_KEY != null) {
           const options: ConvertTo3waOptions = {
             coordinates: { lat: coords.latitude, lng: coords.longitude },
@@ -198,6 +228,7 @@ export default function DisplayUserRow(props) {
   const handleToggleChange = (event: React.MouseEvent<HTMLElement>, nextView: string) => {
     setView(nextView);
     props.onNextPage(true);
+    checkGPS(false);
     if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
@@ -215,6 +246,7 @@ export default function DisplayUserRow(props) {
   const handleRadioGroup = (event: React.ChangeEvent<HTMLInputElement>) => {
     const rValue = (event.target as HTMLInputElement).value;
     setRadioValue(rValue);
+    checkGPS(false);
     if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
@@ -233,7 +265,7 @@ export default function DisplayUserRow(props) {
   const handleText = (event: React.ChangeEvent<HTMLInputElement>) => {
     const tValue = (event.target as HTMLInputElement).value;
     setTextValue(tValue);
-    
+    checkGPS(false);
     if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
@@ -246,6 +278,7 @@ export default function DisplayUserRow(props) {
   const handleDate = (event) => {
     const rValue = event.toString();
     setRadioValue(rValue);
+    checkGPS(false);
     if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
@@ -262,6 +295,7 @@ export default function DisplayUserRow(props) {
   };
 
   const handleButtonClick = () => {
+    checkGPS(false);
     const value = props.question.question_values.includes("|") ? props.question.question_values.split("|")[1] : props.question.question_values;
     if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
@@ -279,6 +313,7 @@ export default function DisplayUserRow(props) {
 
   const handleSwitch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
+    checkGPS(false);
     if (coords && API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
@@ -307,7 +342,14 @@ export default function DisplayUserRow(props) {
     document.getElementById(id).click();
   }
 
+  const handleOnAlert = (e) => {
+    setIsAlert(false);
+    setAlertMessage('');
+    setTheSeverity("error");
+  }
+
   useEffect(() => {
+    checkGPS(true);
 	}, []);
 
   function createMarkup(dirty) {
@@ -352,6 +394,9 @@ export default function DisplayUserRow(props) {
       </Dialog>
     { props.questionType == 'toggle_button' ?
       <div>
+        {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
+            {alertMessage}
+          </Alert>}
         <DisplayAttributes props={props} onParsing={handleAttribute}/>
         <Box component="section"  sx={
           props.useBoxControls==1 || props.useAutoSpacing==1 ?

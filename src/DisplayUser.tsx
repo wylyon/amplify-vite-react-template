@@ -140,7 +140,7 @@ export default function DisplayUser(props) {
 
   const primeLatLongWhat3Words = async() => {
     getPosition();
-    if (checkGPS(false)) {
+    if (checkGPS(true)) {
       return;
     }
     getPosition();
