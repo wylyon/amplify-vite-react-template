@@ -424,7 +424,7 @@ export default function DisplayUser(props) {
               nextQuestion={index+1 < props.templateQuestions.length ? props.templateQuestions[index+1] : null}
             /> : null      
           ) :
-        <Box sx={{width: 'auto', height: 'auto', overflow: 'auto'}}>
+        <Box sx={{width: 'auto', height: 'auto', overflow: 'scroll'}}>
           <Stack direction="row" >
             <Stack spacing={2}>
               <Box sx={{width: props.templateQuestions.filter(comp => comp.question_type.includes('photo')).length>0 ? '250px' : 'auto', maxHeight: '500px', overflow: 'auto'}}>
