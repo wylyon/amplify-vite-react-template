@@ -46,7 +46,7 @@ export default function DisplayUser(props) {
   const [page, setPage] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [results, setResults] = useState([]);
-  const [gps, setGPS] = useState<GeolocatedResult>({});
+  const [gps, setGPS] = useState({});
   const [words, setWords] = useState('');
 
   const client = generateClient<Schema>();
@@ -210,8 +210,8 @@ export default function DisplayUser(props) {
   }
 
   const handleGPSWordsandResults = (id, value, type, file, c, w, p ) => {
-    const lat = c == undefined ? gps.latitude : c.latitude;
-    const long = c == undefined ? gps.longitude : c.longitude;
+    const lat = c == undefined ? gps.lat : c.lat;
+    const long = c == undefined ? gps.long : c.long;
     if (c) {
       setGPS(c);
     }
@@ -337,8 +337,8 @@ export default function DisplayUser(props) {
   
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      const formData = new FormData(event.currentTarget);
-      const formJson = Object.fromEntries((formData as any).entries());
+ //     const formData = new FormData(event.currentTarget);
+ //     const formJson = Object.fromEntries((formData as any).entries());
       results.map(comp => 
         comp.type != 'dialog_input' ? 
           (comp.value != null ?
@@ -485,10 +485,10 @@ export default function DisplayUser(props) {
                   color={page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? "success" : "primary"} 
                   type={page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? "button" : "submit"}
                   disabled={page == currentPage && page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length} 
-                  onClick={() => {
+                  onClick={page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? () => {
                     event.preventDefault();
                     setPage(page+1);
-                  }}>{page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? "Next" : "Finished"}
+                  } : handleSubmit}>{page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? "Next" : "Finished"}
                 </Button>
                 <Button variant="contained" color="error" onClick={handleCancel}>Cancel</Button>
               </Stack>

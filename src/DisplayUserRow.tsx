@@ -65,6 +65,7 @@ export default function DisplayUserRow(props) {
   const [isAlert, setIsAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [theSeverity, setTheSeverity] = useState('error');
+  const [nextCall, setNextCall] = useState({});
 
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
@@ -76,19 +77,6 @@ export default function DisplayUserRow(props) {
     },
   },
   };
-
-  const { coords, 
-    isGeolocationAvailable, 
-    isGeolocationEnabled,
-    getPosition,
-    positionError } =
-      useGeolocated({
-          positionOptions: {
-              enableHighAccuracy: false,
-          },
-          userDecisionTimeout: 5000,
-          watchLocationPermissionChange: true,
-      });
 
   const API_KEY = props.what3wordsAPI;
   const client: ConvertTo3waClient =API_KEY == null ? null : ConvertTo3waClient.init(API_KEY);
@@ -117,7 +105,7 @@ export default function DisplayUserRow(props) {
     }
   }
 
-  const handleChangeMultiple = (event: SelectChangeEvent<typeof comboName>) => {
+  const handleChangeMultiple = async(event: SelectChangeEvent<typeof comboName>) => {
     const {
       target: { value },
     } = event;
@@ -125,36 +113,61 @@ export default function DisplayUserRow(props) {
       // On autofill we get a stringified value.
       typeof value === 'string' ? value.split(',') : value,
     );
-    checkGPS(false);
-    if (coords && API_KEY != null) {
+  //      checkGPS(false);
+  var coordinates = {lat: 0, long: 0};
+  try {
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+    coordinates.lat = position.coords.latitude;
+    coordinates.long = position.coords.longitude;
+  } catch (error) {
+    setAlertMessage(error);
+    setTheSeverity("warning");
+    setIsAlert(true);
+  }
+  if (API_KEY != null) {
+
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
 
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onMultiDrop (event, props.question.id, coords, res.words, props.whatPage));
+      .then((res: LocationJsonResponse) => props.onMultiDrop (event, props.question.id, coordinates, res.words, props.whatPage));
     } else {
-      props.onMultiDrop (event, props.question.id, coords, '', props.whatPage);
+      props.onMultiDrop (event, props.question.id, coordinates, '', props.whatPage);
     }
 
     props.onNextPage(true);
   };
 
-  const handleDropDown = (event: SelectChangeEvent) => {
+  const handleDropDown = async(event: SelectChangeEvent) => {
     const ddValue = event.target.value as string;
     setDropDownValue(ddValue);
-    checkGPS(false);
-    if (coords && API_KEY != null) {
+  //      checkGPS(false);
+  var coordinates = {lat: 0, long: 0};
+  try {
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+    coordinates.lat = position.coords.latitude;
+    coordinates.long = position.coords.longitude;
+  } catch (error) {
+    setAlertMessage(error);
+    setTheSeverity("warning");
+    setIsAlert(true);
+  }
+  if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onDrop (ddValue, props.question.id, coords, res.words, props.whatPage));
+      .then((res: LocationJsonResponse) => props.onDrop (ddValue, props.question.id, coordinates, res.words, props.whatPage));
     } else {
-      props.onDrop (ddValue, props.question.id, coords, '', props.whatPage);
+      props.onDrop (ddValue, props.question.id, coordinates, '', props.whatPage);
     }
 
     props.onNextPage(true);
@@ -170,38 +183,62 @@ export default function DisplayUserRow(props) {
     setOpen(false);
   };
 
-  const handleOther = (value) => {
+  const handleOther = async(value) => {
     setOpen(false);
-    checkGPS(false);
-    if (coords && API_KEY != null) {
+  //      checkGPS(false);
+  var coordinates = {lat: 0, long: 0};
+  try {
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+    coordinates.lat = position.coords.latitude;
+    coordinates.long = position.coords.longitude;
+  } catch (error) {
+    setAlertMessage(error);
+    setTheSeverity("warning");
+    setIsAlert(true);
+  }
+  if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onOtherChange(value, props.question.id, coords, res.words, props.whatPage));
+      .then((res: LocationJsonResponse) => props.onOtherChange(value, props.question.id, coordinates, res.words, props.whatPage));
     } else {
-      props.onOtherChange(value, props.question.id, coords, '', props.whatPage);
+      props.onOtherChange(value, props.question.id, coordinates, '', props.whatPage);
     }
   };
 
-  const handleCapture = (target) => {
+  const handleCapture = async(target) => {
     if (target.files) {
       if (target.files.length !== 0) {
         const file = target.files[0];
         const newUrl = URL.createObjectURL(file);
-        checkGPS(false);
-        if (coords && API_KEY != null) {
+  //      checkGPS(false);
+        var coordinates = {lat: 0, long: 0};
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+          });
+          coordinates.lat = position.coords.latitude;
+          coordinates.long = position.coords.longitude;
+        } catch (error) {
+          setAlertMessage(error);
+          setTheSeverity("warning");
+          setIsAlert(true);
+        }
+        if (API_KEY != null) {
           const options: ConvertTo3waOptions = {
             coordinates: { lat: coords.latitude, lng: coords.longitude },
           };
 
           client
           .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-          .then((res: LocationJsonResponse) => props.onPicture(file, props.question.id, coords, res.words, newUrl, props.whatPage ));
+          .then((res: LocationJsonResponse) => props.onPicture(file, props.question.id, coordinates, res.words, newUrl, props.whatPage ));
         } else {
-          props.onPicture(file, props.question.id, coords, '', newUrl, props.whatPage);
+          props.onPicture(file, props.question.id, coordinates, '', newUrl, props.whatPage);
         }
 
         if (props.props.userData[0].usePagination==0) {
@@ -227,124 +264,209 @@ export default function DisplayUserRow(props) {
     return;
   }
 
-  const handleToggleChange = (event: React.MouseEvent<HTMLElement>, nextView: string) => {
+  const handleToggleChange = async(event: React.MouseEvent<HTMLElement>, nextView: string) => {
     setView(nextView);
     props.onNextPage(true);
-    checkGPS(false);
-    if (coords && API_KEY != null) {
-      const options: ConvertTo3waOptions = {
+   //      checkGPS(false);
+   var coordinates = {lat: 0, long: 0};
+   try {
+     const position = await new Promise((resolve, reject) => {
+       navigator.geolocation.getCurrentPosition(resolve, reject);
+     });
+     coordinates.lat = position.coords.latitude;
+     coordinates.long = position.coords.longitude;
+   } catch (error) {
+     setAlertMessage(error);
+     setTheSeverity("warning");
+     setIsAlert(true);
+   }
+   if (API_KEY != null) {
+     const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onChange(event, coords, res.words, props.whatPage, 'toggle_button', event.target.value));
+      .then((res: LocationJsonResponse) => props.onChange(event, coordinates, res.words, props.whatPage, 'toggle_button', event.target.value));
     } else {
-      props.onChange(event, coords, '', props.whatPage, 'toggle_button', event.target.value);
+        props.onChange(event, coordinates, '', props.whatPage, 'toggle_button', event.target.value);
     }
     trigger_check(nextView);
   };
 
-  const handleMultipleToggleChange = (event: React.MouseEvent<HTMLElement>, newChanges: string[]) => {
+  const handleMultipleToggleChange = async(event: React.MouseEvent<HTMLElement>, newChanges: string[]) => {
     setMView(newChanges);
     props.onNextPage(true);
-    checkGPS(false);
-    if (coords && API_KEY != null) {
+   //      checkGPS(false);
+   var coordinates = {lat: 0, long: 0};
+   try {
+     const position = await new Promise((resolve, reject) => {
+       navigator.geolocation.getCurrentPosition(resolve, reject);
+     });
+     coordinates.lat = position.coords.latitude;
+     coordinates.long = position.coords.longitude;
+   } catch (error) {
+     setAlertMessage(error);
+     setTheSeverity("warning");
+     setIsAlert(true);
+   }
+   if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onChange(event, coords, res.words, props.whatPage, 'checkbox_button', newChanges.join("|")));
+      .then((res: LocationJsonResponse) => props.onChange(event, coordinates, res.words, props.whatPage, 'checkbox_button', newChanges.join("|")));
     } else {
-      props.onChange(event, coords, '', props.whatPage, 'checkbox_button', newChanges.join("|"));
+        props.onChange(event, coordinates, '', props.whatPage, 'checkbox_button', newChanges.join("|"));
     }
 
     trigger_check(newChanges[newChanges.length-1]);
   };
 
-  const handleRadioGroup = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRadioGroup = async(event: React.ChangeEvent<HTMLInputElement>) => {
     const rValue = (event.target as HTMLInputElement).value;
     setRadioValue(rValue);
-    checkGPS(false);
-    if (coords && API_KEY != null) {
+  //      checkGPS(false);
+  var coordinates = {lat: 0, long: 0};
+  try {
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+    coordinates.lat = position.coords.latitude;
+    coordinates.long = position.coords.longitude;
+  } catch (error) {
+    setAlertMessage(error);
+    setTheSeverity("warning");
+    setIsAlert(true);
+  }
+  if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onRadio (rValue, props.question.id, coords, res.words, props.whatPage));
+      .then((res: LocationJsonResponse) => props.onRadio (rValue, props.question.id, coordinates, res.words, props.whatPage));
     } else {
-      props.onRadio (rValue, props.question.id, coords, '', props.whatPage);
+      props.onRadio (rValue, props.question.id, coordinates, '', props.whatPage);
     }
 
     props.onNextPage(true);
   };
 
-  const handleText = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleText = async(event: React.ChangeEvent<HTMLInputElement>) => {
     const tValue = (event.target as HTMLInputElement).value;
     setTextValue(tValue);
-    checkGPS(false);
-    if (coords && API_KEY != null) {
+  //      checkGPS(false);
+  var coordinates = {lat: 0, long: 0};
+  try {
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+    coordinates.lat = position.coords.latitude;
+    coordinates.long = position.coords.longitude;
+  } catch (error) {
+    setAlertMessage(error);
+    setTheSeverity("warning");
+    setIsAlert(true);
+  }
+  if (API_KEY != null) {
+
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
     } 
-    props.onText (tValue, props.question.id, coords, '', props.question.question_type, props.whatPage);
+    props.onText (tValue, props.question.id, coordinates, '', props.question.question_type, props.whatPage);
     props.onNextPage(true);
   }
 
-  const handleDate = (event) => {
+  const handleDate = async(event) => {
     const rValue = event.toString();
     setRadioValue(rValue);
-    checkGPS(false);
-    if (coords && API_KEY != null) {
+  //      checkGPS(false);
+  var coordinates = {lat: 0, long: 0};
+  try {
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+    coordinates.lat = position.coords.latitude;
+    coordinates.long = position.coords.longitude;
+  } catch (error) {
+    setAlertMessage(error);
+    setTheSeverity("warning");
+    setIsAlert(true);
+  }
+  if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onDate (rValue, props.question.id, coords, res.words, props.whatPage));
+      .then((res: LocationJsonResponse) => props.onDate (rValue, props.question.id, coordinates, res.words, props.whatPage));
     } else {
-      props.onDate (rValue, props.question.id, coords, '', props.whatPage);
+      props.onDate (rValue, props.question.id, coordinates, '', props.whatPage);
     }
 
     props.onNextPage(true);
   };
 
-  const handleButtonClick = () => {
-    checkGPS(false);
+  const handleButtonClick = async() => {
     const value = props.question.question_values.includes("|") ? props.question.question_values.split("|")[1] : props.question.question_values;
-    if (coords && API_KEY != null) {
+  //      checkGPS(false);
+  var coordinates = {lat: 0, long: 0};
+  try {
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+    coordinates.lat = position.coords.latitude;
+    coordinates.long = position.coords.longitude;
+  } catch (error) {
+    setAlertMessage(error);
+    setTheSeverity("warning");
+    setIsAlert(true);
+  }
+  if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onButton (value, props.question.id, props.question.question_type, coords, res.words, props.whatPage));
+      .then((res: LocationJsonResponse) => props.onButton (value, props.question.id, props.question.question_type, coordinates, res.words, props.whatPage));
     } else {
-      props.onButton (value, props.question.id, props.question.question_type, coords, '', props.whatPage);
+      props.onButton (value, props.question.id, props.question.question_type, coordinates, '', props.whatPage);
     }      
 
     props.onNextPage(true);
   }
 
-  const handleSwitch = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSwitch = async(event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
-    checkGPS(false);
-    if (coords && API_KEY != null) {
+  //      checkGPS(false);
+  var coordinates = {lat: 0, long: 0};
+  try {
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+    coordinates.lat = position.coords.latitude;
+    coordinates.long = position.coords.longitude;
+  } catch (error) {
+    setAlertMessage(error);
+    setTheSeverity("warning");
+    setIsAlert(true);
+  }
+  if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onSwitch (event.target.checked.toString(), props.question.id, coords, res.words, props.whatPage));
+      .then((res: LocationJsonResponse) => props.onSwitch (event.target.checked.toString(), props.question.id, coordinates, res.words, props.whatPage));
     } else {
-      props.onSwitch (event.target.checked.toString(), props.question.id, coords, '', props.whatPage);
+      props.onSwitch (event.target.checked.toString(), props.question.id, coordinates, '', props.whatPage);
     }
 
     props.onNextPage(true);
@@ -370,7 +492,7 @@ export default function DisplayUserRow(props) {
   }
 
   useEffect(() => {
-    checkGPS(true);
+ //   checkGPS(true);
 	}, []);
 
   function createMarkup(dirty) {
