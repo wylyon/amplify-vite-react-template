@@ -17,6 +17,10 @@ import DisplayUserRow from '../src/DisplayUserRow';
 import Typography from '@mui/material/Typography';
 import Pagination from '@mui/material/Pagination';
 import PaginationItem from '@mui/material/PaginationItem';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 import { disable } from "aws-amplify/analytics";
 import { v4 as uuidv4 } from 'uuid';
 import { generateClient } from 'aws-amplify/data';
@@ -33,7 +37,7 @@ import what3words, {
 } from '@what3words/api';
 
 export default function DisplayUser(props) {
-  const [source, setSource] = useState('');
+  const [source, setSource] = useState({});
   const [isAlert, setIsAlert] = useState(false);
   const [wait, setWait] = useState(true);
   const [alertMessage, setAlertMessage] = useState('');
@@ -63,7 +67,7 @@ export default function DisplayUser(props) {
   }
 
   const resetState = () => {
-    setSource('');
+    setSource({});
     setPage(1);
     setResults([]);
   }
@@ -148,20 +152,20 @@ export default function DisplayUser(props) {
     setWait(false);
   }
 
-  const getLatLongResults = async(id, value, type, file, gpsLat, gpsLong, word) => {
+  const getLatLongResults = async(id, value, type, file, gpsLat, gpsLong, word, pg) => {
     if (gpsLat == '') {
       getPosition();
       checkGPS(false);
       if (coords) {
         setGPSWhat3Words();
   
-        setResultTally(id, value, type, file, coords.latitude, coords.longitude, words == '' ? word : words);
+        setResultTally(id, value, type, file, coords.latitude, coords.longitude, words == '' ? word : words, pg);
       } else {
         setGPSWhat3WordsNoCoords(gpsLat, gpsLong);
-        setResultTally(id, value, type, file, gpsLat, gpsLong, word);
+        setResultTally(id, value, type, file, gpsLat, gpsLong, word, pg);
       }
     } else {
-      setResultTally(id, value, type, file, gpsLat, gpsLong, word);
+      setResultTally(id, value, type, file, gpsLat, gpsLong, word, pg);
     }
 
   }
@@ -169,28 +173,28 @@ export default function DisplayUser(props) {
   const setTally = () => {
     var newTally = [];
     props.templateQuestions.map(comp => newTally.push({id: comp.id, value: null, type: comp.question_type, 
-      file: null, lat: null, long: null, what3words: null}));
+      file: null, lat: null, long: null, what3words: null, page: null}));
     setResults(newTally);
   }
 
-  const setResultTally = (id, value, type, file, lat, long, what3words) => {
+  const setResultTally = (id, value, type, file, lat, long, what3words, pg) => {
     var newTally = [];
     const result = results.find(result => result.id === id);
     if (result) {
       for (var i = 0; i < results.length; i++) {
         if (results[i].id === id) {
-           newTally.push({id: id, value: value, type: results[i].type, file: file, lat: lat, long: long, what3words: what3words});
+           newTally.push({id: id, value: value, type: results[i].type, file: file, lat: lat, long: long, what3words: what3words, page: pg});
         } else {
           newTally.push({id: results[i].id, value: results[i].value, type: results[i].type, file: results[i].file, lat: results[i].lat, 
-            long: results[i].long, what3words: results[i].what3words});
+            long: results[i].long, what3words: results[i].what3words, page: results[i].page});
         }
       }
     } else {
       for (var i = 0; i < results.length; i++) {
         newTally.push({id: results[i].id, value: results[i].value, type: results[i].type, file: results[i].file, lat: results[i].lat, 
-          long: results[i].long, what3words: results[i].what3words});
+          long: results[i].long, what3words: results[i].what3words, page: results[i].page});
       }
-      newTally.push({id: id, value: value, type: type, file: file, lat: lat, long: long, what3words: what3words});     
+      newTally.push({id: id, value: value, type: type, file: file, lat: lat, long: long, what3words: what3words, page: pg});     
     }
     setResults(newTally);
   }
@@ -205,7 +209,7 @@ export default function DisplayUser(props) {
     props.onSubmitChange(false);
   }
 
-  const handleGPSWordsandResults = (id, value, type, file, c, w ) => {
+  const handleGPSWordsandResults = (id, value, type, file, c, w, p ) => {
     const lat = c == undefined ? gps.latitude : c.latitude;
     const long = c == undefined ? gps.longitude : c.longitude;
     if (c) {
@@ -214,50 +218,50 @@ export default function DisplayUser(props) {
     if (w && w != '') {
       setWords(w);
     }
-    getLatLongResults(id, value, type, file, lat, long, w==undefined || w=='' ? words : w);
+    getLatLongResults(id, value, type, file, lat, long, w==undefined || w=='' ? words : w, p);
   }
 
-  const handleOnSubmitOther = (value, id, c, w) => {
-    handleGPSWordsandResults(id, value, 'dialog_input', null, c, w);
+  const handleOnSubmitOther = (value, id, c, w, p) => {
+    handleGPSWordsandResults(id, value, 'dialog_input', null, c, w, p);
   }
 
-  const handleToggleChange = (e, c, w) => {
-    handleGPSWordsandResults(e.target.ariaPlaceholder, e.target.value, 'toggle_button', null, c, w);
+  const handleToggleChange = (e, c, w, p, t, v) => {
+    handleGPSWordsandResults(e.target.ariaPlaceholder, v, t, null, c, w, p);
   }
 
-  const handleOnPicture = (file, id, c, w, s) => {
+  const handleOnPicture = (file, id, c, w, s, p) => {
     if (props.userData[0].usePagination==1) {
-      setSource(s);
+      setSource({ source: s, page: p});
     }
-    handleGPSWordsandResults(id, file.name, 'photo', file, c, w);
+    handleGPSWordsandResults(id, file.name, 'photo', file, c, w, p);
   }
 
-  const handleOnMultiDrop = (e, id, c, w) => {
-    e.target.value == null ? handleGPSWordsandResults(id, null, 'multiple_dropdown', null, c, w) : handleGPSWordsandResults(id, e.target.value.join("|"),'multiple_dropdown', null, c, w);
+  const handleOnMultiDrop = (e, id, c, w, p) => {
+    e.target.value == null ? handleGPSWordsandResults(id, null, 'multiple_dropdown', null, c, w, p) : handleGPSWordsandResults(id, e.target.value.join("|"),'multiple_dropdown', null, c, w, p);
   }
 
-  const handleOnDrop = (v, id, c, w) => {
-    v == null ? handleGPSWordsandResults(id, null, 'dropdown', null, c, w) : handleGPSWordsandResults(id, v, 'dropdown', null, c, w);
+  const handleOnDrop = (v, id, c, w, p) => {
+    v == null ? handleGPSWordsandResults(id, null, 'dropdown', null, c, w, p) : handleGPSWordsandResults(id, v, 'dropdown', null, c, w, p);
   }
 
-  const handleOnRadio = (v, id, c, w) => {
-    v == null ? handleGPSWordsandResults(id, null, 'radiobox', null, c, w) : handleGPSWordsandResults(id, v, 'radiobox', null, c, w);
+  const handleOnRadio = (v, id, c, w, p) => {
+    v == null ? handleGPSWordsandResults(id, null, 'radiobox', null, c, w, p) : handleGPSWordsandResults(id, v, 'radiobox', null, c, w, p);
   }
 
-  const handleOnText = (v, id, c, w, t) => {
-    v == null ? handleGPSWordsandResults(id, null, t, null, c, w) : handleGPSWordsandResults(id, v, t, null, c, w);
+  const handleOnText = (v, id, c, w, t, p) => {
+    v == null ? handleGPSWordsandResults(id, null, t, null, c, w, p) : handleGPSWordsandResults(id, v, t, null, c, w, p);
   }
 
-  const handleOnDate = (v, id, c, w) => {
-    v == null ? handleGPSWordsandResults(id, null, 'datepicker', null, c, w) : handleGPSWordsandResults(id, v, 'datepicker', null, c, w);
+  const handleOnDate = (v, id, c, w, p) => {
+    v == null ? handleGPSWordsandResults(id, null, 'datepicker', null, c, w, p) : handleGPSWordsandResults(id, v, 'datepicker', null, c, w, p);
   }
 
-  const handleOnButton = (v, id, t, c, w) => {
-    handleGPSWordsandResults(id, v, t , null, c, w);
+  const handleOnButton = (v, id, t, c, w, p) => {
+    handleGPSWordsandResults(id, v, t , null, c, w, p);
   }
 
-  const handleOnSwitch = (v, id, c, w) => {
-    handleGPSWordsandResults(id, v, 'switch', null, c, w);
+  const handleOnSwitch = (v, id, c, w, p) => {
+    handleGPSWordsandResults(id, v, 'switch', null, c, w, p);
   }
 
   const handleNextPage = (e) => {
@@ -410,6 +414,7 @@ export default function DisplayUser(props) {
               useAutoSpacing={props.userData[0].useAutoSpacing}
               question={comp}
               what3wordsAPI={props.what3wordsAPI}
+              whatPage={0}
               onOtherChange={handleOnSubmitOther}
               onChange={handleToggleChange}
               onPicture={handleOnPicture}
@@ -437,6 +442,7 @@ export default function DisplayUser(props) {
                   useBoxControls={props.userData[0].useBoxControls}
                   useAutoSpacing={props.userData[0].useAutoSpacing}
                   what3wordsAPI={props.what3wordsAPI}
+                  whatPage={page}
                   question={getNonDialogQuestion(page - 1)}
                   onOtherChange={handleOnSubmitOther}
                   onChange={handleToggleChange}
@@ -455,24 +461,68 @@ export default function DisplayUser(props) {
               <Pagination count={currentPage} 
                 page={page} 
                 onChange={handlePageChange} 
+                showFirstButton={true}
+                showLastButton={true}
+                renderItem={(item) => (
+                  <PaginationItem
+                    slots={{ previous: ArrowBackIcon, next: ArrowForwardIcon }}
+                  />
+                )}
                 color="primary"
                 size="large"
               />
+              <Stack direction="row">
+                <Button variant="contained" color="success" disabled={page == 1} onClick={() => {
+                  event.preventDefault();
+                  setPage(page-1);
+                }}>Previous</Button>
+                <Button variant="contained" 
+                  color={page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? "success" : "primary"} 
+                  type={page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? "button" : "submit"}
+                  disabled={page == currentPage && page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length} 
+                  onClick={() => {
+                    event.preventDefault();
+                    setPage(page+1);
+                  }}>{page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? "Next" : "Finished"}
+                </Button>
+                <Button variant="contained" color="error" onClick={handleCancel}>Cancel</Button>
+              </Stack>
             </Stack>
-            {source && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
+            <Stack direction="column">
+            {Object.keys(source).length > 0 && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
               <Box sx={{ width: 100, height: 100, borderRadius: 1}}>
-                <img src={source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}}></img>
+                <img src={source.source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}} 
+                  onClick={() => {
+                    event.preventDefault();
+                    setPage(source.page);
+                  }}></img>
               </Box> 
             </Paper> }
+            <Stack spacing={1}>
+              {results.map(comp => comp.type != 'dialog_input' && comp.type != 'photo' && comp.value != null ? 
+              <Breadcrumbs aria-label="breadcrumb" key={"b"+comp.id}>
+                <Link component="button" variant="caption" key={comp.id}
+                  onClick={() => {
+                    event.preventDefault();
+                    setPage(comp.page);
+                  }}
+                >
+                  {comp.value}
+                </Link>
+              </Breadcrumbs>
+              : null)}
+            </Stack>
+            </Stack>
           </Stack>
         </Box>
         }
+        {props.userData[0].usePagination==0 ?
         <Stack spacing={2} direction="row">
           <Button variant="contained" 
             disabled={props.userData[0].usePagination==0 ? false : page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? true : false} 
             type="submit">Save</Button>
           <Button variant="contained" color="error" onClick={handleCancel}>Cancel</Button>
-        </Stack>
+        </Stack> : null }
         </Stack>
       </form> }
       </Paper>

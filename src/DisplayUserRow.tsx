@@ -13,6 +13,7 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import { Check, CheckBox, Label } from "@mui/icons-material";
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import Alert from '@mui/material/Alert';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import TextField from '@mui/material/TextField';
@@ -58,6 +59,7 @@ export default function DisplayUserRow(props) {
   const [dateValue, setDateValue] = useState(null);
   const [words, setWords] = useState('');
   const [value, setValue] = useState('');
+  const [mView, setMView] = useState([]);
   const [attributes, setAttributes] = useState('');
   const [checked, setChecked] = useState(false);
   const [isAlert, setIsAlert] = useState(false);
@@ -131,9 +133,9 @@ export default function DisplayUserRow(props) {
 
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onMultiDrop (event, props.question.id, coords, res.words));
+      .then((res: LocationJsonResponse) => props.onMultiDrop (event, props.question.id, coords, res.words, props.whatPage));
     } else {
-      props.onMultiDrop (event, props.question.id, coords, '');
+      props.onMultiDrop (event, props.question.id, coords, '', props.whatPage);
     }
 
     props.onNextPage(true);
@@ -150,9 +152,9 @@ export default function DisplayUserRow(props) {
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onDrop (ddValue, props.question.id, coords, res.words));
+      .then((res: LocationJsonResponse) => props.onDrop (ddValue, props.question.id, coords, res.words, props.whatPage));
     } else {
-      props.onDrop (ddValue, props.question.id, coords, '');
+      props.onDrop (ddValue, props.question.id, coords, '', props.whatPage);
     }
 
     props.onNextPage(true);
@@ -178,9 +180,9 @@ export default function DisplayUserRow(props) {
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onOtherChange(value, props.question.id, coords, res.words));
+      .then((res: LocationJsonResponse) => props.onOtherChange(value, props.question.id, coords, res.words, props.whatPage));
     } else {
-      props.onOtherChange(value, props.question.id, coords, '');
+      props.onOtherChange(value, props.question.id, coords, '', props.whatPage);
     }
   };
 
@@ -197,9 +199,9 @@ export default function DisplayUserRow(props) {
 
           client
           .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-          .then((res: LocationJsonResponse) => props.onPicture(file, props.question.id, coords, res.words, newUrl ));
+          .then((res: LocationJsonResponse) => props.onPicture(file, props.question.id, coords, res.words, newUrl, props.whatPage ));
         } else {
-          props.onPicture(file, props.question.id, coords, '', newUrl);
+          props.onPicture(file, props.question.id, coords, '', newUrl, props.whatPage);
         }
 
         if (props.props.userData[0].usePagination==0) {
@@ -236,11 +238,30 @@ export default function DisplayUserRow(props) {
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onChange(event, coords, res.words));
+      .then((res: LocationJsonResponse) => props.onChange(event, coords, res.words, props.whatPage, 'toggle_button', event.target.value));
     } else {
-      props.onChange(event, coords, '');
+      props.onChange(event, coords, '', props.whatPage, 'toggle_button', event.target.value);
     }
     trigger_check(nextView);
+  };
+
+  const handleMultipleToggleChange = (event: React.MouseEvent<HTMLElement>, newChanges: string[]) => {
+    setMView(newChanges);
+    props.onNextPage(true);
+    checkGPS(false);
+    if (coords && API_KEY != null) {
+      const options: ConvertTo3waOptions = {
+        coordinates: { lat: coords.latitude, lng: coords.longitude },
+      };
+      
+      client
+      .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
+      .then((res: LocationJsonResponse) => props.onChange(event, coords, res.words, props.whatPage, 'checkbox_button', newChanges.join("|")));
+    } else {
+      props.onChange(event, coords, '', props.whatPage, 'checkbox_button', newChanges.join("|"));
+    }
+
+    trigger_check(newChanges[newChanges.length-1]);
   };
 
   const handleRadioGroup = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -254,9 +275,9 @@ export default function DisplayUserRow(props) {
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onRadio (rValue, props.question.id, coords, res.words));
+      .then((res: LocationJsonResponse) => props.onRadio (rValue, props.question.id, coords, res.words, props.whatPage));
     } else {
-      props.onRadio (rValue, props.question.id, coords, '');
+      props.onRadio (rValue, props.question.id, coords, '', props.whatPage);
     }
 
     props.onNextPage(true);
@@ -271,7 +292,7 @@ export default function DisplayUserRow(props) {
         coordinates: { lat: coords.latitude, lng: coords.longitude },
       };
     } 
-    props.onText (tValue, props.question.id, coords, '', props.question.question_type);
+    props.onText (tValue, props.question.id, coords, '', props.question.question_type, props.whatPage);
     props.onNextPage(true);
   }
 
@@ -286,9 +307,9 @@ export default function DisplayUserRow(props) {
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onDate (rValue, props.question.id, coords, res.words));
+      .then((res: LocationJsonResponse) => props.onDate (rValue, props.question.id, coords, res.words, props.whatPage));
     } else {
-      props.onDate (rValue, props.question.id, coords, '');
+      props.onDate (rValue, props.question.id, coords, '', props.whatPage);
     }
 
     props.onNextPage(true);
@@ -303,9 +324,9 @@ export default function DisplayUserRow(props) {
       };
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onButton (value, props.question.id, props.question.question_type, coords, res.words));
+      .then((res: LocationJsonResponse) => props.onButton (value, props.question.id, props.question.question_type, coords, res.words, props.whatPage));
     } else {
-      props.onButton (value, props.question.id, props.question.question_type, coords, '');
+      props.onButton (value, props.question.id, props.question.question_type, coords, '', props.whatPage);
     }      
 
     props.onNextPage(true);
@@ -321,9 +342,9 @@ export default function DisplayUserRow(props) {
       
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onSwitch (event.target.checked.toString(), props.question.id, coords, res.words));
+      .then((res: LocationJsonResponse) => props.onSwitch (event.target.checked.toString(), props.question.id, coords, res.words, props.whatPage));
     } else {
-      props.onSwitch (event.target.checked.toString(), props.question.id, coords, '');
+      props.onSwitch (event.target.checked.toString(), props.question.id, coords, '', props.whatPage);
     }
 
     props.onNextPage(true);
@@ -392,7 +413,7 @@ export default function DisplayUserRow(props) {
           <Button type="submit" color="success">Ok</Button>
         </DialogActions>
       </Dialog>
-    { props.questionType == 'toggle_button' ?
+    { props.questionType == 'toggle_button' || props.questionType == 'checkbox_button' ?
       <div>
         {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
@@ -407,20 +428,32 @@ export default function DisplayUserRow(props) {
             key={'tbg_' + props.question.question_order}
             aria-placeholder={'tbg_' + props.question.question_order}
             color="primary"
-            value={view}
+            value={props.questionType == 'toggle_button' ? view : mView}
             size="small"
-            exclusive
-            onChange={handleToggleChange}
+            exclusive={props.questionType == 'toggle_button'}
+            onChange={props.questionType == 'toggle_button' ? handleToggleChange : handleMultipleToggleChange}
             orientation="vertical"
           >
-            {props.question.question_values.split("|").map((comp, index) => 
-            <ToggleButton 
-              key={'tb_'+props.question.question_order+'_'+index} 
-              value={comp} 
-              size="small"
-              aria-label={comp} 
-              aria-placeholder={props.question.id}
-              sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
+            {props.questionType == 'checkbox_button' ?
+            <Stack direction="column" spacing={2}>
+              {props.question.question_values.split("|").map((comp, index) => 
+              <ToggleButton 
+                key={'tb_'+props.question.question_order+'_'+index} 
+                value={comp} 
+                size="small"
+                aria-label={comp} 
+                aria-placeholder={props.question.id}
+                sx={{backgroundColor: "dodgerblue"}}>{comp}
+              </ToggleButton> )}
+            </Stack> :
+              props.question.question_values.split("|").map((comp, index) => 
+              <ToggleButton 
+                key={'tb_'+props.question.question_order+'_'+index} 
+                value={comp} 
+                size="small"
+                aria-label={comp} 
+                aria-placeholder={props.question.id}
+                sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
           </ToggleButtonGroup>
         </Box>
       </div>
