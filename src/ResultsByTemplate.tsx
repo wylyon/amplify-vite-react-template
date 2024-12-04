@@ -224,6 +224,7 @@ export default function ResultsByTemplate(props) {
       companyId: false,
 	  templateId: false,
 	  divisionId: false,
+	  what3words: false,
     });
 
 	function handleRowClick (params, event, details) {

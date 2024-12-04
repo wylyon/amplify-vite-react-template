@@ -121,14 +121,14 @@ export default function DisplayUser(props) {
   const checkGPS = (showMessage) => {
     if (!isGeolocationAvailable) {
       setAlertMessage('Your browser does not support Geolocation');
-      setTheSeverity("warning");
+      setTheSeverity("error");
       setIsAlert(true);
       return false;
     } else {
       if (!isGeolocationEnabled) {
         if (showMessage) {
           setAlertMessage('Geolocation is not enabled.');
-          setTheSeverity("warning");
+          setTheSeverity("error");
           setIsAlert(true);  
         }      
         return false;
@@ -277,9 +277,13 @@ export default function DisplayUser(props) {
   }
 
   const handleOnAlert = (e) => {
+    const severity = theSeverity;
     setIsAlert(false);
     setAlertMessage('');
     setTheSeverity("error");
+    if (severity == 'error') {
+      handleCancel(e);
+    }
   }
 
   function getDate(value) {
@@ -313,6 +317,7 @@ export default function DisplayUser(props) {
           type == 'multiple_dropdown' || 
           type == 'dropdown' || 
           type == 'radiobox' || 
+          type == 'checkbox_button' ||
           type == 'input' || type == 'text' ||
           type == 'button' || type == 'contained_button_color' ||
           type == 'switch' ? value : null,
