@@ -48,8 +48,13 @@ import SelectGridCustomer from '../src/SelectGridCustomer';
 import PopupReview from '../src/PopupPreview';
 import AssociateUsers from '../src/AssociateUsers';
 import SetupTemplate from '../src/SetupTemplate';
+import PopupNewTemplate from '../src/PopupNewTemplate';
+import moment from 'moment';
 
 interface EditToolbarProps {
+	filter: string;
+	arrayDivisions: [{}];
+	rows: GridRowsProp;
 	setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
 	setRowModesModel: (
 	  newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
@@ -57,9 +62,59 @@ interface EditToolbarProps {
   }
 
 function EditToolbar(props: EditToolbarProps) {
-	const { setRows, setRowModesModel } = props;
+	const { filter, arrayDivisions, rows, setRows, setRowModesModel } = props;
+	const [openNew, setOpenNew] = useState(false);
+	const [openBuild, setOpenBuild] = useState(false);
+	const [item, setItem] = useState({});
   
+	const handleOnClose = () => {
+		setOpenNew(false);
+	}
+
+	function getDate(value) {
+		if (value == null) {
+			return null
+		}
+		const date = moment(value);
+		const formattedDate = date.format("YYYY-MM-DD 23:00:00");
+		return new Date(formattedDate);
+	  }
+
+	const handleOnSubmit = (item) => {
+		setItem(item);
+		setRows((oldRows) => [
+			...oldRows,
+			{ id: item.id, 
+			  divisionId: item.division_id,
+			  divisionName: arrayDivisions.filter(comp => comp.id == item.division_id)[0].name,
+			  company: filter.name,
+			  title: item.title,
+			  description: item.description,
+			  preLoadPageAttributes: '',
+			  postLoadPageAttributes: '',
+			  liveDate: getDate(item.live_date),
+			  prodDate: getDate(item.prod_date),
+			  deactiveDate: null,
+			  notes: item.notes,
+			  usePagination: item.use_pagination,
+			  useAutoSpace: true,
+			  useBoxControls: false,
+			  isNew: false
+			},
+		  ]);
+		setOpenBuild(true);
+	}
+
+	const handleUpdateOnCancel = (e) => {
+		setOpenBuild(false);
+		setItem({});
+	  };
+
 	const handleClick = () => {
+		if (filter != null) {
+			setOpenNew(true);
+			return;
+		}
 		const id = uuidv4();
 		setRows((oldRows) => [
 		  ...oldRows,
@@ -88,6 +143,16 @@ function EditToolbar(props: EditToolbarProps) {
 	  };
   
 	return (
+		<React.Fragment>
+			{openNew && <PopupNewTemplate props={props} arrayDivisions={arrayDivisions} rows={rows} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
+			{openBuild && <SetupTemplate onSubmitAdd={handleUpdateOnCancel} 
+				onSubmitChange={handleUpdateOnCancel} 
+				name={item.title} 
+				templateId={item.id} 
+				divisionId={item.division_id} 
+				preLoadAttributes={''} 
+				postLoadAttributes={''}
+				usePages={item.use_pagination == 1} />}
 	  <GridToolbarContainer>
 		<Tooltip title="Add a new Template">
 			<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
@@ -96,11 +161,13 @@ function EditToolbar(props: EditToolbarProps) {
 		</Tooltip>
 		<GridToolbar />
 	  </GridToolbarContainer>
+	  </React.Fragment>
 	);
   }
 
 export default function TemplateGrid(props) {
 	const [loading, setLoading] = useState(true);
+	const [arrayDivisions, setArrayDivisions] = useState([{}]);
 	const [open, setOpen] = useState(false);
 	const [openHtml, setOpenHtml] = useState(false);
 	const [error, setError] = useState('');
@@ -144,6 +211,7 @@ export default function TemplateGrid(props) {
 	  }]);
 
 	  const [rows, setRows] = useState<GridRowsProp>([]);
+	  const [filter, setFilter] = useState(props.filter);
 	  const [filtered, setFiltered] = useState<Schema["template_question"]["type"][]>([]);
 
 	  const getQuestionsByTemplate = async (tempId) => {
@@ -181,17 +249,24 @@ export default function TemplateGrid(props) {
 			setError(errors[0].message);
 			setOpen(true);
 		  } else {
+			var array = [];
+			items.map(comp => {
+				array.push({id: comp.id, name: comp.name});
+			})
+			setArrayDivisions(array);
 			setDivision(items);
 		  }
 		  setLoading(false);
 		}
 
-	  function getDate(value) {
-		if (value == null) {
-			return null
-		}
-		return new Date(value);
-	  }
+		function getDate(value) {
+			if (value == null) {
+				return null
+			}
+			const date = moment(value);
+			const formattedDate = date.format("YYYY-MM-DD 23:00:00");
+			return new Date(formattedDate);
+		  }
 
 	  function translateUserTemplate (item) {
 		const data = [{id: item.id, 
@@ -589,7 +664,8 @@ export default function TemplateGrid(props) {
 			editable: true  },
 		{ field: 'description', headerName: 'Description', width: 200, headerClassName: 'grid-headers', editable: true  },
 		{ field: 'notes', headerName: 'Notes', headerClassName: 'grid-headers', width: 100, editable: true  },
-		{ field: 'liveDate', type: 'date', headerName: 'Live', width: 90, headerClassName: 'grid-headers', editable: true },
+		{ field: 'liveDate', type: 'date', 
+			headerName: 'Live', width: 90, headerClassName: 'grid-headers', editable: true },
 		{ field: 'prodDate', headerName: 'Prod', type: 'date', width: 90, headerClassName: 'grid-headers', editable: true  },
 		{ field: 'isActive',
 			headerName: 'isActive',
@@ -775,7 +851,7 @@ export default function TemplateGrid(props) {
 				toolbar: EditToolbar as GridSlots['toolbar'],
 			  }}
 			slotProps={{
-				toolbar: { setRows, setRowModesModel },
+				toolbar: { filter, arrayDivisions, rows, setRows, setRowModesModel },
 			}}
 			/>
 		</Paper>

@@ -44,6 +44,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { MenuItem } from '@mui/material';
+import moment from 'moment';
 
 export default function SummaryAllResults(props) {
 	const [loading, setLoading] = useState(true);
@@ -63,11 +64,13 @@ export default function SummaryAllResults(props) {
 		earliestPosting: null, 
 	  }]);
 
-	function getDate(value) {
+	  function getDate(value) {
 		if (value == null) {
 			return null
 		}
-		return new Date(value);
+		const date = moment(value);
+		const formattedDate = date.format("YYYY-MM-DD 23:00:00");
+		return new Date(formattedDate);
 	  }
 	
 	  function translateUserTemplates (items) {

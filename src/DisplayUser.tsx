@@ -183,7 +183,7 @@ export default function DisplayUser(props) {
     if (result) {
       for (var i = 0; i < results.length; i++) {
         if (results[i].id === id) {
-           newTally.push({id: id, value: value, type: results[i].type, file: file, lat: lat, long: long, what3words: what3words, page: pg});
+           newTally.push({id: id, value: value, type: results[i].type, file: file, lat: lat, long: long, what3words: what3words, page: results[i].page == null ? pg : results[i].page});
         } else {
           newTally.push({id: results[i].id, value: results[i].value, type: results[i].type, file: results[i].file, lat: results[i].lat, 
             long: results[i].long, what3words: results[i].what3words, page: results[i].page});

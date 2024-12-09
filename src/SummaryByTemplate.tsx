@@ -48,6 +48,7 @@ import SelectTemplate from '../src/SelectTemplate';
 import MapWithGoogle from '../src/MapWithGoogle';
 import MapIcon from '@mui/icons-material/Map';
 import { MenuItem } from '@mui/material';
+import moment from 'moment';
 
 export default function SummaryByTemplate(props) {
 	const [loading, setLoading] = useState(true);
@@ -77,11 +78,13 @@ export default function SummaryByTemplate(props) {
 		whoPosted: null,
 	  }]);
 
-	function getDate(value) {
+	  function getDate(value) {
 		if (value == null) {
 			return null
 		}
-		return new Date(value);
+		const date = moment(value);
+		const formattedDate = date.format("YYYY-MM-DD 23:00:00");
+		return new Date(formattedDate);
 	  }
 	
 	  function translateUserTemplates (items) {

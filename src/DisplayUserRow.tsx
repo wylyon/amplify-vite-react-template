@@ -30,6 +30,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import FormLabel from '@mui/material/FormLabel';
 import Radio from '@mui/material/Radio';
+import CircularProgress from '@mui/material/CircularProgress';
 import RadioGroup from '@mui/material/RadioGroup';
 import ListItemText from '@mui/material/ListItemText';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
@@ -48,6 +49,7 @@ import {
 
 export default function DisplayUserRow(props) {
   const [source, setSource] = useState('');
+  const [isWaiting, setIsWaiting] = useState(false);
   const [view, setView] = useState('list');
   const [open, setOpen] = useState(false);
   const [heading, setHeading] = useState('');
@@ -66,6 +68,7 @@ export default function DisplayUserRow(props) {
   const [alertMessage, setAlertMessage] = useState('');
   const [theSeverity, setTheSeverity] = useState('error');
   const [nextCall, setNextCall] = useState({});
+  const [id, setId] = useState(0);
 
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
@@ -175,12 +178,15 @@ export default function DisplayUserRow(props) {
 
   const handleCloseMultiple = (event) => {
     if (Array.isArray(comboName) && comboName.length > 0) {
-      comboName.map((item, index) => trigger_check(item));
+      comboName.map((item, index) => trigger_check(item, event.target.ariaPlaceholder));
     }
   }
 
   const handleOtherClose = () => {
     setOpen(false);
+    setId(0);
+    setHeading('');
+    setTitle('');
   };
 
   const handleOther = async(value) => {
@@ -207,11 +213,15 @@ export default function DisplayUserRow(props) {
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
       .then((res: LocationJsonResponse) => props.onOtherChange(value, props.question.id, coordinates, res.words, props.whatPage));
     } else {
-      props.onOtherChange(value, props.question.id, coordinates, '', props.whatPage);
+      props.onOtherChange(value, id, coordinates, '', props.whatPage);
     }
+    setId(0);
+    setHeading('');
+    setTitle('');
   };
 
   const handleCapture = async(target) => {
+    setIsWaiting(true);
     if (target.files) {
       if (target.files.length !== 0) {
         const file = target.files[0];
@@ -247,15 +257,17 @@ export default function DisplayUserRow(props) {
         props.onNextPage(true);
       }
     }
+    setIsWaiting(false);
   }
   
-  function trigger_check (value) {
+  function trigger_check (value, id) {
     if (props.nextQuestion == null) {
       return;
     }
     if (props.nextQuestion.question_type == 'dialog_input') {
       // we have a trigger to check
       if (props.nextQuestion.trigger_value == value) {
+        setId(id);
         setHeading(props.nextQuestion.pre_load_attributes);
         setTitle(props.nextQuestion.title);
         setOpen(true);
@@ -265,8 +277,8 @@ export default function DisplayUserRow(props) {
   }
 
   const handleToggleChange = async(event: React.MouseEvent<HTMLElement>, nextView: string) => {
+    setIsWaiting(true);
     setView(nextView);
-    props.onNextPage(true);
    //      checkGPS(false);
    var coordinates = {lat: 0, long: 0};
    try {
@@ -291,12 +303,14 @@ export default function DisplayUserRow(props) {
     } else {
         props.onChange(event, coordinates, '', props.whatPage, 'toggle_button', event.target.value);
     }
-    trigger_check(nextView);
+    trigger_check(nextView, event.target.ariaPlaceholder);
+    props.onNextPage(true);
+    setIsWaiting(false);
   };
 
   const handleMultipleToggleChange = async(event: React.MouseEvent<HTMLElement>, newChanges: string[]) => {
+    setIsWaiting(true);
     setMView(newChanges);
-    props.onNextPage(true);
    //      checkGPS(false);
    var coordinates = {lat: 0, long: 0};
    try {
@@ -322,7 +336,9 @@ export default function DisplayUserRow(props) {
         props.onChange(event, coordinates, '', props.whatPage, 'checkbox_button', newChanges.join("|"));
     }
 
-    trigger_check(newChanges[newChanges.length-1]);
+    trigger_check(newChanges[newChanges.length-1], event.target.ariaPlaceholder);
+    props.onNextPage(true);
+    setIsWaiting(false);
   };
 
   const handleRadioGroup = async(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -540,6 +556,7 @@ export default function DisplayUserRow(props) {
         {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
           </Alert>}
+        {isWaiting && <CircularProgress />}
         <DisplayAttributes props={props} onParsing={handleAttribute}/>
         <Box component="section"  sx={
           props.useBoxControls==1 || props.useAutoSpacing==1 ?

@@ -45,8 +45,17 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
+import PopupNewUser from '../src/PopupNewUser';
+import moment from 'moment';
+import SignUp from '../src/SignUp';
+import PasswordIcon from '@mui/icons-material/Password';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
+import { resetPassword } from 'aws-amplify/auth';
 
 interface EditToolbarProps {
+	filter: string;
+	arrayDivisions: [{}];
+	rows: GridRowsProp;
 	setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
 	setRowModesModel: (
 	  newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
@@ -54,9 +63,50 @@ interface EditToolbarProps {
   }
 
 function EditToolbar(props: EditToolbarProps) {
-	const { setRows, setRowModesModel } = props;
-  
+	const { filter, arrayDivisions, rows, setRows, setRowModesModel } = props;
+	const [openNew, setOpenNew] = useState(false);
+	const [item, setItem] = useState({});
+ 
+	const handleOnClose = () => {
+		setOpenNew(false);
+	}
+
+	function getDate(value) {
+		if (value == null) {
+			return null
+		}
+		const date = moment(value);
+		const formattedDate = date.format("YYYY-MM-DD 23:00:00");
+		return new Date(formattedDate);
+	  }
+
+	  const handleOnSubmit = (item) => {
+		setItem(item);
+		setRows((oldRows) => [
+			...oldRows,
+			{ id: item.id, 
+			  username: '',
+			  companyId: filter.id,
+			  divisionId: item.division_id,
+			  division: arrayDivisions.filter(comp => comp.id == item.division_id)[0].name,
+			  company: filter.name,
+			  email: item.email_address,
+			  firstName: item.first_name,
+			  middleName: item.middle_name,
+			  lastName: item.last_name,
+			  activeDate: getDate(item.active_date),
+			  notes: item.notes,
+			  isNew: false
+			},
+		  ]);
+		  setOpenNew(false);
+	}
+
 	const handleClick = () => {
+		if (filter != null) {
+			setOpenNew(true);
+			return;
+		}
 		const id = uuidv4();
 		setRows((oldRows) => [
 		  ...oldRows,
@@ -81,23 +131,29 @@ function EditToolbar(props: EditToolbarProps) {
 	  };
   
 	return (
-	  <GridToolbarContainer>
-		<Tooltip title="Add a new User">
-			<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-		  	Add a User
-			</Button>
-		</Tooltip>
-		<GridToolbar />
-	  </GridToolbarContainer>
+		<React.Fragment>
+			{openNew && <PopupNewUser props={props} arrayDivisions={arrayDivisions} rows={rows} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
+			<GridToolbarContainer>
+			<Tooltip title="Add a new User">
+				<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
+				Add a User
+				</Button>
+			</Tooltip>
+			<GridToolbar />
+		</GridToolbarContainer>
+		</React.Fragment>
 	);
   }
 
 export default function UserGrid(props) {
 	const [loading, setLoading] = useState(true);
+	const [arrayDivisions, setArrayDivisions] = useState([{}]);
 	const [isAdmin, setIsAdmin] = useState(props.filter == null ? true : false);
 	const [open, setOpen] = useState(false);
 	const [error, setError] = useState('');
 	const [deleteId, setDeleteId] = useState('');
+	const [isSignUpTime, setIsSignUpTime] = useState(false);
+	const [signUpEmail, setSignUpEmail] = useState('');
 	const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
 
 	const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
@@ -107,6 +163,7 @@ export default function UserGrid(props) {
 	};
 
 	const client = generateClient<Schema>();
+	const [filter, setFilter] = useState(props.filter);
 	const [company, setCompany] = useState<Schema["company"]["type"][]>([]);
 	const [division, setDivision] = useState<Schema["division"]["type"][]>([]);
 	const [userData, setUserData] = useState([{
@@ -150,6 +207,11 @@ export default function UserGrid(props) {
 			setError(errors[0].message);
 			setOpen(true);
 		} else {
+			var array = [];
+			items.map(comp => {
+				array.push({id: comp.id, name: comp.name});
+			})
+			setArrayDivisions(array);
 			setDivision(items);
 		}
 		setLoading(false);
@@ -166,7 +228,9 @@ export default function UserGrid(props) {
 		if (value == null) {
 			return null
 		}
-		return new Date(value);
+		const date = moment(value);
+		const formattedDate = date.format("YYYY-MM-DD 23:00:00");
+		return new Date(formattedDate);
 	  }
 
 	  function translateUserTemplate (item) {
@@ -413,8 +477,37 @@ export default function UserGrid(props) {
 		}
 	}
 
+	const handleSignOnCancel = (e) => {
+		setIsSignUpTime(false);
+		setSignUpEmail('');
+	 };
+
+	 const handleEnroll = (id: GridRowId) => () => {
+		const row = rows.filter((row) => row.id === id);
+		setSignUpEmail(row[0].email);
+		setIsSignUpTime(true);
+	 }
+
 	const handleDeactivate = (id: GridRowId) => () => {
 		handleDeactiveOrActivate(id, true);
+	}
+
+	const handleResetPassword = async(emailAddress) => {
+		try {
+		  const output = await resetPassword({
+		username: emailAddress
+		  });
+		  console.log(output.isPasswordReset);
+		} catch (error) {
+			setError(error);
+			setOpen(true);
+		}
+	  }
+	  
+
+	const handleReset = (id: GridRowId) => () => {
+		const row = rows.filter((row) => row.id === id);
+		handleResetPassword(row[0].email);
 	}
 
 	const handleActivate = (id: GridRowId) => () => {
@@ -595,6 +688,8 @@ export default function UserGrid(props) {
 				<GridActionsCellItem icon={<EditIcon />} label="Edit" color='primary' onClick={handleEditClick(id)} />,
 				<GridActionsCellItem icon={<SupervisedUserCircleIcon />} label="Make SuperAdmin" disabled={!isAdmin} 
 					onClick={handleMakeSuperAdmin(id)} showInMenu/>,
+				<GridActionsCellItem icon={<PasswordIcon />} label="Reset Password" onClick={handleReset(id)} disabled showInMenu />,
+				<GridActionsCellItem icon={<AssignmentIndIcon />} label="Enroll User" onClick={handleEnroll(id)} showInMenu />,
 				<GridActionsCellItem icon={<DeleteOutlineIcon />} label="Deactivate" onClick={handleDeactivate(id)} showInMenu/>,
 				<GridActionsCellItem icon={<AddCircleOutlineIcon />} label="Activate" onClick={handleActivate(id)} showInMenu/>,
 				<GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={handleDelete(id)} showInMenu />,
@@ -634,6 +729,7 @@ export default function UserGrid(props) {
         </DialogActions>
       </Dialog>
 	<Stack>
+	{isSignUpTime && <SignUp email={signUpEmail} onSubmitChange={handleSignOnCancel} /> }
     {props.filter == null ? <FormGroup>
       <Typography variant='subtitle1'>Company User 
 		<FormControlLabel control={<Switch defaultChecked onChange={handleUserChange}/>} 
@@ -665,7 +761,7 @@ export default function UserGrid(props) {
 				toolbar: EditToolbar as GridSlots['toolbar'],
 			  }}
 			slotProps={{
-				toolbar: { setRows, setRowModesModel },
+				toolbar: { filter, arrayDivisions, rows, setRows, setRowModesModel },
 			}}
 			/>
 		</Paper>
