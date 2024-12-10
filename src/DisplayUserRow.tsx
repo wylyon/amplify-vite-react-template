@@ -573,8 +573,7 @@ export default function DisplayUserRow(props) {
             onChange={props.questionType == 'toggle_button' ? handleToggleChange : handleMultipleToggleChange}
             orientation="vertical"
           >
-            {props.questionType == 'checkbox_button' ?
-            <Stack direction="column" spacing={2}>
+            <Stack direction="column" spacing={ props.questionType == 'checkbox_button' ? 2 : 1 }>
               {props.question.question_values.split("|").map((comp, index) => 
               <ToggleButton 
                 key={'tb_'+props.question.question_order+'_'+index} 
@@ -582,17 +581,9 @@ export default function DisplayUserRow(props) {
                 size="small"
                 aria-label={comp} 
                 aria-placeholder={props.question.id}
-                sx={{backgroundColor: "dodgerblue"}}>{comp}
+                sx={{backgroundColor: "yellow"}}>{comp}
               </ToggleButton> )}
-            </Stack> :
-              props.question.question_values.split("|").map((comp, index) => 
-              <ToggleButton 
-                key={'tb_'+props.question.question_order+'_'+index} 
-                value={comp} 
-                size="small"
-                aria-label={comp} 
-                aria-placeholder={props.question.id}
-                sx={{backgroundColor: "dodgerblue"}}>{comp}</ToggleButton> )}
+            </Stack>
           </ToggleButtonGroup>
         </Box>
       </div>

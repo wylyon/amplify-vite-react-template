@@ -404,7 +404,7 @@ export default function DisplayUser(props) {
       {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
           </Alert>}
-      <Paper>
+      <Paper sx={{marginLeft: '5px'}}>
       {!wait && <form onSubmit={handleSubmit} >
         <Stack spacing={2}>
         { props.userData[0].usePagination==0 || (props.userData[0].usePagination==1 && props.templateQuestions.length < 1) ?
