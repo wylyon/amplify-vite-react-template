@@ -83,8 +83,8 @@ export default function PopupNewTemplate(props) {
 			division_id: selectDivision,
 			title: title, 
 			description: description,
-			live_date: liveDate == null || liveDate == '' ? null : getDate(liveDate).toISOString().slice(0, 10),
-			prod_date: prodDate == null || prodDate == '' ? null : getDate(prodDate).toISOString().slice(0, 10),
+			live_date: now.toISOString().slice(0, 10),
+			prod_date: now.toISOString().slice(0, 10),
 			notes: notes,
 			created: now,
 			created_by: 0,
@@ -185,26 +185,6 @@ export default function PopupNewTemplate(props) {
             maxRows={3}
             variant="standard"
           />
-        <Stack direction="row" spacing={5}>
-          <Paper elevation={2}>
-            <Typography variant="caption" gutterBottom>Live Date</Typography>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker 
-                  name="liveDate"
-                  key="liveDate"
-                />
-              </LocalizationProvider>
-          </Paper>
-          <Paper elevation={2}>
-            <Typography variant="caption" gutterBottom>Prod Date</Typography>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker 
-                  name="prodDate"
-                  key="prodDate"
-                />
-              </LocalizationProvider>
-          </Paper>
-        </Stack>
         <FormControlLabel control={<Checkbox defaultChecked checked={checked} onChange={handleChangeBox} inputProps={{ 'aria-label': 'controlled'}}/>} label="Page all controls?" />
       </Box>
     </DialogContent>

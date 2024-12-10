@@ -31,15 +31,19 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import { IconButton } from "@mui/material";
+import ConfirmPassword from "../src/ConfirmPassword";
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 export default function PopupNewUser(props) {
   const [isWaiting, setIsWaiting] = useState(false);
   const [open, setOpen] = useState(true);
   const [openError, setOpenError] = useState(false);
   const [error, setError] = useState('');
-  const [checked, setChecked] = useState(true);
+  const [confirm, setConfirm] = useState(false);
+  const [password, setPassword] = useState('');
   const [arrayDivisions, setArrayDivisions] = useState([{}]);
   const [selectDivision, setSelectDivision] = useState(props.arrayDivisions[0].id);
+  const [textType, setTextType] = useState('password');
 
   const client = generateClient<Schema>();
 
@@ -51,13 +55,31 @@ export default function PopupNewUser(props) {
     setArrayDivisions(props.arrayDivisions);
 	}, []);
 
-  const handleChangeBox = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setChecked(event.target.checked);
-  };
-
   const handleCloseValues = () => {
     props.onClose();
     setOpen(false);
+  }
+
+  const handlePasswordConfirm = (event) => {
+    event.preventDefault();
+    setPassword(event.target.value as string);
+    setConfirm(true);
+  }
+
+  const handlePasswordVisibility = (event) => {
+    setTextType(textType == 'password' ? 'text' : 'password');
+  }
+
+  const handleGoodPassword = (event) => {
+    event.preventDefault();
+    setError('');
+    setOpenError(false);
+  }
+
+  const handleBadPassword = (event) => {
+    event.preventDefault();
+    setError("Passwords don't match, please try again.")
+    setOpenError(true);
   }
 
   const handleSubmitValues = (item) => {
@@ -94,7 +116,7 @@ export default function PopupNewUser(props) {
     }
   }
 
-  const handleAddRow = async(email, firstName, middleName, lastName, notes, activeDate, password, isAddCognito) => {
+  const handleAddRow = async(email, firstName, middleName, lastName, notes, password) => {
 		const now = new Date();
     setIsWaiting(true);
     const id = uuidv4();
@@ -105,7 +127,7 @@ export default function PopupNewUser(props) {
 			first_name: firstName,
       middle_name: middleName,
       last_name: lastName,
-			active_date: activeDate == null || activeDate == '' ? null : getDate(activeDate).toISOString().slice(0, 10),
+			active_date: now.toISOString().slice(0, 10),
 			notes: notes,
 			created: now,
 			created_by: 0,
@@ -116,7 +138,7 @@ export default function PopupNewUser(props) {
 			setOpenError(true);
       return false;
 		}
-    if (isAddCognito && password != null) {
+    if (password != null) {
       signThemUp(email, password);
     }
     setIsWaiting(false);
@@ -133,6 +155,10 @@ export default function PopupNewUser(props) {
         component: 'form',
         onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
           event.preventDefault();
+          if (confirm) {
+            setConfirm(false);
+            return false;
+          }
           const formData = new FormData(event.currentTarget);
           const formJson = Object.fromEntries((formData as any).entries());
           const email = formJson.email;
@@ -140,15 +166,14 @@ export default function PopupNewUser(props) {
           const middleName = formJson.middleName;
           const lastName = formJson.lastName;
           const notes = formJson.notes;
-          const activeDate = formJson.activeDate;
-          const password = checked ? formJson.password : null;
+          const password = formJson.password;
           const filterEmail = props.rows.filter(comp => comp.email == email);
           if (filterEmail != null && filterEmail.length > 0) {
             setError("Email " + email + " already exists.   Please choose another.");
             setOpenError(true);
             return false;
           }
-          return handleAddRow(email, firstName, middleName, lastName, notes, activeDate, password, checked);
+          return handleAddRow(email, firstName, middleName, lastName, notes, password);
         },
       }}
     >
@@ -162,6 +187,7 @@ export default function PopupNewUser(props) {
       {openError &&  <Alert severity="error" onClose={handleCloseError}>
             {error}
           </Alert>}
+      {confirm && <ConfirmPassword props={props} password={password} onGoodPassword={handleGoodPassword} onBadPassword={handleBadPassword} />}
         <FormControl fullWidth>
           <Typography variant="caption">Division: </Typography>
           <Select fullWidth
@@ -188,6 +214,20 @@ export default function PopupNewUser(props) {
             fullWidth
             variant="standard"
           />
+          <Stack direction="row" spacing={2}>
+           <TextField
+            margin="dense"
+            required
+            id="password"
+            name="password"
+            label="Password"
+            type={textType}
+            fullWidth
+            variant="standard"
+            onBlur={handlePasswordConfirm}
+          />
+          <IconButton aria-label="show password" onClick={handlePasswordVisibility}><VisibilityIcon /></IconButton>
+          </Stack>
         <TextField
             margin="dense"
             required
@@ -227,25 +267,7 @@ export default function PopupNewUser(props) {
             multiline
             maxRows={3}
             variant="standard"
-          />
-           <FormControlLabel control={<Checkbox defaultChecked checked={checked} onChange={handleChangeBox} inputProps={{ 'aria-label': 'controlled'}}/>} label="Add User to AWS Cloud?" />
-           {checked &&         
-           <TextField
-            margin="dense"
-            id="password"
-            name="password"
-            label="Password"
-            type="password"
-            fullWidth
-            variant="standard"
-          />}
-          <Typography variant="caption" gutterBottom>Active Date</Typography>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker 
-                name="activeDate"
-                key="activeDate"
-              />
-            </LocalizationProvider>
+          />    
       </Box>
     </DialogContent>
     <DialogActions>
