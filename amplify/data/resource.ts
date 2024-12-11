@@ -9,7 +9,8 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     })
     .returns(a.ref("user").array())
     .handler(a.handler.inlineSql(
-      "SELECT id, division_id, email_address, first_name, last_name, middle_name, active_date, deactive_date, notes, created, created_by FROM logistics.user WHERE email_address = :email;"
+      "SELECT distinct u.id, u.division_id, u.email_address, u.first_name, u.last_name, u.middle_name, u.active_date, u.deactive_date, u.notes, u.created, u.created_by " +
+      "FROM logistics.user u JOIN logistics.template_permissions p on p.user_id = u.id WHERE email_address = :email;"
     )).authorization(allow => allow.publicApiKey()),
     listAllAdmin: a.query()
     .arguments({})

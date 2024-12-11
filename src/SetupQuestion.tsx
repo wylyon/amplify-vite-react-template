@@ -617,6 +617,11 @@ export default function SetupQuestion(props) {
                           control={formData.questionType=="toggle_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                           label="Toggle Button" 
                           onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
+                        <Tooltip title="Select this for a multi-select toggle button" placement="right">
+                        <FormControlLabel value="checkbox_button" 
+                          control={formData.questionType=="checkbox_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                          label="Multi-Toggle Button" 
+                          onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
                         <Tooltip title="Select this for a dialog input (triggered by previous question)" placement="right">
                         <FormControlLabel value="dialog_input" 
                           control={formData.questionType=="dialog_input" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 

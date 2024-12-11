@@ -23,6 +23,7 @@ export default function DisplayQuestion(props) {
   const TYPE_CONTAINED_BUTTON_COLOR = 'contained_button_color';
   const TYPE_SWITCH = 'switch';
   const TYPE_TOGGLE_BUTTON = 'toggle_button';
+  const TYPE_MULTI_TOGGLE_BUTTON = 'checkbox_button';
 
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
@@ -117,6 +118,8 @@ export default function DisplayQuestion(props) {
       case TYPE_SWITCH:
         return "<label class=\"switch\"><input type=\"checkbox\"><span class=\"slider round\"></span></label>";
       case TYPE_TOGGLE_BUTTON:
+        return returnToggleButton(questionValueArr, questionSeq);
+      case TYPE_MULTI_TOGGLE_BUTTON:
         return returnToggleButton(questionValueArr, questionSeq);
       default:
         return ;

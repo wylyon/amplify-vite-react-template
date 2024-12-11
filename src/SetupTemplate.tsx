@@ -808,114 +808,125 @@ export default function SetupTemplate(props) {
               </ButtonGroup>
             </h3>
             <FormControl>
-              <div>
-              <div style={{ float: 'left'}}>
-                <RadioGroup
-                  aria-labelledby="question-group-label"
-                  name="questionType" >
-                    <Tooltip title="Select this to input a photo" placement="top">
-                    <FormControlLabel value="photo"
-                      control={(formData.questionType=="" || formData.questionType=="photo") ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                      label="Photo" 
-                      onClick={handlePhotoClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this to input a dropdown for a single input" placement="right">
-                    <FormControlLabel value="dropdown" 
-                      control={(formData.questionType=="dropdown") ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                      label="Dropdown" 
-                      onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this to input a dropdown for multiple inputs" placement="right">
-                    <FormControlLabel value="multiple_dropdown" 
-                      control={formData.questionType=="multiple_dropdown" ? <Radio checked="true" size="small"/> : <Radio size="small" />} 
-                      label="Multiple Dropdown" onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this to input radio boxes for different input" placement="right">
-                    <FormControlLabel value="radiobox" 
-                      control={formData.questionType=="radiobox" ? <Radio checked="true"  size="small"/> : <Radio  size="small"/>} 
-                      label="Radio" 
-                      onClick={handleRadioClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this to input an input box for data" placement="right">
-                    <FormControlLabel value="input" 
-                      control={formData.questionType=="input" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                      label="Input" 
-                      onClick={handleInputClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this to input text input for data" placement="right">
-                    <FormControlLabel value="text" 
-                      control={formData.questionType=="text" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                      label="Text" 
-                      onClick={handleTextClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this to input date data" placement="right">
-                    <FormControlLabel value="datepicker" 
-                      control={formData.questionType=="datepicker" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                      label="Date Picker" 
-                      onClick={handleDateClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this to select by button" placement="right">
-                    <FormControlLabel value="button" 
-                      control={formData.questionType=="button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                      label="Button" 
-                      onClick={handleButtonClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this to select by color button" placement="right">
-                    <FormControlLabel value="contained_button_color" 
-                      control={formData.questionType=="contained_button_color" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                      label="Color Button" 
-                      onClick={handleColorButtonClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this for a switch" placement="right">
-                    <FormControlLabel value="switch" 
-                      control={formData.questionType=="switch" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                      label="Switch" 
-                      onClick={handleSwitchClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this for a toggle button" placement="right">
-                    <FormControlLabel value="toggle_button" 
-                      control={formData.questionType=="toggle_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                      label="Toggle Button" 
-                      onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
-                    <Tooltip title="Select this for a dialog input (triggered by previous question)" placement="right">
-                    <FormControlLabel value="dialog_input" 
-                      control={formData.questionType=="dialog_input" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                      label="Dialog Input" 
-                      onClick={handleDialogInputClick} onChange={handleChange}/></Tooltip>
-                </RadioGroup>
-              </div>
-              <div style={{ marginLeft: '200px'}}>
-                <Tooltip title="Enter here a title of what this question is about." placement="top">
-                <TextField id="question_title" name="title" value={formData.title} 
-                  label="Question Title" variant="outlined" required="true" size="small" 
-                  sx={{ width: '250px'}} onChange={handleChange}/></Tooltip>
-                <FormLabel id="filler1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FormLabel>
-                <Tooltip title="Enter here the order of this question relative to others." placement="right">
-                <TextField id="question_order" name="questionOrder" value={formData.questionOrder} 
-                  label="Order" variant="outlined" size="small" 
-                  sx={{ width: '80px' }} required="true" onChange={handleChange}/></Tooltip>
-                <br />
-                <Tooltip title="Enter here a fuller description of what this question is for and about." placement="right">
-                <TextField id="question_desc" name="description" value={formData.description} 
-                  label="Description" variant="outlined" size="small" multiline
-                  maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip>
-                <br /><br />
-                <Tooltip title="Enter here any special HTML formatting, or text you want processed BEFORE control is rendered." placement="right">
-                <TextField id="question_pre" name="preLoadAttributes" value={formData.preLoadAttributes} 
-                  label="control pre-attributes i.e. label" variant="outlined" size="small" multiline
-                  maxRows={4} sx={{ width: "350px"}} 
-                  onClick={handleClickOpenPre} onChange={handleChange}/></Tooltip>
-                <br />  
-                <Tooltip title="Enter here any special HTML formatting, or text you want processed AFTER control is rendered." placement="right">    
-                <TextField id="question_post" name="postLoadAttributes" value={formData.postLoadAttributes} 
-                  label="control post attributes (optional)" variant="outlined" size="small" multiline
-                  maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip> 
-                <br /><br />
-                <Tooltip title="Enter here control values (ie. dropdown or radio values)." placement="right">
-                <TextField id="question_values" name="questionValues" value={formData.questionValues} 
-                  label="dropdown/radio values" 
-                  disabled={isValuesDisabled} variant="outlined" size="small" multiline
-                  maxRows={4} sx={{ width: "350px"}} onClick={handleClickOpen} onChange={handleChange}/></Tooltip>   
-                <br />
-                <FormGroup>
-                <Tooltip title="Check this if input for this control is optional." placement="right">
-                  <FormControlLabel value={formData.optionalFlag} name="optionalFlag" 
-                    control={formData.optionalFlag ? <Checkbox checked /> : <Checkbox />} 
-                    label="Optional control" 
-                    onChange={handleChange} /></Tooltip>
-                </FormGroup>                  
-              </div>
-              </div>
+              <Stack direction="row" spacing={2}>
+                <Box>
+                  <RadioGroup
+                    aria-labelledby="question-group-label"
+                    defaultValue="photo"
+                    value={formData.questionType}
+                    name="questionType" >
+                      <Tooltip title="Select this to input a photo" placement="top">
+                      <FormControlLabel value="photo"
+                        control={(formData.questionType=="photo") ? <Radio checked="true" size="small"/> : <Radio size="small"/>} 
+                        label="Photo" 
+                        onClick={handlePhotoClick} onChange={handleChange}/></Tooltip>
+                      <Tooltip title="Select this to input a dropdown for a single input" placement="right">
+                      <FormControlLabel value="dropdown" 
+                        control={(formData.questionType=="dropdown") ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                        label="Dropdown" 
+                        onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
+                      <Tooltip title="Select this to input a dropdown for multiple inputs" placement="right">
+                      <FormControlLabel value="multiple_dropdown" 
+                        control={formData.questionType=="multiple_dropdown" ? <Radio checked="true" size="small"/> : <Radio size="small" />} 
+                        label="Multiple Dropdown" onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
+                      <Tooltip title="Select this to input radio boxes for different input" placement="right">
+                      <FormControlLabel value="radiobox" 
+                        control={formData.questionType=="radiobox" ? <Radio checked="true"  size="small"/> : <Radio  size="small"/>} 
+                        label="Radio" 
+                        onClick={handleRadioClick} onChange={handleChange}/></Tooltip>
+                      <Tooltip title="Select this to input an input box for data" placement="right">
+                      <FormControlLabel value="input" 
+                        control={formData.questionType=="input" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                        label="Input" 
+                        onClick={handleInputClick} onChange={handleChange}/></Tooltip>
+                      <Tooltip title="Select this to input text input for data" placement="right">
+                      <FormControlLabel value="text" 
+                        control={formData.questionType=="text" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                        label="Text" 
+                        onClick={handleTextClick} onChange={handleChange}/></Tooltip>
+                      <Tooltip title="Select this to input date data" placement="right">
+                      <FormControlLabel value="datepicker" 
+                        control={formData.questionType=="datepicker" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                        label="Date Picker" 
+                        onClick={handleDateClick} onChange={handleChange}/></Tooltip>
+                      <Tooltip title="Select this to select by button" placement="right">
+                      <FormControlLabel value="button" 
+                        control={formData.questionType=="button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                        label="Button" 
+                        onClick={handleButtonClick} onChange={handleChange}/></Tooltip>
+                      <Tooltip title="Select this to select by color button" placement="right">
+                      <FormControlLabel value="contained_button_color" 
+                        control={formData.questionType=="contained_button_color" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                        label="Color Button" 
+                        onClick={handleColorButtonClick} onChange={handleChange}/></Tooltip>
+                      <Stack direction="row">
+                        <Tooltip title="Select this for a switch" placement="right">
+                        <FormControlLabel value="switch" 
+                          control={formData.questionType=="switch" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                          label="Switch" 
+                          onClick={handleSwitchClick} onChange={handleChange}/></Tooltip>
+                        <Tooltip title="Select this for a toggle button" placement="right">
+                        <FormControlLabel value="toggle_button" 
+                          control={formData.questionType=="toggle_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                          label="Toggle Button" 
+                          onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
+                      </Stack>
+                      <Stack direction="row">
+                        <Tooltip title="Select this for a multi-select toggle button" placement="right">
+                        <FormControlLabel value="checkbox_button" 
+                          control={formData.questionType=="checkbox_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                          label="Multi-Toggle Button" 
+                          onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
+                        <Tooltip title="Select this for a dialog input (triggered by previous question)" placement="right">
+                        <FormControlLabel value="dialog_input" 
+                          control={formData.questionType=="dialog_input" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                          label="Dialog Input" 
+                          onClick={handleDialogInputClick} onChange={handleChange}/></Tooltip>
+                      </Stack>
+                  </RadioGroup>
+                </Box>
+                <Box>
+                  <Tooltip title="Enter here a title of what this question is about." placement="top">
+                  <TextField id="question_title" name="title" value={formData.title} 
+                    label="Question Title" variant="outlined" required="true" size="small" 
+                    sx={{ width: '250px'}} onChange={handleChange}/></Tooltip>
+                  <FormLabel id="filler1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FormLabel>
+                  <Tooltip title="Enter here the order of this question relative to others." placement="right">
+                  <TextField id="question_order" name="questionOrder" value={formData.questionOrder} 
+                    label="Order" variant="outlined" size="small" 
+                    sx={{ width: '80px' }} required="true" onChange={handleChange}/></Tooltip>
+                  <br />
+                  <Tooltip title="Enter here a fuller description of what this question is for and about." placement="right">
+                  <TextField id="question_desc" name="description" value={formData.description} 
+                    label="Description" variant="outlined" size="small" multiline
+                    maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip>
+                  <br /><br />
+                  <Tooltip title="Enter here any special HTML formatting, or text you want processed BEFORE control is rendered." placement="right">
+                  <TextField id="question_pre" name="preLoadAttributes" value={formData.preLoadAttributes} 
+                    label="control pre-attributes i.e. label" variant="outlined" size="small" multiline
+                    maxRows={4} sx={{ width: "350px"}} 
+                    onClick={handleClickOpenPre} onChange={handleChange}/></Tooltip>
+                  <br />  
+                  <Tooltip title="Enter here any special HTML formatting, or text you want processed AFTER control is rendered." placement="right">    
+                  <TextField id="question_post" name="postLoadAttributes" value={formData.postLoadAttributes} 
+                    label="control post attributes (optional)" variant="outlined" size="small" multiline
+                    maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip> 
+                  <br /><br />
+                  <Tooltip title="Enter here control values (ie. dropdown or radio values)." placement="right">
+                  <TextField id="question_values" name="questionValues" value={formData.questionValues} 
+                    label="dropdown/radio values" 
+                    disabled={isValuesDisabled} variant="outlined" size="small" multiline
+                    maxRows={4} sx={{ width: "350px"}} onClick={handleClickOpen} onChange={handleChange}/></Tooltip>   
+                  <br />
+                  <FormGroup>
+                  <Tooltip title="Check this if input for this control is optional." placement="right">
+                    <FormControlLabel value={formData.optionalFlag} name="optionalFlag" 
+                      control={formData.optionalFlag ? <Checkbox checked /> : <Checkbox />} 
+                      label="Optional control" 
+                      onChange={handleChange} /></Tooltip>
+                  </FormGroup>                  
+                </Box>
+              </Stack>
             </FormControl>
           </Box>
           <Box sx={{ bgcolor: '#52B2BF', width: '500px', height: '500px', marginLeft: '620px',
