@@ -86,8 +86,8 @@ export default function DetermineMode(props) {
         setIsSuperAdmin(false);
         return false;
       }
-      setOpen(true);
     }
+    setOpen(true);
     setMode(0);
     return false;
   };
