@@ -110,7 +110,7 @@ export default function PopupNewUser(props) {
         }
       });
     } catch (error) {
-      setError(error);
+      setError("Warning...could not signup on cloud...could already be defined.");
       setOpenError(true);
       return;
     }
@@ -120,21 +120,34 @@ export default function PopupNewUser(props) {
 		const now = new Date();
     setIsWaiting(true);
     const id = uuidv4();
-		const { errors, data: item } = await client.models.user.create({
-			id: id,
-			division_id: selectDivision,
-			email_address: email, 
-			first_name: firstName,
-      middle_name: middleName,
-      last_name: lastName,
-			active_date: now.toISOString().slice(0, 10),
-			notes: notes,
-			created: now,
-			created_by: 0,
-		});
+		const { errors, data: item } =
+      props.props.isAdmin ?
+        await client.models.admin.create({
+          id: id,
+          email_address: email,
+          company_id: props.company.id,
+          first_name: firstName,
+          middle_name: middleName,
+          last_name: lastName,
+          active_date: now.toISOString().slice(0, 10),
+          created: now,
+          created_by: 0,         
+        }) : 
+        await client.models.user.create({
+          id: id,
+          division_id: selectDivision,
+          email_address: email, 
+          first_name: firstName,
+          middle_name: middleName,
+          last_name: lastName,
+          active_date: now.toISOString().slice(0, 10),
+          notes: notes,
+          created: now,
+          created_by: 0,
+        }) ;
 		if (errors) {
       setIsWaiting(false);
-			setError(errors[0].message);
+			setError("Can't create user...could be a duplicate email.");
 			setOpenError(true);
       return false;
 		}
@@ -177,7 +190,7 @@ export default function PopupNewUser(props) {
         },
       }}
     >
-    <DialogTitle>Create New User</DialogTitle>
+    <DialogTitle>{props.props.isAdmin ? "Create a New Admin" : "Create a New User"}</DialogTitle>
     <DialogContent>
       <DialogContentText>
         Enter Following Fields:

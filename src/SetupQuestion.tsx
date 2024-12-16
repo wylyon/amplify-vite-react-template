@@ -56,6 +56,7 @@ export default function SetupQuestion(props) {
   const [openPreAttributes, setOpenPreAttributes] = useState(false);
   const [dialogPrompt, setDialogPrompt] = useState('');
   const [dialogControls, setDialogControls] = useState({});
+  const [isAdvanced, setIsAdvanced] = useState(false);
 
   const handleOnSignOut = (e) => {
     props.onSubmitChange(false);
@@ -271,6 +272,11 @@ export default function SetupQuestion(props) {
     setIsValuesDisabled(false);
     setWhichControl('Dialog Input');
   }
+
+
+  const handleAdvanced = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setIsAdvanced(event.target.checked);
+	  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -560,7 +566,11 @@ export default function SetupQuestion(props) {
                   <Typography variant="subtitle2" gutterBottom>
                   <br /> 
                   </Typography>
-                  <RadioGroup
+                  <FormControlLabel control={<Checkbox id='easyOrAdvanced' checked={isAdvanced} onClick={handleAdvanced}/>} label="Advanced Controls" 
+                  />
+                  <Button variant='contained' color='error'>Preview</Button>
+                  {isAdvanced ?
+                    <RadioGroup
                       aria-labelledby="question-group-label"
                       name="questionType" >
                         <Tooltip title="Select this to input a photo" placement="top">
@@ -628,6 +638,68 @@ export default function SetupQuestion(props) {
                           label="Dialog Input" 
                           onClick={handleDialogInputClick} onChange={handleChange}/></Tooltip>
                     </RadioGroup>
+                  : 
+                  <RadioGroup
+                  aria-labelledby="question-group-label"
+                  name="questionType" >
+                    <Tooltip title="Select this to input a photo" placement="top">
+                    <FormControlLabel value="photo" 
+                      control={(formData.questionType=="" || formData.questionType=="photo") ? <Radio checked="true" size="small"/> : <Radio size="small" />} 
+                      label="Photo" 
+                      onClick={handlePhotoClick} onChange={handleChange}/></Tooltip>
+                    <Paper elevation={3}>
+                      <Typography variant='caption'>Single Input Controls<br/></Typography>
+                      <Tooltip title="Select this to select by button" placement="right">
+                      <FormControlLabel value="button" 
+                        control={formData.questionType=="button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                        label="A Button" 
+                        onClick={handleButtonClick} onChange={handleChange}/></Tooltip>             
+                      <br/>        
+                      <Tooltip title="Select this to input an input box for data" placement="right">
+                      <FormControlLabel value="input" 
+                        control={formData.questionType=="input" ? <Radio checked="true" size="small"/> : <Radio size="small" />} 
+                        label="Simple Input Control" 
+                        onClick={handleInputClick} onChange={handleChange}/></Tooltip>
+                    </Paper>
+                    <br/>
+                    <Paper elevation={3}>
+                      <Typography variant='caption'>Single Selection from List Controls</Typography>
+                      <br/>
+                      <Tooltip title="Select this to input a dropdown for a single input" placement="right">
+                      <FormControlLabel value="dropdown" 
+                        control={(formData.questionType=="dropdown") ? <Radio checked="true" size="small"/> : <Radio size="small" />} 
+                        label="Dropdown To Select Answer" 
+                        onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
+                        <br/>
+                      <Tooltip title="Select this for a toggle button" placement="right">
+                      <FormControlLabel value="toggle_button" 
+                        control={formData.questionType=="toggle_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                        label="Series of Buttons of which you can select one" 
+                        onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
+                        <br/>
+                      <Tooltip title="Select this to input radio boxes for different input" placement="right">
+                      <FormControlLabel value="radiobox" 
+                          control={formData.questionType=="radiobox" ? <Radio checked="true" size="small"/> : <Radio size="small" />} 
+                          label="Radio buttons to select one" 
+                          onClick={handleRadioClick} onChange={handleChange}/></Tooltip>
+                    </Paper>
+                    <br/>
+                    <Paper elevation={3}>
+                      <Typography variant='caption'>Multiple Selections from List Controls</Typography>
+                      <br/>
+                      <Tooltip title="Select this for a multi-select toggle button" placement="right">
+                        <FormControlLabel value="checkbox_button" 
+                          control={formData.questionType=="checkbox_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                          label="Series of Buttons of which you can select multiple answers" 
+                          onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
+                      <br/>
+                      <Tooltip title="Select this to input a dropdown for multiple inputs" placement="right">
+                        <FormControlLabel value="multiple_dropdown" 
+                          control={formData.questionType=="multiple_dropdown" ? <Radio checked="true" size="small"/> : <Radio size="small" />} 
+                          label="Dropdown to Select Multiple answers" onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
+                    </Paper>
+                </RadioGroup>
+                  }
               </AccordionDetails>
             </Accordion>
             <Accordion>
@@ -640,27 +712,28 @@ export default function SetupQuestion(props) {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="subtitle1" gutterBottom>
-                    Please select any attributes and values you want on this control.
+                {props.isWizard ? "Please select any control titles(headers) and values" : "Please select any attributes and values you want on this control."}
                 </Typography>
                 <Typography variant="subtitle2" gutterBottom>
                 <br /> 
                 </Typography>
                 <Stack spacing={2} direction="row">
                   <Tooltip title="Click here any special HTML formatting, or text you want processed BEFORE control is rendered." placement="right">
-                    <Button variant='contained' onClick={handleClickOpenPre}>Set Attributes</Button>
+                    <Button variant='contained' onClick={handleClickOpenPre}>{props.isWizard ? "Set Headers" : "Set Attributes"}</Button>
                   </Tooltip>
                   <Tooltip title="Enter here control values (ie. dropdown or radio values)." placement="right">
                     <Button variant='contained' disabled={isValuesDisabled} onClick={handleClickOpen}>Set Values</Button>
                   </Tooltip>  
-                </Stack> 
-                  <br />
+                </Stack>
+                {!props.isWizard ? 
                   <FormGroup>
+                  <br />
                   <Tooltip title="Check this if input for this control is optional." placement="right">
                     <FormControlLabel value={formData.optionalFlag} name="optionalFlag" 
                       control={formData.optionalFlag ? <Checkbox checked /> : <Checkbox />} 
                       label="Optional control" 
                       onChange={handleChange} /></Tooltip>
-                  </FormGroup> 
+                  </FormGroup> : null}
               </AccordionDetails>
           </Accordion>
         </DialogContent>

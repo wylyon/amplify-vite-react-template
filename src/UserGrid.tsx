@@ -56,6 +56,7 @@ interface EditToolbarProps {
 	filter: string;
 	arrayDivisions: [{}];
 	rows: GridRowsProp;
+	isAdmin: boolean;
 	setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
 	setRowModesModel: (
 	  newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
@@ -63,7 +64,7 @@ interface EditToolbarProps {
   }
 
 function EditToolbar(props: EditToolbarProps) {
-	const { filter, arrayDivisions, rows, setRows, setRowModesModel } = props;
+	const { filter, arrayDivisions, rows, isAdmin, setRows, setRowModesModel } = props;
 	const [openNew, setOpenNew] = useState(false);
 	const [item, setItem] = useState({});
  
@@ -84,6 +85,19 @@ function EditToolbar(props: EditToolbarProps) {
 		setItem(item);
 		setRows((oldRows) => [
 			...oldRows,
+			isAdmin ?
+			{ id: item.id, 
+				username: '',
+				companyId: filter.id,
+				company: filter.name,
+				email: item.email_address,
+				firstName: item.first_name,
+				middleName: item.middle_name,
+				lastName: item.last_name,
+				activeDate: getDate(item.active_date),
+				notes: item.notes,
+				isNew: false
+			} :
 			{ id: item.id, 
 			  username: '',
 			  companyId: filter.id,
@@ -132,11 +146,11 @@ function EditToolbar(props: EditToolbarProps) {
   
 	return (
 		<React.Fragment>
-			{openNew && <PopupNewUser props={props} arrayDivisions={arrayDivisions} rows={rows} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
+			{openNew && <PopupNewUser props={props} arrayDivisions={arrayDivisions} company={filter} rows={rows} isAdmin={isAdmin} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
 			<GridToolbarContainer>
 			<Tooltip title="Add a new User">
 				<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-				Add a User
+				{isAdmin ? "Add an Admin" : "Add a User"}
 				</Button>
 			</Tooltip>
 			<GridToolbar />
@@ -220,7 +234,7 @@ export default function UserGrid(props) {
 	  const handleUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setChecked(event.target.checked);
 		setLoading(true);
-		getTemplates(event.target.checked, true);
+		getUsers(event.target.checked, true);
 		setIsAdmin(event.target.checked);
 	  };
 
@@ -291,7 +305,7 @@ export default function UserGrid(props) {
 		return data;
 	  }
 
-	  const getTemplates = async (isAdmin, isLoading) => {
+	  const getUsers = async (isAdmin, isLoading) => {
 		const { data: items, errors } = 
 			(isAdmin) ? (
 				props.filter == null ?
@@ -331,7 +345,7 @@ export default function UserGrid(props) {
 	  };
 
 	useEffect(() => {
-		getTemplates(isAdmin, props.filter != null);
+		getUsers(isAdmin, props.filter != null);
 		if (props.filter == null) {
 			allCompanies();
 		}
@@ -371,7 +385,7 @@ export default function UserGrid(props) {
 			setOpen(true);
 		}
 		setLoading(true);
-		getTemplates(isAdmin, true);		
+		getUsers(isAdmin, true);		
 	}
 
 	const handleDeactiveOrActivate = async(id, isDeactive) => {
@@ -391,7 +405,7 @@ export default function UserGrid(props) {
 			setOpen(true);
 		}
 		setLoading(true);
-		getTemplates(isAdmin, true);
+		getUsers(isAdmin, true);
 	}
 
 	const handleDeleteRow = async(id) => {
@@ -686,7 +700,7 @@ export default function UserGrid(props) {
 
 				return [
 				<GridActionsCellItem icon={<EditIcon />} label="Edit" color='primary' onClick={handleEditClick(id)} />,
-				<GridActionsCellItem icon={<SupervisedUserCircleIcon />} label="Make SuperAdmin" disabled={!isAdmin} 
+				<GridActionsCellItem icon={<SupervisedUserCircleIcon />} label="Make SuperAdmin" disabled 
 					onClick={handleMakeSuperAdmin(id)} showInMenu/>,
 				<GridActionsCellItem icon={<PasswordIcon />} label="Reset Password" onClick={handleReset(id)} disabled showInMenu />,
 				<GridActionsCellItem icon={<AssignmentIndIcon />} label="Enroll User" onClick={handleEnroll(id)} showInMenu />,
@@ -730,12 +744,12 @@ export default function UserGrid(props) {
       </Dialog>
 	<Stack>
 	{isSignUpTime && <SignUp email={signUpEmail} onSubmitChange={handleSignOnCancel} /> }
-    {props.filter == null ? <FormGroup>
+    <FormGroup>
       <Typography variant='subtitle1'>Company User 
-		<FormControlLabel control={<Switch defaultChecked onChange={handleUserChange}/>} 
+		<FormControlLabel control={<Switch defaultChecked={props.filter == null ? true : false} onChange={handleUserChange}/>} 
 			label="Admin User" />
 	  </Typography>
-    </FormGroup> : null }
+    </FormGroup>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
 			rows={rows}
@@ -761,7 +775,7 @@ export default function UserGrid(props) {
 				toolbar: EditToolbar as GridSlots['toolbar'],
 			  }}
 			slotProps={{
-				toolbar: { filter, arrayDivisions, rows, setRows, setRowModesModel },
+				toolbar: { filter, arrayDivisions, rows,  isAdmin, setRows, setRowModesModel },
 			}}
 			/>
 		</Paper>

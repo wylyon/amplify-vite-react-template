@@ -602,7 +602,7 @@ export default function SetupTemplate(props) {
   return (
     <React.Fragment>
       <CssBaseline />
-      {isWizard && <SetupQuestion props={props} 
+      {isWizard && <SetupQuestion props={props} isWizard={false}
         onSubmitChange={newQuestionSubmit} 
         nextOrder={templateQuestion.length+1}
       />}
@@ -802,7 +802,7 @@ export default function SetupTemplate(props) {
             <h3>Add Questions/Controls: 
               <ButtonGroup variant="contained" aria-label="Question Input group" 
                 sx={{ float: 'right'}}>
-                <Button variant="contained" color="success" onClick={handleOnNew}>New</Button>
+                <Button variant="contained" color="success" onClick={handleOnNew}>New Wizard</Button>
                 <Button variant="contained" color="success" onClick={handleOnSave}>Save</Button>
                 <Button variant="contained" color="error" onClick={handleOnCancel}>Cancel</Button>
               </ButtonGroup>
