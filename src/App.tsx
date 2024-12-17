@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { Authenticator } from '@aws-amplify/ui-react';
+import { getCurrentUser } from 'aws-amplify/auth';
 import '@aws-amplify/ui-react/styles.css';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
@@ -9,6 +10,8 @@ import AdminMode from '../src/AdminMode';
 import UserMode from '../src/UserMode';
 import DisableMode from '../src/DisableMode';
 import DetermineMode from '../src/DetermineMode';
+import { signOut } from 'aws-amplify/auth';
+import { fetchUserAttributes } from 'aws-amplify/auth';
 
 const client = generateClient<Schema>();
 
@@ -18,6 +21,7 @@ function App() {
   const [settings, setSettings] = useState<Schema["Settings"]["type"][]>([]);
   const [isAccessDisabled, setIsAccessDisabled] = useState(false);
   const [disableMsg, setDisableMsg] = useState('');
+  const [loginId, setLoginId] = useState('');
 
   const fetchSettings = async () => {
     const { data: items, errors } = await client.models.Settings.list();
@@ -34,6 +38,16 @@ function App() {
     }
   };
 
+  const fetchLogin = async () => {
+    const { email } = await fetchUserAttributes();
+    setLoginId(email);
+    return email;
+  }
+
+  const logOut = async() => {
+    await signOut();
+  }
+
   useEffect(() => {
     fetchSettings();
   }, []);
@@ -46,7 +60,7 @@ function App() {
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
     {!isAccessDisabled && <Authenticator >
       {({ signOut, user }) => (
-        <DetermineMode userId={user.signInDetails.loginId} onSubmitChange={signOut}/>
+        fetchLogin() && loginId != '' && <DetermineMode userId={loginId} onSubmitChange={signOut}/>
       )}
     </Authenticator> }
     </>
