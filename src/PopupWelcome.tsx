@@ -53,7 +53,7 @@ export default function PopupWelcome(props) {
 
   const client = generateClient<Schema>();
   const steps = ['Select your Profile', 'Build a Template', 'Setup Users for that Template'];
-  const descriptions = ['The first step is to create for you a profile.   This profile will identify the main email address, address, and contact information. ' +
+  const descriptions = ['The first step is to create for you a profile.   This profile will identify the main email address and contact information. ' +
     'Normally, this profile information is your company, personal contact information', 'Step 2 is to create a template of an application to collect your data that you want captured.  ' +
     'This is an optional step, as you can also create this template later.',
     'Step 3 is define any users you want to run your application (template) and capture their data.   Please note, this wizard will automatically add your email to this template, ' +
@@ -235,6 +235,17 @@ export default function PopupWelcome(props) {
               nextOrder={1}
             />}
       {confirm && <ConfirmPassword props={props} password={password} onGoodPassword={handleGoodPassword} onBadPassword={handleBadPassword} />}
+      <TextField
+              margin="dense"
+              required
+              id="email"
+              name="email"
+              defaultValue={props.userId}
+              label="Email Address"
+              type="email"
+              fullWidth
+              variant="standard"
+            />
       <Box sx={{ width: '100%', border: '1px dashed grey' }}>
         <Stepper activeStep={activeStep}>
           {steps.map((label, index) => {
@@ -273,16 +284,6 @@ export default function PopupWelcome(props) {
           {activeStep == 0 ?
           <Box>
             <TextField
-              margin="dense"
-              required
-              id="email"
-              name="email"
-              label="Email Address"
-              type="email"
-              fullWidth
-              variant="standard"
-            />
-            <TextField
                 margin="dense"
                 required
                 id="name"
@@ -290,66 +291,6 @@ export default function PopupWelcome(props) {
                 label="Contact Name"
                 type="text"
                 fullWidth
-                variant="standard"
-              />
-            <TextField
-                margin="dense"
-                required
-                id="address1"
-                name="address1"
-                label="Address"
-                type="text"
-                fullWidth
-                variant="standard"
-              />
-            <TextField
-                margin="dense"
-                id="address2"
-                name="address2"
-                label="Address - More"
-                type="text"
-                fullWidth
-                variant="standard"
-              />
-            <Stack direction="row" spacing={2}>
-              <TextField
-                margin="dense"
-                required
-                id="city"
-                name="city"
-                label="City"
-                type="text"
-                variant="standard"
-              />
-              <SelectState props={props} onChange={handleStateOnChange} />
-              <TextField
-                margin="dense"
-                required
-                id="zipcode"
-                name="zipcode"
-                label="Zipcode"
-                type="text"
-                variant="standard"
-              />
-            </Stack>
-            <TextField
-                margin="dense"
-                id="refDepartment"
-                name="refDepartment"
-                label="Reference Department"
-                type="text"
-                fullWidth
-                variant="standard"
-              />
-            <TextField
-                margin="dense"
-                id="notes"
-                name="notes"
-                label="Notes"
-                type="text"
-                fullWidth
-                multiline
-                rows={3}
                 variant="standard"
               />
           </Box> : activeStep == 1 ? 

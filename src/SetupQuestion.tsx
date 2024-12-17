@@ -472,6 +472,8 @@ export default function SetupQuestion(props) {
             variant="outlined"
             fullWidth
           />
+          {!props.isWizard ? 
+          <Paper>
           <Typography variant="caption" gutterBottom>Number Lines From Prior Control</Typography>
           <Slider aria-label="Always visible"
             defaultValue={dialogControls.lines}
@@ -494,6 +496,7 @@ export default function SetupQuestion(props) {
             min={0}
             max={10}
           />
+          </Paper> : null }
         </DialogContent>
         <DialogActions>
           <Button onClick={handlePreClose}>Cancel</Button>
@@ -568,7 +571,7 @@ export default function SetupQuestion(props) {
                   </Typography>
                   <FormControlLabel control={<Checkbox id='easyOrAdvanced' checked={isAdvanced} onClick={handleAdvanced}/>} label="Advanced Controls" 
                   />
-                  <Button variant='contained' color='error'>Preview</Button>
+                  <Button variant='contained' color='success'>Preview</Button>
                   {isAdvanced ?
                     <RadioGroup
                       aria-labelledby="question-group-label"
