@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import { Authenticator } from '@aws-amplify/ui-react';
+import { Authenticator, Input, TextField, useAuthenticator } from '@aws-amplify/ui-react';
 import { getCurrentUser } from 'aws-amplify/auth';
 import '@aws-amplify/ui-react/styles.css';
 import { generateClient } from 'aws-amplify/data';
@@ -22,6 +22,7 @@ function App() {
   const [isAccessDisabled, setIsAccessDisabled] = useState(false);
   const [disableMsg, setDisableMsg] = useState('');
   const [loginId, setLoginId] = useState('');
+  const [companyName, setCompanyName] = useState('');
 
   const fetchSettings = async () => {
     const { data: items, errors } = await client.models.Settings.list();
@@ -55,12 +56,30 @@ function App() {
   function nothingToDo() {
   }
 
+  const handleCompanyName = (e) => {
+    setCompanyName(e.target.value);
+  }
+
   return (
     <>
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
-    {!isAccessDisabled && <Authenticator >
+    {!isAccessDisabled && <Authenticator 
+      components={{
+        SignUp: {
+          FormFields() {
+            const { validationErrors } = useAuthenticator();
+            return (
+              <>
+              <Authenticator.SignUp.FormFields />
+              <TextField name="company" label="Company (or Name)" type="text" onBlur={handleCompanyName}/>
+              </>
+            )
+          }
+        }
+      }}
+    >
       {({ signOut, user }) => (
-        fetchLogin() && loginId != '' && <DetermineMode userId={loginId} onSubmitChange={signOut}/>
+        fetchLogin() && loginId != '' && <DetermineMode userId={loginId} onSubmitChange={signOut} companyName={companyName} />
       )}
     </Authenticator> }
     </>
