@@ -63,7 +63,7 @@ function App() {
   return (
     <>
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
-    {!isAccessDisabled && <Authenticator 
+    {!isAccessDisabled && <Authenticator
       components={{
         SignUp: {
           FormFields() {

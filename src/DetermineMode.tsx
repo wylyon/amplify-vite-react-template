@@ -58,7 +58,7 @@ export default function DetermineMode(props) {
       setWhat3WordsAPIKey(what3wordsAPI == null || what3wordsAPI.length < 1 ? null : what3wordsAPI[0].value);
     }
   }
-  const fetchAdmins = (emailId, items) => {
+  const fetchAdmins = (emailId, items, isValid) => {
     if (items.length < 1 || isSuperAdmin || mode != 9) {
       return false;
     }
@@ -66,7 +66,7 @@ export default function DetermineMode(props) {
     if (filterAdmin == null || filterAdmin.length < 1 || !filterAdmin[0].active_date) {
       if (filterAdmin == null || filterAdmin.length < 1) {
 	// check if user is valid for input
-	      if (isValidUser) {
+	      if (isValid) {
 	        setMode(1);
 	        setIsSuperAdmin(false);
 	        return false;
@@ -78,7 +78,7 @@ export default function DetermineMode(props) {
     if (!filterAdmin[0].company_id) {
       setIsSuperAdmin(true);
     }
-    if (isValidUser) {
+    if (isValid) {
       // here we have an Admin who is also a template user
       // check screen size...if mobile then default to company user vs admin.
       if (isMobile()) {
@@ -92,7 +92,7 @@ export default function DetermineMode(props) {
     return false;
   };
 
-  const allAdmins = async () => {
+  const allAdmins = async (isValid, userId) => {
     const { data: items, errors } = await client.models.admin.list();
     if (errors) {
       alert(errors[0].message);
@@ -100,7 +100,7 @@ export default function DetermineMode(props) {
       setIsDisabledUser(true);
     } else {
       setAdmin(items);
-      fetchAdmins (props.userId, items);
+      fetchAdmins (userId, items, isValid);
     }
   }
 
@@ -115,11 +115,14 @@ export default function DetermineMode(props) {
         setDisableMsg("Cannot access Users By Email.");
         setIsDisabledUser(true);
         setIsValidUser(false);
+        allAdmins(false, userId);
       } else {
         if (items == null || items.length < 1) {
           setIsValidUser(false);
+          allAdmins(false, userId);
         } else {
           setIsValidUser(true);
+          allAdmins(true, userId);
         }
       }
     }
@@ -127,7 +130,6 @@ export default function DetermineMode(props) {
     getAppSettings();
     setUserEmail(props.userId);
     getUser(props.userId);
-    allAdmins();
   }, []);
 
   const handleOnCancel = (e) => {
