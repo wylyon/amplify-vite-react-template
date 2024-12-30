@@ -11,9 +11,6 @@ Amplify.configure({
   ...existingConfig,
   API: {
     ...existingConfig.API,
-    REST: {
-      ...existingConfig.API.REST,
-    }
   }
 });
 
