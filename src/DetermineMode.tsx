@@ -186,7 +186,7 @@ export default function DetermineMode(props) {
                 <PersonIcon />
               </Avatar>
             </ListItemAvatar>
-            <ListItemText primary="Regular" />
+            <ListItemText primary="Data Input" />
           </ListItemButton>         
         </ListItem>
       </List>

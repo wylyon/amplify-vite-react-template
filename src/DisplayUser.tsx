@@ -48,6 +48,7 @@ export default function DisplayUser(props) {
   const [results, setResults] = useState([]);
   const [gps, setGPS] = useState({});
   const [words, setWords] = useState('');
+  const [validPages, setValidPages] = useState(props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')));
 
   const client = generateClient<Schema>();
 
@@ -265,11 +266,13 @@ export default function DisplayUser(props) {
   }
 
   const handleNextPage = (e) => {
-    if (currentPage < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length) {
+    if (currentPage < validPages.length) {
       if (page <= currentPage) {
         setCurrentPage(currentPage+1);
         setPage(page+1);
       }
+    } else {
+      setCurrentPage(currentPage+1);
     }
   }
 
@@ -350,9 +353,9 @@ export default function DisplayUser(props) {
   function getNonDialogQuestion (index) {
     const limit = props.templateQuestions.length;
     if (index == limit) {
-      return props.templateQuestions[index];
+      return validPages[index];
     }
-    return (props.templateQuestions[index].question_type == 'dialog_input' ? props.templateQuestions[index+1] : props.templateQuestions[index]);
+    return (validPages[index]);
   }
 
   function getNextQuestion (q) {
@@ -482,13 +485,13 @@ export default function DisplayUser(props) {
                   setPage(page-1);
                 }}>Previous</Button>
                 <Button variant="contained" 
-                  color={page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? "success" : "primary"} 
-                  type={page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? "button" : "submit"}
-                  disabled={page == currentPage && page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length} 
-                  onClick={page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? () => {
+                  color={page <= validPages.length ? "success" : "primary"} 
+                  type={page <= validPages.length ? "button" : "submit"}
+                  disabled={page == currentPage && page <= validPages.length} 
+                  onClick={page < validPages.length ? () => {
                     event.preventDefault();
                     setPage(page+1);
-                  } : handleSubmit}>{page < props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')).length ? "Next" : "Finished"}
+                  } : handleSubmit}>{page < validPages.length ? "Next" : "Finished"}
                 </Button>
                 <Button variant="contained" color="error" onClick={handleCancel}>Cancel</Button>
               </Stack>
