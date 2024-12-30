@@ -967,7 +967,12 @@ export default function SetupTemplate(props) {
                       label="control post attributes (optional)" variant="outlined" size="small" multiline
                       maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip> 
                     <br /><br />
-
+                    <Tooltip title="Enter here control values (ie. dropdown or radio values)." placement="right">
+                    <TextField id="question_values" name="questionValues" value={formData.questionValues} 
+                      label="dropdown/button list values" 
+                      disabled={isValuesDisabled} variant="outlined" size="small" multiline
+                      maxRows={4} sx={{ width: "350px"}} onClick={handleClickOpen} onChange={handleChange}/></Tooltip>   
+                    <br />
                     <FormGroup>
                     <Tooltip title="Check this if input for this control is optional." placement="right">
                       <FormControlLabel value={formData.optionalFlag} name="optionalFlag" 
