@@ -571,7 +571,6 @@ export default function SetupQuestion(props) {
                   </Typography>
                   <FormControlLabel control={<Checkbox id='easyOrAdvanced' checked={isAdvanced} onClick={handleAdvanced}/>} label="Advanced Controls" 
                   />
-                  <Button variant='contained' color='success'>Preview</Button>
                   {isAdvanced ?
                     <RadioGroup
                       aria-labelledby="question-group-label"

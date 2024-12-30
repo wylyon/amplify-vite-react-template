@@ -813,6 +813,7 @@ export default function TemplateGrid(props) {
       {isSetupTemplate && <SetupTemplate onSubmitAdd={handleUpdateOnCancel} 
         onSubmitChange={handleUpdateOnCancel} 
         name={preHtml} 
+		isWizard={false}
         templateId={htmlId} 
         divisionId={postHtml} 
         preLoadAttributes={''} 
