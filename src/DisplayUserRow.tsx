@@ -564,6 +564,7 @@ export default function DisplayUserRow(props) {
           { props.props.userData[0].usePagination==1 ? <p>{value}</p> :
           <Typography variant="caption" gutterBottom>{value}</Typography> }
           <ToggleButtonGroup
+            aria-label={props.questionType + props.question.question_order}
             key={'tbg_' + props.question.question_order}
             aria-placeholder={'tbg_' + props.question.question_order}
             color="primary"
@@ -581,7 +582,7 @@ export default function DisplayUserRow(props) {
                 size="small"
                 aria-label={comp} 
                 aria-placeholder={props.question.id}
-                sx={{backgroundColor: "yellow"}}>{comp}
+                sx={{bgcolor: "info.main", color: 'info.contrastText'}}>{comp}
               </ToggleButton> )}
             </Stack>
           </ToggleButtonGroup>
