@@ -369,6 +369,7 @@ export default function DisplayUserRow(props) {
       props.onRadio (rValue, props.question.id, coordinates, '', props.whatPage);
     }
 
+    trigger_check(rValue, props.question.id);
     props.onNextPage(true);
   };
 
