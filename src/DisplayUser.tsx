@@ -48,6 +48,7 @@ export default function DisplayUser(props) {
   const [results, setResults] = useState([]);
   const [gps, setGPS] = useState({});
   const [words, setWords] = useState('');
+  const [key, setKey] = useState(0);
   const [validPages, setValidPages] = useState(props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')));
 
   const client = generateClient<Schema>();
@@ -274,6 +275,7 @@ export default function DisplayUser(props) {
     } else {
       setCurrentPage(currentPage+1);
     }
+    setKey(key + 1);
   }
 
   const handleNextPageNoPaging = (e) => {
