@@ -19,7 +19,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import PersonIcon from '@mui/icons-material/Person';
 import AddIcon from '@mui/icons-material/Add';
+import LoginIcon from '@mui/icons-material/Login';
+import InfoIcon from '@mui/icons-material/Info';
 import Typography from '@mui/material/Typography';
+import CloseIcon from '@mui/icons-material/Close';
 import { blue } from '@mui/material/colors';
 import PopupWelcome from '../src/PopupWelcome';
 
@@ -149,10 +152,13 @@ export default function DetermineMode(props) {
   const handleListItemClick = (value: string) => {
     setOpen(false);
     setWelcome(false);
-    if (value == "exit") {
+    if (value == "info") {
+      window.location.href = 'https://logit.pro';
+    } else if (value == "login") {
+      props.onSubmitChange(false);
+    } else if (value == "exit") {
       handleWelcomeClose;
-    }
-    if (value == "welcome") {
+    } else if (value == "welcome") {
       setMode(2);
     } else if (value == "admin") {
       setMode(0);
@@ -192,8 +198,18 @@ export default function DetermineMode(props) {
       </List>
     </Dialog>
     <Dialog onClose={handleWelcomeClose} open={welcome && !isValidUser}>
-      <DialogTitle>New User</DialogTitle>
+      <DialogTitle>Invalid Login or New User</DialogTitle>
       <List sx={{ pt: 0 }}>
+      <ListItem disableGutters key="info">
+          <ListItemButton onClick={() => handleListItemClick("info")}>
+            <ListItemAvatar>
+              <Avatar sx={{ bgcolor: blue[100], color: blue[600] }}>
+                <InfoIcon />
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText primary="More Information about Logit.pro" />
+          </ListItemButton>         
+        </ListItem>
         <ListItem disableGutters key="welcome">
           <ListItemButton onClick={() => handleListItemClick("welcome")}>
             <ListItemAvatar>
@@ -201,7 +217,17 @@ export default function DetermineMode(props) {
                 <PersonIcon />
               </Avatar>
             </ListItemAvatar>
-            <ListItemText primary="Welcome to Product WalkThru" />
+            <ListItemText primary="Create an Account and Walkthru" />
+          </ListItemButton>         
+        </ListItem>
+        <ListItem disableGutters key="login">
+          <ListItemButton onClick={() => handleListItemClick("login")}>
+            <ListItemAvatar>
+              <Avatar sx={{ bgcolor: blue[100], color: blue[600] }}>
+                <LoginIcon />
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText primary="Return to Login" />
           </ListItemButton>         
         </ListItem>
         <ListItem disableGutters key="welcomeExit">
@@ -212,7 +238,7 @@ export default function DetermineMode(props) {
           }}>
             <ListItemAvatar>
               <Avatar sx={{ bgcolor: blue[100], color: blue[600] }}>
-                <PersonIcon />
+                <CloseIcon />
               </Avatar>
             </ListItemAvatar>
             <ListItemText primary="Exit" />
