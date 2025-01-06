@@ -42,6 +42,7 @@ export default function UserMode(props) {
 	const [tempId, setTempId] = useState('');
 	const [isMulti, setIsMulti] = useState(false);
 	const [isDefaultPage2, setIsDefaultPage2] = useState(true);
+	const [foundTemplate, setFoundTemplate] = useState(false);
 	
 	const handleVerifiedDate = async(id) => {
 		const now = new Date();
@@ -81,7 +82,7 @@ export default function UserMode(props) {
 		setTemplates(templateIdAndTitle);
 	  }
 
-	const getQuestionsByTemplate = async (tempId) => {
+	const getQuestionsByTemplate = async (tempId, isRefresh) => {
 		const { data: items, errors } = await client.queries.listQuestionsByTemplateId({
 		  templateId: tempId
 		});
@@ -90,6 +91,9 @@ export default function UserMode(props) {
 		  return;
 		}
 		setTemplateQuestion(items);
+		if (isRefresh) {
+			setFoundTemplate(true);
+		}
 	};
 
 	const getUserPageDetails = async (emailAddress) => {
@@ -116,6 +120,7 @@ export default function UserMode(props) {
 				  setIsDefaultPage2(true);
 				  setUserData(translateUserTemplate (firstItem));
 				  getQuestionsByTemplate(firstItem.template_id);
+				  setFoundTemplate(true);
 				} else {
 				// here we have multiple templates...need to show list of templates to choose.
 				//  setUserData(translateUserTemplate (userItems))
@@ -136,7 +141,7 @@ export default function UserMode(props) {
 						setIsDefaultPage(false);
 						setIsDefaultPage2(true);
 						setUserData(translateUserTemplate (item))	
-						getQuestionsByTemplate(firstItem.template_id);
+						getQuestionsByTemplate(firstItem.template_id, false);
 						return;						
 					}
 				  }
@@ -167,7 +172,7 @@ export default function UserMode(props) {
 				setIsDefaultPage(false);
 				setIsDefaultPage2(true);
 				setUserData(translateUserTemplate (item))	
-				getQuestionsByTemplate(templateId);				
+				getQuestionsByTemplate(templateId, true);				
 			}
 		}
 	};
@@ -188,6 +193,7 @@ export default function UserMode(props) {
   }
   
   const handleOnTemplate = (e) => {
+	setFoundTemplate(false);
 	setIsMultiTemplates(false);
 	getUserPageDetailsByTemplate(props.userId, e);
   }
@@ -229,7 +235,7 @@ export default function UserMode(props) {
 	  		</a>
 		</div>
 		{isMultiTemplates && <PopupTemplate theTemplates={templates} onSelectTemplate={handleOnTemplate}/> }
-	  {	!isDefaultPage && templateQuestion && templateQuestion.length > 0 && <DisplayUser 
+	  {	foundTemplate && !isDefaultPage && templateQuestion && templateQuestion.length > 0 && <DisplayUser 
 	  		userId={props.userId} 
 			templateId={tempId} 
 			userData={userData} 
@@ -237,7 +243,7 @@ export default function UserMode(props) {
 			what3wordsAPI={props.what3words}
 			templateQuestions={templateQuestion} 
 	  	preLoadAttributes={preLoadPage} postLoadAttributes={postLoadPage} onSubmitChange={handleSubmit}/>}
-		{!isDefaultPage2 && templateQuestion && templateQuestion.length > 0 && <DisplayUser 
+		{foundTemplate && !isDefaultPage2 && templateQuestion && templateQuestion.length > 0 && <DisplayUser 
 			userId={props.userId} 
 			templateId={tempId} 
 			userData={userData} 
