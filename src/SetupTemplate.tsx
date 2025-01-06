@@ -33,6 +33,7 @@ import Slider from "@mui/material/Slider";
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination';
 import PopupReview from "../src/PopupPreview";
+import { min } from "moment";
 
 export default function SetupTemplate(props) {
   const [formData, setFormData] = useState({
@@ -257,6 +258,11 @@ export default function SetupTemplate(props) {
   }
 
   const getQuestionsByTemplate = async (tempId) => {
+    if (props.isWizard) {
+      setTemplateQuestion(props.templateQuestions);
+      setFormDataFields(props.templateQuestions == [] ? 1 : props.templateQuestions.length + 1, 'order');
+      return;
+    }
     const { data: items, errors } = await client.queries.listQuestionsByTemplateId({
       templateId: tempId
     });
@@ -300,11 +306,11 @@ export default function SetupTemplate(props) {
     }));
   }
   
-  function resetQuestions () {
+  function resetQuestions (questionOrder) {
     setFormData({
       id: '',
       templateId: props.template_id,
-      questionOrder: 0,
+      questionOrder: questionOrder == null ? 0 : questionOrder,
       preLoadAttributes: '',
       title: '',
       description: '',
@@ -319,34 +325,94 @@ export default function SetupTemplate(props) {
     setWhichControl('');
   }
 
+  const mapTemplateQuestions = (isUpdate, deleteId) => {
+    var newTemplateQuestion = [];
+    for (var indx = 0; indx < templateQuestion.length; indx++) {
+      if (deleteId != null && templateQuestion[indx].id == deleteId) {
+
+      } else if (isUpdate && templateQuestion[indx].id == formData.id) {
+        newTemplateQuestion.push({
+          id: formData.id,
+          question_order: formData.questionOrder,
+          pre_load_attributes: formData.preLoadAttributes,   
+          title: formData.title,
+          description: formData.description,
+          question_type: formData.questionType,
+          question_values: formData.questionValues,
+          post_load_attributes: formData.postLoadAttributes,
+          optional_flag: (!formData.optionalFlag ? 0 : 1),
+          trigger_value: formData.questionType == 'dialog_input' ? formData.questionValues : ''
+        });
+      } else {
+          newTemplateQuestion.push({
+            id: templateQuestion[indx].id,
+            question_order: templateQuestion[indx].question_order,
+            pre_load_attributes: templateQuestion[indx].pre_load_attributes,   
+            title: templateQuestion[indx].title,
+            description: templateQuestion[indx].description,
+            question_type: templateQuestion[indx].question_type,
+            question_values: templateQuestion[indx].question_values,
+            post_load_attributes: templateQuestion[indx].post_load_attributes,
+            optional_flag: templateQuestion[indx].optional_flag,
+            trigger_value: templateQuestion[indx].trigger_value   
+          });
+      }
+    }
+    if (!isUpdate && deleteId == null) {
+      newTemplateQuestion.push({
+        id: uuidv4(),
+        question_order: formData.questionOrder,
+        pre_load_attributes: formData.preLoadAttributes,   
+        title: formData.title,
+        description: formData.description,
+        question_type: formData.questionType,
+        question_values: formData.questionValues,
+        post_load_attributes: formData.postLoadAttributes,
+        optional_flag: (!formData.optionalFlag ? 0 : 1),
+        trigger_value: formData.questionType == 'dialog_input' ? formData.questionValues : ''
+      });
+    }
+    setTemplateQuestion(newTemplateQuestion);
+    setFiltered(newTemplateQuestion.filter(comp => !comp.question_type.includes('dialog_input')));
+  }
+
+
   // For now, lets "mark" as deleted until we can officially delete
   const deleteQuestions = async(questionId) => {
-    const now = new Date();
-    const qId = questionId.id;
-    const { errors, data } = await client.mutations.deleteQuestionById({
-      questionId: qId
-    });
+    if (props.isWizard) {
+      mapTemplateQuestions(false, questionId.id);
+    } else {
+      const now = new Date();
+      const qId = questionId.id;
+      const { errors, data } = await client.mutations.deleteQuestionById({
+        questionId: qId
+      });
+    }
   }
 
   const updateQuestions = async() => {
-    const { errors, data: updateQuestions } = await client.models.template_question.update({
-      id: formData.id,
-      question_order: formData.questionOrder,
-      pre_load_attributes: formData.preLoadAttributes,
-      title: formData.title,
-      description: formData.description,
-      question_type: formData.questionType,
-      question_values: formData.questionValues,
-      post_load_attributes: formData.postLoadAttributes,
-      optional_flag: (!formData.optionalFlag ? 0 : 1),
-      trigger_value: formData.questionType == 'dialog_input' ? formData.questionValues : ''
-    });
-    if (errors) {
-      setAlertMessage(errors[0].message);
-      setIsAlert(true);
-      return;
-    }
-    getQuestionsByTemplate(props.templateId);
+    if (props.isWizard) {
+      mapTemplateQuestions(true, null);
+    } else {
+      const { errors, data: updateQuestions } = await client.models.template_question.update({
+        id: formData.id,
+        question_order: formData.questionOrder,
+        pre_load_attributes: formData.preLoadAttributes,
+        title: formData.title,
+        description: formData.description,
+        question_type: formData.questionType,
+        question_values: formData.questionValues,
+        post_load_attributes: formData.postLoadAttributes,
+        optional_flag: (!formData.optionalFlag ? 0 : 1),
+        trigger_value: formData.questionType == 'dialog_input' ? formData.questionValues : ''
+      });
+      if (errors) {
+        setAlertMessage(errors[0].message);
+        setIsAlert(true);
+        return;
+      }
+      getQuestionsByTemplate(props.templateId);
+  }
     setAlertMessage("Question " + formData.title + " Updated");
     setTheSeverity("success");
     setIsAlert(true);
@@ -354,40 +420,51 @@ export default function SetupTemplate(props) {
 
   const createQuestions = async() => {
     const now = new Date();
+    const nextOrder = formData.questionOrder + 1;
     const currentDateTime = now.toLocaleString();
-
-    const { errors, data: newQuestions } = await client.models.template_question.create({
-      id: uuidv4(),
-      template_id: props.templateId,
-      question_order: formData.questionOrder,
-      pre_load_attributes: formData.preLoadAttributes,
-      title: formData.title,
-      description: formData.description,
-      question_type: formData.questionType,
-      question_values: formData.questionValues,
-      post_load_attributes: formData.postLoadAttributes,
-      optional_flag: (!formData.optionalFlag ? 0 : 1),
-      notes: '',
-      created: now,
-      created_by: 0,
-      trigger_value: formData.questionType == 'dialog_input' ? formData.questionValues : ''
-    });
-    if (errors) {
-      setAlertMessage(errors[0].message);
-      setIsAlert(true);
-      return;
+    if (props.isWizard) {
+      mapTemplateQuestions(false, null);
+    } else {
+      const { errors, data: newQuestions } = await client.models.template_question.create({
+        id: uuidv4(),
+        template_id: props.templateId,
+        question_order: formData.questionOrder,
+        pre_load_attributes: formData.preLoadAttributes,
+        title: formData.title,
+        description: formData.description,
+        question_type: formData.questionType,
+        question_values: formData.questionValues,
+        post_load_attributes: formData.postLoadAttributes,
+        optional_flag: (!formData.optionalFlag ? 0 : 1),
+        notes: '',
+        created: now,
+        created_by: 0,
+        trigger_value: formData.questionType == 'dialog_input' ? formData.questionValues : ''
+      });
+      if (errors) {
+        setAlertMessage(errors[0].message);
+        setIsAlert(true);
+        return;
+      }
+      getQuestionsByTemplate(props.templateId);
     }
-    getQuestionsByTemplate(props.templateId);
     setAlertMessage("Question " + formData.title + " Added");
     setTheSeverity("success");
     setIsAlert(true);
-    resetQuestions();
+    resetQuestions(props.isWizard ? nextOrder : null);
   }
 
 
-  const handleOnCancel = (e) => {
+  const handleOnCancel = (event: object, reason: string) => {
+    if (reason == "escapeKeyDown" || reason == "backdropClick") {
+      return;
+    }
     setOpenSetup(false);
-    props.onSubmitChange(false);
+    props.onSubmitChange(
+      props.isWizard ?
+        templateQuestion
+      : false
+    );
   };
 
   const handleComplete = () => {
@@ -482,7 +559,9 @@ export default function SetupTemplate(props) {
     for (var i = 0; i < selectedRows.length; i++) {
       deleteQuestions(selectedRows[i]);
     }
-    getQuestionsByTemplate(props.templateId);  
+    if (!props.isWizard) {
+      getQuestionsByTemplate(props.templateId); 
+    }
   }
 
   function handleRowClick (params, event, details) {
@@ -492,7 +571,7 @@ export default function SetupTemplate(props) {
     // called on checkbox for row.   
     if (rowSelectionModel.length == 0) {
       setIsUpdate(false);
-      resetQuestions();
+      resetQuestions(null);
       setIsPreviewActive(true);
       setIsDeleteActive(false);
       setSelectedRows([]);
@@ -665,28 +744,31 @@ export default function SetupTemplate(props) {
             variant="outlined"
             fullWidth
           />
-          <Typography variant="caption" gutterBottom>Number Lines From Prior Control</Typography>
-          <Slider aria-label="Always visible"
-            defaultValue={dialogControls.lines}
-            getAriaValueText={valuetext}
-            name="linesValue"
-            step={1}
-            marks={marks}
-            valueLabelDisplay="auto"
-            min={0}
-            max={10}
-          />
-          <Typography variant="caption" gutterBottom>Number Tabs before label or control</Typography>
-          <Slider aria-label="Always visible"
-            defaultValue={dialogControls.tabs}
-            getAriaValueText={valuetext}
-            name="tabValue"
-            step={1}
-            marks={marks}
-            valueLabelDisplay="auto"
-            min={0}
-            max={10}
-          />
+          {props.isWizard ? null : 
+          <Paper elevation={2}>
+            <Typography variant="caption" gutterBottom>Number Lines From Prior Control</Typography>
+            <Slider aria-label="Always visible"
+              defaultValue={dialogControls.lines}
+              getAriaValueText={valuetext}
+              name="linesValue"
+              step={1}
+              marks={marks}
+              valueLabelDisplay="auto"
+              min={0}
+              max={10}
+            />
+            <Typography variant="caption" gutterBottom>Number Tabs before label or control</Typography>
+            <Slider aria-label="Always visible"
+              defaultValue={dialogControls.tabs}
+              getAriaValueText={valuetext}
+              name="tabValue"
+              step={1}
+              marks={marks}
+              valueLabelDisplay="auto"
+              min={0}
+              max={10}
+            />
+          </Paper> }
         </DialogContent>
         <DialogActions>
           <Button onClick={handlePreClose}>Cancel</Button>
@@ -782,6 +864,7 @@ export default function SetupTemplate(props) {
       <Dialog
         open={openSetup}
         fullWidth
+        keepMounted
         maxWidth='lg'
         onClose={handleOnCancel}
         aria-labelledby="alert-dialog-title"
@@ -816,7 +899,8 @@ export default function SetupTemplate(props) {
                     value={formData.questionType}
                     name="questionType" >
                       {props.isWizard ? 
-                      <Box>
+                      <Paper elevation={3}>
+                        <Typography variant="h6" alignContent="center">Step 1: Select Control</Typography>
                         <Tooltip title="Select this to input a photo" placement="top">
                         <FormControlLabel value="photo"
                           control={(formData.questionType=="photo") ? <Radio checked="true" size="small"/> : <Radio size="small"/>} 
@@ -849,7 +933,7 @@ export default function SetupTemplate(props) {
                               onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
                           </Paper>
                         </Stack>
-                      </Box>
+                      </Paper>
                       :
                       <Box>
                         <Tooltip title="Select this to input a photo" placement="top">
@@ -923,7 +1007,10 @@ export default function SetupTemplate(props) {
                       </Box> }
                   </RadioGroup>
                 </Box>
-                <Box>
+                <Paper elevation={3}>
+                  {props.isWizard ?
+                  <Typography variant="h6" alignContent="center">Step 2: Enter Details</Typography>
+                   : null}
                   <Tooltip title="Enter here a title of what this question is about." placement="top">
                   <TextField id="question_title" name="title" value={formData.title} 
                     label="Question Title" variant="outlined" required="true" size="small" 
@@ -981,7 +1068,7 @@ export default function SetupTemplate(props) {
                         onChange={handleChange} /></Tooltip>
                     </FormGroup>   
                   </Box> }               
-                </Box>
+                </Paper>
               </Stack>
             </FormControl>
           </Box>

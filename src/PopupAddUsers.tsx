@@ -12,16 +12,23 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import Button from "@mui/material/Button";
+import ButtonGroup from '@mui/material/ButtonGroup';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import FormGroup from '@mui/material/FormGroup';
+import Tab from '@mui/material/Tab';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
 import Checkbox from '@mui/material/Checkbox';
@@ -31,24 +38,32 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
-import { IconButton } from "@mui/material";
+import { FormLabel, IconButton } from "@mui/material";
 import ConfirmPassword from "../src/ConfirmPassword";
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import SubjectIcon from '@mui/icons-material/Subject';
 
 export default function PopupAddUsers(props) {
   const [isWaiting, setIsWaiting] = useState(false);
   const [open, setOpen] = useState(true);
+  const [email, setEmail] = useState('');
   const [openError, setOpenError] = useState(false);
   const [error, setError] = useState('');
+  const [checked, setChecked] = useState(true);
+  const [isAdd, setIsAdd] = useState(false);
+  const [tabValue, setTabValue] = useState('1');
   const [confirm, setConfirm] = useState(false);
+  const [isDeleteActive, setIsDeleteActive] = useState(false);
   const [password, setPassword] = useState('');
   const [arrayDivisions, setArrayDivisions] = useState([{}]);
   const [selectDivision, setSelectDivision] = useState('');
   const [textType, setTextType] = useState('password');
-  const [addedUsers, setAddedUsers] = useState([{
-    id: '',
-    email: ''
-  }])
+  const [addedUsers, setAddedUsers] = useState([])
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [verificationSubject, setVerificationSubject] = useState("Welcome to " + props.title + " App!");
+  const [verificationBody, setVerificationBody] = useState('');
+  const [invitationSubject, setInvitationSubject] = useState("Welcome to " + props.title + " App!");
+  const [invitationBody, setInvitationBody] = useState('');
 
   const client = generateClient<Schema>();
 
@@ -58,11 +73,37 @@ export default function PopupAddUsers(props) {
 
   useEffect(() => {
     setArrayDivisions(props.arrayDivisions);
+    setAddedUsers(props.addedUsers);
 	}, []);
 
   const handleCloseValues = () => {
-    props.onClose();
+    props.onClose(addedUsers);
     setOpen(false);
+  }
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    setTabValue(newValue);
+  };
+
+  const handleOnChange = (event) => {
+    setIsAdd(true);
+    setEmail(event.target.value as string);
+  }
+
+  const handleVerificationSubjectChange = (event) => {
+    setVerificationSubject(event.target.value as string);
+  }
+
+  const handleInvitationSubjectChange = (event) => {
+    setInvitationSubject(event.target.value as string);
+  }
+
+  const handleVerificationBodyChange = (event) => {
+    setVerificationBody(event.target.value as string);
+  }
+
+  const handleInvitationBodyChange = (event) => {
+    setInvitationBody(event.target.value as string);
   }
 
   const handlePasswordConfirm = (event) => {
@@ -121,9 +162,29 @@ export default function PopupAddUsers(props) {
     }
   }
 
+  const handleAddEmail = (event) => {
+    const existing = addedUsers.filter(comp => comp.email == email);
+    if (email == '') {
+      setError("Need a valid email address");
+      setOpenError(true);
+      return;
+    }
+    if (existing && existing.length > 0) {
+      setError("Email address " + email + " Already Exists.");
+      setOpenError(true);
+      return;
+    }
+    setAddedUsers([...addedUsers, {
+      id: uuidv4(),
+      email: email
+    }]);
+    setEmail('');
+    setIsAdd(false);
+  }
+
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'email', headerName: 'Email Address', width: 130 },
+    { field: 'email', headerName: 'Email Address', width: 230 },
   ];
 
   const handleAddRow = async(email, firstName, middleName, lastName, notes, password) => {
@@ -168,7 +229,24 @@ export default function PopupAddUsers(props) {
     handleSubmitValues(item);
 	}
 
+  const deleteUsers = (rowId) => {
+    const newUserArray = [];
+    for (var indx = 0; indx < addedUsers.length; indx++) {
+      if (addedUsers[indx].id == rowId.id) {
+      } else {
+        newUserArray.push({
+          id: addedUsers[indx].id,
+          email: addedUsers[indx].email
+        })
+      }
+    }
+    setAddedUsers(newUserArray);
+  }
+
   function handleDelete () { 
+    for (var i = 0; i < selectedRows.length; i++) {
+      deleteUsers(selectedRows[i]);
+    }
   }
 
   function handleRowClick (params, event, details) {
@@ -177,14 +255,26 @@ export default function PopupAddUsers(props) {
   function handleRowSelection (rowSelectionModel, details) {
     // called on checkbox for row.   
     if (rowSelectionModel.length == 0) {
+      setIsDeleteActive(false);
+      setSelectedRows([]);
     } else {
       if (rowSelectionModel.length == 1) {
-
+        setIsDeleteActive(true);
+        setSelectedRows([ { id: rowSelectionModel[0]}]);
       } else {
-
+        setIsDeleteActive(true);
+        var rowIds = [];
+        for (var i = 0; i < rowSelectionModel.length; i++) {
+          rowIds.push({ id: rowSelectionModel[i]});
+        }
+        setSelectedRows(rowIds);
       }
     }
   }
+
+  const handleCheckedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setChecked(event.target.checked);
+  };
 
 	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
 		id: false,
@@ -204,31 +294,13 @@ export default function PopupAddUsers(props) {
     <CssBaseline />
     <Dialog
       open={open}
-      maxWidth="md"
+      maxWidth="lg"
       onClose={handleCloseValues}
       PaperProps={{
         component: 'form',
         onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
           event.preventDefault();
-          if (confirm) {
-            setConfirm(false);
-            return false;
-          }
-          const formData = new FormData(event.currentTarget);
-          const formJson = Object.fromEntries((formData as any).entries());
-          const email = formJson.email;
-          const firstName = formJson.firstName;
-          const middleName = formJson.middleName;
-          const lastName = formJson.lastName;
-          const notes = formJson.notes;
-          const password = formJson.password;
-          const filterEmail = props.rows.filter(comp => comp.email == email);
-          if (filterEmail != null && filterEmail.length > 0) {
-            setError("Email " + email + " already exists.   Please choose another.");
-            setOpenError(true);
-            return false;
-          }
-          return handleAddRow(email, firstName, middleName, lastName, notes, password);
+          handleCloseValues();
         },
       }}
     >
@@ -245,41 +317,111 @@ export default function PopupAddUsers(props) {
           </Alert>}
       {confirm && <ConfirmPassword props={props} password={password} onGoodPassword={handleGoodPassword} onBadPassword={handleBadPassword} />}
         <Stack direction="row" spacing={3} >
-          <Paper elevation={3} sx={{ height: '200px', width: '900px'}}>
-            <TextField
-                autoFocus
-                required
-                margin="dense"
-                id="email"
-                name="email"
-                label="User Email Address"
-                type="email"
-                fullWidth
-                variant="standard"
-              />
-              <Stack direction="row" spacing={2}>
-                <TextField
-                  margin="dense"
-                  required
-                  id="password"
-                  name="password"
-                  label="Password"
-                  type={textType}
-                  fullWidth
-                  variant="standard"
-                  onBlur={handlePasswordConfirm}
-                />
-                <IconButton aria-label="show password" onClick={handlePasswordVisibility}><VisibilityIcon /></IconButton>
-              </Stack>
+          <Stack direction="column" spacing={2} >
+            <Paper elevation={3} sx={{ height: '130px', width: '300px'}}>
               <br />
-              <Button variant="contained" color="primary" >Add User</Button>
+              <TextField
+                  autoFocus
+                  margin="dense"
+                  id="email"
+                  name="email"
+                  value={email}
+                  label="User Email Address"
+                  type="email"
+                  fullWidth
+                  onChange={handleOnChange}
+                  variant="standard"
+              />
+              <br />
+              <Button variant="contained" color="primary" onClick={handleAddEmail} 
+                disabled={!isAdd}>Add User</Button>
             </Paper>
-            <Box sx={{ bgcolor: '#52B2BF', width: '1300px', height: '500px', 
+            <Paper elevation={3} sx={{ height: '440px', width: '600px'}}>
+              <Typography variant="caption">Email Options...</Typography><br/>
+              <FormControlLabel control={<Checkbox defaultChecked checked={checked} onChange={handleCheckedChange} />} label="Default email settings" /> <br/>
+              {!checked ?
+              <FormControl>
+                <FormLabel id="verification_type">Verification Type</FormLabel>
+                <RadioGroup
+                  row
+                  aria-labelledby="verification_type_group"
+                  defaultValue="Code"
+                  name="verification_type_group">
+                  <FormControlLabel value="Code" control={<Radio />} label="Code" />
+                  <FormControlLabel value="Link" control={<Radio />} label="Link" />
+                </RadioGroup>
+              </FormControl> : null}
+              {!checked ?
+              <TabContext value={tabValue}>
+                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                  <TabList onChange={handleTabChange} aria-label="lab API tabs example">
+                    <Tab label="Verification-Email" value="1" />
+                    <Tab label="User Invitation-Email" value="2" />
+                  </TabList>
+                </Box>
+                <TabPanel value="1">
+                  <TextField 
+                    margin="dense"
+                    id="verificationSubject"
+                    name="verificationSubject"
+                    value={verificationSubject}
+                    label="Verification Subject"
+                    onChange={handleVerificationSubjectChange}
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                  />
+                  <TextField 
+                    margin="dense"
+                    id="verificationBody"
+                    name="verificationBody"
+                    value={verificationBody}
+                    onChange={handleVerificationBodyChange}
+                    multiline
+                    maxRows={4}
+                    label="Verification Body"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                  />
+                  <Typography variant="caption">NOTE:  Verification body will automatically include "Use this code ### to confirm your account"</Typography>
+                </TabPanel>
+                <TabPanel value="2">
+                <TextField 
+                    margin="dense"
+                    id="invitationSubject"
+                    name="invitationSubject"
+                    value={invitationSubject}
+                    onChange={handleInvitationSubjectChange}
+                    label="Invitation Subject"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                  />
+                  <TextField 
+                    margin="dense"
+                    id="invitationBody"
+                    name="invitationBody"
+                    value={invitationBody}
+                    onChange={handleInvitationBodyChange}
+                    multiline
+                    maxRows={4}
+                    label="Invitation Body"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                  />
+                  <Typography variant="caption">NOTE:  Invitation body will automatically include "You can now login with email ### and temp password ###."</Typography>
+                </TabPanel>
+              </TabContext> : null }
+            </Paper>
+          </Stack>
+          <Box sx={{ bgcolor: '#52B2BF', width: '300px', height: '590px', 
               borderStyle: 'solid', borderWidth: '2px'}} >
             <h3>{"Added Users"}
-              <Button variant="contained" color="error" onClick={handleDelete}>Delete</Button>
+              <Button variant="contained" color="error" disabled={!isDeleteActive} onClick={handleDelete}>Delete</Button>
             </h3>
-             <Paper sx={{ height: 400, width: '100%' }}>
+             <Paper sx={{ height: 500, width: '100%' }}>
               <DataGrid
                 rows={addedUsers}
                 columns={columns}
@@ -296,12 +438,11 @@ export default function PopupAddUsers(props) {
               />
             </Paper>
           </Box>
-          </Stack>
+        </Stack>
       </Box>
     </DialogContent>
     <DialogActions>
-      <Button onClick={handleCloseValues}>Cancel</Button>
-      <Button type="submit">Save</Button>
+      <Button type="submit">Close</Button>
     </DialogActions>
   </Dialog>
 </React.Fragment>

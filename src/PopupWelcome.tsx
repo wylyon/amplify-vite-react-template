@@ -34,6 +34,7 @@ import type { Schema } from '../amplify/data/resource'; // Path to your backend 
 import SelectState from '../src/SelectState';
 import SetupTemplate from '../src/SetupTemplate';
 import PopupAddUsers from "../src/PopupAddUsers";
+import PopupGenerate from "../src/PopupGenerate";
 import BuildIcon from '@mui/icons-material/Build';
 import { IconButton } from "@mui/material";
 import ConfirmPassword from "../src/ConfirmPassword";
@@ -42,10 +43,14 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import Badge from '@mui/material/Badge';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
+import DisplayQuestion from "../src/DisplayQuestion";
+import Pagination from '@mui/material/Pagination';
 
 export default function PopupWelcome(props) {
   const [isWaiting, setIsWaiting] = useState(false);
+  const [openGenerate, setOpenGenerate] = useState(false);
   const [open, setOpen] = useState(true);
+  const [page, setPage] = useState(1);
   const [openName, setOpenName] = useState(false);
   const [checked, setChecked] = useState(true);
   const [openError, setOpenError] = useState(false);
@@ -60,6 +65,8 @@ export default function PopupWelcome(props) {
   const [name, setName] = useState('');
   const [prevent, setPrevent] = useState(false);
   const [num, setNum] = useState(0);
+  const [templateQuestion, setTemplateQuestion] = useState<Schema["template_question"]["type"][]>([]);
+  const [addedUsers, setAddedUsers] = useState([]);
   const [numUsers, setNumUsers] = useState(0);
   const [formData, setFormData] = useState({
     id: '',
@@ -85,10 +92,10 @@ export default function PopupWelcome(props) {
 
   const client = generateClient<Schema>();
   const steps = ['Select your Profile', 'Build a Template', 'Setup Users for that Template'];
-  const descriptions = ['The first step is to complete your profile.   We have your email and company name.   Please give us a contact name', 'Step 2 is to create a template of an application to collect your data that you want captured.  ' +
-    'This is an optional step, as you can also create this template later.',
+  const descriptions = ['The first step is to complete your profile.   We have your email and company name.   Please give us a contact name', 
+    'Step 2 is to create a template of an application to collect your data that you want captured.',
     'Step 3 is define any users you want to run your application (template) and capture their data.   Please note, this wizard will automatically add your email to this template, ' +
-    'so you would only need to add other contributors.  This is an optional step at this point, as you can create and assign users later once you have created a template.'];
+    'so you would only need to add other contributors.'];
 
   const isStepOptional = (step: number) => {
     return step === 2 || step === 1;
@@ -97,6 +104,10 @@ export default function PopupWelcome(props) {
   const isStepSkipped = (step: number) => {
     return skipped.has(step);
   };
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  }
 
   const handleNext = () => {
     setPrevent(false);
@@ -109,6 +120,11 @@ export default function PopupWelcome(props) {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
     setSkipped(newSkipped);
   };
+
+  const handleFinish = () => {
+    setPrevent(false);
+    setOpenGenerate(true);
+  }
 
   const handleBack = () => {
     setPrevent(false);
@@ -212,37 +228,26 @@ export default function PopupWelcome(props) {
     e.preventDefault();
     setPrevent(true);
     setIsUserWizard(true);
-    setNumUsers(2);
   }
 
   const handleStateOnChange = (v) => {
   }
 
   function addedUsersClose (e) {
+    setAddedUsers(e);
     setIsUserWizard(false);
+    setNumUsers(e.length);
+  }
+
+  function generateClose (e) {
+    setOpenGenerate(false);
+    handleNext();
   }
 
   function newQuestionSubmit (e) {
     setIsWizard(false);
-    setNum(num + 1);
-    setFormData({
-      id: e.id,
-      name: formData.name,
-      templateName: formData.templateName,
-      templateDescription: formData.templateDescription,
-      templateId: props.template_id,
-      questionOrder: e.questionOrder,
-      preLoadAttributes: e.preLoadAttributes,
-      title: e.title,
-      description: e.description,
-      questionType: e.questionType,
-      questionValues: e.questionValues,
-      postLoadAttributes: e.postLoadAttributes,
-      optionalFlag: e.optionalFlag,
-      actionsFlag: false,
-      notes: '',
-      triggerValue: e.triggerValue
-    });
+    setNum(e.length);
+    setTemplateQuestion(e);
   }
 
   const handlePasswordVisibility = (event) => {
@@ -278,6 +283,10 @@ export default function PopupWelcome(props) {
       [name]: value,
     }));
   };
+
+  function createMarkup(dirty) {
+    return { __html: dirty };
+  }
 
   return (
     <React.Fragment>
@@ -357,13 +366,15 @@ export default function PopupWelcome(props) {
                 onSubmitAdd={newQuestionSubmit}
                 nextOrder={1}
                 name={formData.templateName}
+                templateQuestions = {templateQuestion}
                 templateId={formData.templateId}
                 divisionId={props.divisionId}
                 preLoadAttributes={''}
                 postLoadAttributes={''}
                 usePages={true}
               />}
-        { isUserWizard && <PopupAddUsers props={props} onClose={addedUsersClose} />}
+        { openGenerate && <PopupGenerate props={props} onClose={generateClose} />}
+        { isUserWizard && <PopupAddUsers props={props} onClose={addedUsersClose} addedUsers={addedUsers} title={formData.templateName} />}
         {confirm && <ConfirmPassword props={props} password={password} onGoodPassword={handleGoodPassword} onBadPassword={handleBadPassword} />}
         <Stack direction="row" spacing={3}>
           <Paper elevation={3}>
@@ -412,16 +423,21 @@ export default function PopupWelcome(props) {
               {activeStep === steps.length ? (
               <React.Fragment>
                 <Typography sx={{ mt: 2, mb: 1 }}>
-                  All steps completed - you&apos;re finished
+                  All steps completed and setup!  Press EXIT to use logit.pro.
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                  <Box sx={{ flex: '1 1 auto' }} />
-                  <Button onClick={handleReset}>Reset</Button>
+                  <Button variant="contained">Exit</Button>
                 </Box>
               </React.Fragment>
               ) : (
               <React.Fragment>
                 <Typography sx={{ mt: 2, mb: 1 }}>{descriptions[activeStep]}</Typography>
+                {activeStep == 1 || activeStep == 2 ?
+                <box>
+                  <br/><Typography variant="body1">NOTE:  This is an optional step, as you can create a Template or Users later.</Typography> 
+                </box>
+                : null
+              }
                 {activeStep == 0 ?
                 <Box>
                   <TextField
@@ -479,7 +495,7 @@ export default function PopupWelcome(props) {
                       variant="standard"
                     />
                     <Badge badgeContent={num} color="primary">
-                      <Button variant="contained" onClick={handleTemplateWizard} startIcon={<BuildIcon />}>Build App</Button>
+                      <Button variant="contained" disabled={formData.templateName == ''} onClick={handleTemplateWizard} startIcon={<BuildIcon />}>Build App</Button>
                   </Badge>
                 </Box>
                 : activeStep == 2 ?
@@ -501,11 +517,11 @@ export default function PopupWelcome(props) {
                   </Button>
                   <Box sx={{ flex: '1 1 auto' }} />
                   {isStepOptional(activeStep) && (
-                    <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
+                    <Button color="inherit" onClick={activeStep === steps.length - 1 ? handleFinish : handleSkip} sx={{ mr: 1 }}>
                       Skip
                     </Button>
                   )}
-                  <Button onClick={handleNext}>
+                  <Button onClick={activeStep === steps.length - 1 ? handleFinish : handleNext} disabled={formData.name == ''}>
                     {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
                   </Button>
                 </Box>
@@ -513,11 +529,38 @@ export default function PopupWelcome(props) {
             )}
           </Box>
         </Paper>
+        {activeStep == 2 || (activeStep == 1 && templateQuestion.length > 0) ?
         <Paper elevation={3}>
           <Box sx={{ width: '400px' }}>
             <Typography variant="caption">Preview</Typography>
+            <div className="startPreview" dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes)} /><br/><br/><br/>
+            {templateQuestion == null || templateQuestion.length == 0 ?
+              <Typography variant="h4">No Preview Available</Typography>
+            :
+              <Stack spacing={2}>
+                <Typography variant="h6">
+                  {props.name}
+                </Typography>
+                <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
+                  <Stack direction="row" spacing={1} >
+                    <Paper elevation={0}>
+                      <DisplayQuestion props={props} question = {templateQuestion[page-1]}  useBox={false}  useSpacing={false} isPreview = {true}/>
+                    </Paper>
+                    <Paper elevation={0}>
+                      <Typography variant="caption" gutterBottom>{"<---" + templateQuestion[page-1].title}</Typography>
+                    </Paper>
+                  </Stack>
+                </Box>
+                <Pagination count={templateQuestion.length} 
+                  page={page} 
+                  onChange={handlePageChange} 
+                  showFirstButton 
+                  showLastButton
+                  color="primary"
+                />
+              </Stack>       }     
           </Box>
-        </Paper>
+        </Paper> : null }
       </Stack>
     </DialogContent>
   </Dialog>
