@@ -23,7 +23,7 @@ export default function PopupTemplate(props) {
 
   const handleSelectChange = (e) => {
     setSelectTemplate(e.target.value);
-  //  props.onSelectTemplate(e.target.value);
+    props.onSelectTemplate(e.target.value);
   };
 
   useEffect(() => {
