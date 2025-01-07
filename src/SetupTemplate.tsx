@@ -568,10 +568,10 @@ export default function SetupTemplate(props) {
   }
 
   function handleRowSelection (rowSelectionModel, details) {
-    // called on checkbox for row.   
+    // called on checkbox for row.         
     if (rowSelectionModel.length == 0) {
       setIsUpdate(false);
-      resetQuestions(null);
+      resetQuestions(templateQuestion.length + 1);
       setIsPreviewActive(true);
       setIsDeleteActive(false);
       setSelectedRows([]);
@@ -771,8 +771,8 @@ export default function SetupTemplate(props) {
           </Paper> }
         </DialogContent>
         <DialogActions>
-          <Button onClick={handlePreClose}>Cancel</Button>
-          <Button type="submit">Save</Button>
+          <Button onClick={handlePreClose} variant="contained" color="error">Cancel</Button>
+          <Button type="submit" variant="contained">Save</Button>
         </DialogActions>
       </Dialog>
       <Dialog
@@ -857,8 +857,8 @@ export default function SetupTemplate(props) {
             /> : null}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button type="submit">Save</Button>
+          <Button onClick={handleClose} variant="contained" color="error">Cancel</Button>
+          <Button type="submit" variant="contained">Save</Button>
         </DialogActions>
       </Dialog>
       <Dialog
@@ -887,7 +887,6 @@ export default function SetupTemplate(props) {
                 sx={{ float: 'right'}}>
                 <Button variant="contained" color="success" onClick={handleOnNew}>Add Wizard</Button>
                 <Button variant="contained" color="success" onClick={handleOnSave}>Save</Button>
-                <Button variant="contained" color="error" onClick={handleOnCancel}>Cancel</Button>
               </ButtonGroup>
             </h3>
             <FormControl>
@@ -1016,16 +1015,19 @@ export default function SetupTemplate(props) {
                     label="Question Title" variant="outlined" required="true" size="small" 
                     sx={{ width: '250px'}} onChange={handleChange}/></Tooltip>
                   <FormLabel id="filler1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FormLabel>
+                  {props.isWizard && formData.questionOrder > 0 && !isUpdate ? null
+                   :
                   <Tooltip title="Enter here the order of this question relative to others." placement="right">
                   <TextField id="question_order" name="questionOrder" value={formData.questionOrder} 
                     label="Order" variant="outlined" size="small" 
-                    sx={{ width: '80px' }} required="true" onChange={handleChange}/></Tooltip>
+                    sx={{ width: '80px' }} required="true" onChange={handleChange}/></Tooltip> }
                   <br />
+                  {props.isWizard ? null :
                   <Tooltip title="Enter here a fuller description of what this question is for and about." placement="right">
                   <TextField id="question_desc" name="description" value={formData.description} 
                     label="Description" variant="outlined" size="small" multiline
-                    maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip>
-                  <br /><br />
+                    maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip> }
+                  <br />
                   {props.isWizard ? 
                   <Box>
                     <Tooltip title="Enter here any special HTML formatting, or text you want processed BEFORE control is rendered." placement="right">
@@ -1098,7 +1100,7 @@ export default function SetupTemplate(props) {
       </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleOnCancel} autoFocus>
+          <Button onClick={handleOnCancel} autoFocus variant="contained" color="error">
             Close
           </Button>
         </DialogActions>

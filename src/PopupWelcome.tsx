@@ -91,10 +91,10 @@ export default function PopupWelcome(props) {
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const client = generateClient<Schema>();
-  const steps = ['Select your Profile', 'Build a Template', 'Setup Users for that Template'];
+  const steps = ['Select your Profile', 'Build a Logging App', 'Setup Users for that Logging App'];
   const descriptions = ['The first step is to complete your profile.   We have your email and company name.   Please give us a contact name', 
-    'Step 2 is to create a template of an application to collect your data that you want captured.',
-    'Step 3 is define any users you want to run your application (template) and capture their data.   Please note, this wizard will automatically add your email to this template, ' +
+    'Step 2 is to create a logging app to collect your data that you want captured.',
+    'Step 3 is define any users you want to run your application and capture their data.   Please note, this wizard will automatically add your email to this template, ' +
     'so you would only need to add other contributors.'];
 
   const isStepOptional = (step: number) => {
@@ -322,8 +322,8 @@ export default function PopupWelcome(props) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseValues}>Cancel</Button>
-          <Button type="submit">Ok</Button>
+          <Button onClick={handleCloseValues} variant="contained" color="error">Cancel</Button>
+          <Button type="submit" variant="contained">Ok</Button>
         </DialogActions>
       </Dialog>
       <Dialog
@@ -434,7 +434,7 @@ export default function PopupWelcome(props) {
                 <Typography sx={{ mt: 2, mb: 1 }}>{descriptions[activeStep]}</Typography>
                 {activeStep == 1 || activeStep == 2 ?
                 <box>
-                  <br/><Typography variant="body1">NOTE:  This is an optional step, as you can create a Template or Users later.</Typography> 
+                  <br/><Typography variant="body1">NOTE:  This is an optional step, as you can create a Logging App or Users later.</Typography> 
                 </box>
                 : null
               }
@@ -466,7 +466,7 @@ export default function PopupWelcome(props) {
                       margin="dense"
                       id="templateName"
                       name="templateName"
-                      label="Template Title"
+                      label="Logging App Title"
                       slotProps={{
                         inputLabel: {
                           shrink: true,
@@ -482,7 +482,7 @@ export default function PopupWelcome(props) {
                       margin="dense"
                       id="templateDescription"
                       name="templateDescription"
-                      label="Description"
+                      label="Note (Optional)"
                       slotProps={{
                         inputLabel: {
                           shrink: true,
@@ -509,6 +509,7 @@ export default function PopupWelcome(props) {
                 <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
                   <Button
                     color="inherit"
+                    variant="contained"
                     disabled={activeStep === 0}
                     onClick={handleBack}
                     sx={{ mr: 1 }}
@@ -517,11 +518,11 @@ export default function PopupWelcome(props) {
                   </Button>
                   <Box sx={{ flex: '1 1 auto' }} />
                   {isStepOptional(activeStep) && (
-                    <Button color="inherit" onClick={activeStep === steps.length - 1 ? handleFinish : handleSkip} sx={{ mr: 1 }}>
+                    <Button color="inherit" variant="contained" onClick={activeStep === steps.length - 1 ? handleFinish : handleSkip} sx={{ mr: 1 }}>
                       Skip
                     </Button>
                   )}
-                  <Button onClick={activeStep === steps.length - 1 ? handleFinish : handleNext} disabled={formData.name == ''}>
+                  <Button onClick={activeStep === steps.length - 1 ? handleFinish : handleNext} variant="contained" color={activeStep === steps.length - 1 ? 'success' : 'primary'} disabled={formData.name == ''}>
                     {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
                   </Button>
                 </Box>

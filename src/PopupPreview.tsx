@@ -93,7 +93,7 @@ export default function PopupReview(props) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseValues} autoFocus>
+          <Button onClick={handleCloseValues} autoFocus variant="contained" color="error">
             Close
           </Button>
         </DialogActions>

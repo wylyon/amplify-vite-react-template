@@ -200,16 +200,6 @@ export default function DetermineMode(props) {
     <Dialog onClose={handleWelcomeClose} open={welcome && !isValidUser}>
       <DialogTitle>Invalid Login or New User</DialogTitle>
       <List sx={{ pt: 0 }}>
-      <ListItem disableGutters key="info">
-          <ListItemButton onClick={() => handleListItemClick("info")}>
-            <ListItemAvatar>
-              <Avatar sx={{ bgcolor: blue[100], color: blue[600] }}>
-                <InfoIcon />
-              </Avatar>
-            </ListItemAvatar>
-            <ListItemText primary="More Information about Logit.pro" />
-          </ListItemButton>         
-        </ListItem>
         <ListItem disableGutters key="welcome">
           <ListItemButton onClick={() => handleListItemClick("welcome")}>
             <ListItemAvatar>
@@ -218,16 +208,6 @@ export default function DetermineMode(props) {
               </Avatar>
             </ListItemAvatar>
             <ListItemText primary="Create an Account and Walkthru" />
-          </ListItemButton>         
-        </ListItem>
-        <ListItem disableGutters key="login">
-          <ListItemButton onClick={() => handleListItemClick("login")}>
-            <ListItemAvatar>
-              <Avatar sx={{ bgcolor: blue[100], color: blue[600] }}>
-                <LoginIcon />
-              </Avatar>
-            </ListItemAvatar>
-            <ListItemText primary="Return to Login" />
           </ListItemButton>         
         </ListItem>
         <ListItem disableGutters key="welcomeExit">
