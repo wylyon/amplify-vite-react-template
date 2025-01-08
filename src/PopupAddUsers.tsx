@@ -76,7 +76,10 @@ export default function PopupAddUsers(props) {
     setAddedUsers(props.addedUsers);
 	}, []);
 
-  const handleCloseValues = () => {
+  const handleCloseValues = (event: object, reason: string) => {
+    if (reason == "escapeKeyDown" || reason == "backdropClick") {
+      return;
+    }
     props.onClose(addedUsers);
     setOpen(false);
   }
@@ -307,8 +310,7 @@ export default function PopupAddUsers(props) {
     <DialogTitle>{props.props.isAdmin ? "Create a New Admin" : "Create a New User"}</DialogTitle>
     <DialogContent>
       <DialogContentText>
-        Enter Following Fields: <br />
-        (NOTE:  Password is initial password, user will be required to set their own)
+        Enter Following Fields:
       </DialogContentText>
       <Box>
       {isWaiting && <CircularProgress />}
@@ -340,53 +342,13 @@ export default function PopupAddUsers(props) {
               <Typography variant="caption">Email Options...</Typography><br/>
               <FormControlLabel control={<Checkbox defaultChecked checked={checked} onChange={handleCheckedChange} />} label="Default email settings" /> <br/>
               {!checked ?
-              <FormControl>
-                <FormLabel id="verification_type">Verification Type</FormLabel>
-                <RadioGroup
-                  row
-                  aria-labelledby="verification_type_group"
-                  defaultValue="Code"
-                  name="verification_type_group">
-                  <FormControlLabel value="Code" control={<Radio />} label="Code" />
-                  <FormControlLabel value="Link" control={<Radio />} label="Link" />
-                </RadioGroup>
-              </FormControl> : null}
-              {!checked ?
               <TabContext value={tabValue}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                   <TabList onChange={handleTabChange} aria-label="lab API tabs example">
-                    <Tab label="Verification-Email" value="1" />
-                    <Tab label="User Invitation-Email" value="2" />
+                    <Tab label="User Invitation-Email" value="1" />
                   </TabList>
                 </Box>
                 <TabPanel value="1">
-                  <TextField 
-                    margin="dense"
-                    id="verificationSubject"
-                    name="verificationSubject"
-                    value={verificationSubject}
-                    label="Verification Subject"
-                    onChange={handleVerificationSubjectChange}
-                    type="text"
-                    fullWidth
-                    variant="standard"
-                  />
-                  <TextField 
-                    margin="dense"
-                    id="verificationBody"
-                    name="verificationBody"
-                    value={verificationBody}
-                    onChange={handleVerificationBodyChange}
-                    multiline
-                    maxRows={4}
-                    label="Verification Body"
-                    type="text"
-                    fullWidth
-                    variant="standard"
-                  />
-                  <Typography variant="caption">NOTE:  Verification body will automatically include "Use this code ### to confirm your account"</Typography>
-                </TabPanel>
-                <TabPanel value="2">
                 <TextField 
                     margin="dense"
                     id="invitationSubject"
@@ -406,10 +368,11 @@ export default function PopupAddUsers(props) {
                     onChange={handleInvitationBodyChange}
                     multiline
                     maxRows={4}
+                    rows={4}
                     label="Invitation Body"
                     type="text"
                     fullWidth
-                    variant="standard"
+                    variant="outlined"
                   />
                   <Typography variant="caption">NOTE:  Invitation body will automatically include "You can now login with email ### and temp password ###."</Typography>
                 </TabPanel>
@@ -442,7 +405,7 @@ export default function PopupAddUsers(props) {
       </Box>
     </DialogContent>
     <DialogActions>
-      <Button type="submit">Close</Button>
+      <Button type="submit" variant="contained" color="error">Close</Button>
     </DialogActions>
   </Dialog>
 </React.Fragment>

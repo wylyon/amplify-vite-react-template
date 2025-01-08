@@ -94,7 +94,7 @@ export default function PopupWelcome(props) {
   const steps = ['Select your Profile', 'Build a Logging App', 'Setup Users for that Logging App'];
   const descriptions = ['The first step is to complete your profile.   We have your email and company name.   Please give us a contact name', 
     'Step 2 is to create a logging app to collect your data that you want captured.',
-    'Step 3 is define any users you want to run your application and capture their data.   Please note, this wizard will automatically add your email to this template, ' +
+    'Step 3 is define any users you want to run your application and capture their data.   Please note, this wizard will automatically add your email to this logging app, ' +
     'so you would only need to add other contributors.'];
 
   const isStepOptional = (step: number) => {
@@ -373,7 +373,7 @@ export default function PopupWelcome(props) {
                 postLoadAttributes={''}
                 usePages={true}
               />}
-        { openGenerate && <PopupGenerate props={props} onClose={generateClose} />}
+        { openGenerate && <PopupGenerate props={props} onClose={generateClose} userId={props.userId} name={name} contact={formData.name} />}
         { isUserWizard && <PopupAddUsers props={props} onClose={addedUsersClose} addedUsers={addedUsers} title={formData.templateName} />}
         {confirm && <ConfirmPassword props={props} password={password} onGoodPassword={handleGoodPassword} onBadPassword={handleBadPassword} />}
         <Stack direction="row" spacing={3}>
@@ -508,7 +508,7 @@ export default function PopupWelcome(props) {
                 }
                 <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
                   <Button
-                    color="inherit"
+                    color="primary"
                     variant="contained"
                     disabled={activeStep === 0}
                     onClick={handleBack}
@@ -518,7 +518,7 @@ export default function PopupWelcome(props) {
                   </Button>
                   <Box sx={{ flex: '1 1 auto' }} />
                   {isStepOptional(activeStep) && (
-                    <Button color="inherit" variant="contained" onClick={activeStep === steps.length - 1 ? handleFinish : handleSkip} sx={{ mr: 1 }}>
+                    <Button color="primary" variant="contained" onClick={activeStep === steps.length - 1 ? handleFinish : handleSkip} sx={{ mr: 1 }}>
                       Skip
                     </Button>
                   )}

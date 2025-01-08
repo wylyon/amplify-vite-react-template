@@ -261,6 +261,7 @@ export default function SetupTemplate(props) {
     if (props.isWizard) {
       setTemplateQuestion(props.templateQuestions);
       setFormDataFields(props.templateQuestions == [] ? 1 : props.templateQuestions.length + 1, 'order');
+      setFiltered(props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')));
       return;
     }
     const { data: items, errors } = await client.queries.listQuestionsByTemplateId({
