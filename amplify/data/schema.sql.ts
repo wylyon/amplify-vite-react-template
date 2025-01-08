@@ -56,7 +56,7 @@ export const schema = configure({
         active_date: a.date(),
         deactive_date: a.datetime(),
         created: a.datetime().required(),
-        created_by: a.integer().required()
+        created_by: a.string()
     }).identifier([
         "id"
     ]),
@@ -82,7 +82,7 @@ export const schema = configure({
         notes: a.string(),
         deactive_date: a.datetime(),
         created: a.datetime().required(),
-        created_by: a.integer().required()
+        created_by: a.string()
     }).identifier([
         "id"
     ]),
@@ -100,7 +100,7 @@ export const schema = configure({
         notes: a.string(),
         deactive_date: a.datetime(),
         created: a.datetime().required(),
-        created_by: a.integer().required()
+        created_by: a.string()
     }).identifier([
         "id"
     ]),

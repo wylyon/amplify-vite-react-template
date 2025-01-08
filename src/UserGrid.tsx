@@ -246,25 +246,6 @@ export default function UserGrid(props) {
 		const formattedDate = date.format("YYYY-MM-DD 23:00:00");
 		return new Date(formattedDate);
 	  }
-
-	  function translateUserTemplate (item) {
-		const data = [{id: item.id, 
-			company: item.company, 
-			divisionId: item.division_id,
-			division: item.division,
-			companyId: item.company_id,
-			email: item.email_address,
-			firstName: item.first_name,
-			lastName: item.last_name,
-			middleName: item.middle_name,
-			activeDate: getDate(item.active_date),
-			deactiveDate: getDate(item.deactive_date),
-			notes: item.notes,
-			created: item.created,
-			createdBy: item.created_by,
-		  }];
-		return data;
-	  }
 	
 	  function translateUserTemplates (items) {
 		const item = JSON.parse(items[0]);
@@ -328,15 +309,9 @@ export default function UserGrid(props) {
 			if (Array.isArray(items) && items.length > 0) {
 				const db = JSON.stringify(items);
 				const userItems = JSON.parse(db);
-				if (items.length < 2) {
-				  const data = translateUserTemplate (userItems);
-				  setUserData(data);
-				  setRows(data);
-				} else {
-				  const data = translateUserTemplates(userItems);
-				  setUserData(data);
-				  setRows(data);
-				}
+				const data = translateUserTemplates(userItems);
+				setUserData(data);
+				setRows(data);
 			  }
 		}
 		if (isLoading) {

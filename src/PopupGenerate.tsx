@@ -45,8 +45,13 @@ export default function PopupGenerate(props) {
   const [theSeverity, setTheSeverity] = useState('error');
   const [alertMessage, setAlertMessage] = useState('');
   const client = generateClient<Schema>();
+  var isProfile = false;
 
-  const createCompanyDivisionRow = async() => {
+  const createCompanyDivisionAdminRow = async() => {
+    if (isProfile) {
+      return;
+    }
+    isProfile = true;
 		const now = new Date();
 		const { errors, data: item } = await client.models.company.create({
 			id: uuidv4(),
@@ -71,7 +76,7 @@ export default function PopupGenerate(props) {
       setTheSeverity('success');
       setIsAlert(true);
       
-      const { errors, data: divisions } = await client.models.division.create({
+      const { errors, data: division } = await client.models.division.create({
         id: uuidv4(),
         company_id: item.id,
         name: props.name, 
@@ -94,6 +99,27 @@ export default function PopupGenerate(props) {
         setAlertMessage('Setup Division Record.');
         setTheSeverity('success');
         setIsAlert(true);
+        const firstLastName = props.contact.split(' ');
+        const { errors, data: admin } = await client.models.admin.create({
+          id: uuidv4(),
+          company_id: item.id,
+          email_address: props.userId,
+          first_name: firstLastName[0],
+          last_name: firstLastName.length > 1 ? firstLastName[1] : firstLastName[0],
+          middle_name: '',
+          active_date: now.toISOString().slice(0, 10),
+          created: now,
+          created_by: props.userId			
+        });			
+        if (errors) {
+          setAlertMessage(errors[0].message);
+          setTheSeverity('error');
+          setIsAlert(true);
+        } else {
+          setAlertMessage('Setup Admin Record.');
+          setTheSeverity('success');
+          setIsAlert(true);
+        }
       }    
     }
 	}
@@ -103,7 +129,7 @@ export default function PopupGenerate(props) {
       setProgress((prevProgress) => (prevProgress + 10));
     }, 800);
     if (progress == 10) {
-      createCompanyDivisionRow();
+      createCompanyDivisionAdminRow();
     } else if (progress >= 100) {
       clearInterval(timer);
       handleCloseValues();
