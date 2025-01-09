@@ -373,7 +373,15 @@ export default function PopupWelcome(props) {
                 postLoadAttributes={''}
                 usePages={true}
               />}
-        { openGenerate && <PopupGenerate props={props} onClose={generateClose} userId={props.userId} name={name} contact={formData.name} />}
+        { openGenerate && <PopupGenerate props={props} 
+            onClose={generateClose} 
+            userId={props.userId} 
+            name={name} 
+            contact={formData.name} 
+            title={formData.templateName}
+            description={formData.templateDescription} 
+            hasTemplate={num > 0}
+            templateQuestions = {templateQuestion} />}
         { isUserWizard && <PopupAddUsers props={props} onClose={addedUsersClose} addedUsers={addedUsers} title={formData.templateName} />}
         {confirm && <ConfirmPassword props={props} password={password} onGoodPassword={handleGoodPassword} onBadPassword={handleBadPassword} />}
         <Stack direction="row" spacing={3}>

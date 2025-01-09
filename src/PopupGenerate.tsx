@@ -46,6 +46,77 @@ export default function PopupGenerate(props) {
   const [alertMessage, setAlertMessage] = useState('');
   const client = generateClient<Schema>();
   var isProfile = false;
+  var divisionId = null;
+  var isTemplate = false;
+
+  const createTemplate = async() => {
+    if (isTemplate) {
+      return;
+    }
+    isTemplate = true;
+    if (!props.hasTemplate) {
+      setAlertMessage('Bypassing Template(Logging App) Creation.');
+      setTheSeverity('success');
+      setIsAlert(true);
+      return;
+    }
+		const now = new Date();
+		const { errors, data: template } = await client.models.template.create({
+			id: uuidv4(),
+			division_id: divisionId,
+			title: props.title,
+			description: props.description,
+			live_date:  now.toISOString().slice(0, 10),
+			prod_date:  now.toISOString().slice(0, 10),
+			notes: '',
+			created: now,
+			created_by: props.userId,
+			use_pagination: 1,
+			auto_space:  1,
+			box_controls:  0		
+		});
+		if (errors) {
+			setAlertMessage(errors[0].message);
+      setTheSeverity('error');
+			setIsAlert(true);
+		} else {
+      setAlertMessage('Setup Template(Logging App) Record.');
+      setTheSeverity('success');
+      setIsAlert(true);
+
+      var numAdded = 0;
+      for (var indx = 0; indx < props.templateQuestions.length; indx++) {
+        const { errors, data: newQuestion } = await client.models.template_question.create({
+          id: uuidv4(),
+          template_id: template.id,
+          question_order: props.templateQuestions[indx].question_order,
+          pre_load_attributes: props.templateQuestions[indx].pre_load_attributes,
+          title: props.templateQuestions[indx].title,
+          description: props.templateQuestions[indx].description,
+          question_type: props.templateQuestions[indx].question_type,
+          question_values: props.templateQuestions[indx].question_values,
+          post_load_attributes: props.templateQuestions[indx].post_load_attributes,
+          optional_flag: props.templateQuestions[indx].optional_flag,
+          notes: '',
+          created: now,
+          created_by: props.userId,
+          trigger_value: props.templateQuestions[indx].trigger_value
+        });
+        if (errors) {
+          setAlertMessage(errors[0].message);
+          setTheSeverity('error');
+          setIsAlert(true);
+        } else {
+          numAdded++;
+        }
+      }
+      if (numAdded > 0) {
+        setAlertMessage('Setup ' + numAdded + ' Questions for Logging App.');
+        setTheSeverity('success');
+        setIsAlert(true);
+      }
+    }
+  }
 
   const createCompanyDivisionAdminRow = async() => {
     if (isProfile) {
@@ -99,6 +170,7 @@ export default function PopupGenerate(props) {
         setAlertMessage('Setup Division Record.');
         setTheSeverity('success');
         setIsAlert(true);
+        divisionId = division.id;
         const firstLastName = props.contact.split(' ');
         const { errors, data: admin } = await client.models.admin.create({
           id: uuidv4(),
@@ -130,6 +202,8 @@ export default function PopupGenerate(props) {
     }, 800);
     if (progress == 10) {
       createCompanyDivisionAdminRow();
+    } else if (progress == 30) {
+      createTemplate();
     } else if (progress >= 100) {
       clearInterval(timer);
       handleCloseValues();
