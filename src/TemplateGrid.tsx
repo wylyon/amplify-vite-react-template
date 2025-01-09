@@ -264,27 +264,6 @@ export default function TemplateGrid(props) {
 			const formattedDate = date.format("YYYY-MM-DD 23:00:00");
 			return new Date(formattedDate);
 		  }
-
-	  function translateUserTemplate (item) {
-		const data = [{id: item.id, 
-			divisionId: item.division_id, 
-			divisionName: item.division,
-			company: item.company, 
-			title: item.title,
-			description: item.description,
-			preLoadPageAttributes: item.pre_load_page_attributes,
-			postLoadPageAttributes: item.post_load_page_attributes,
-			liveDate: getDate(item.live_date),
-			deactiveDate: getDate(item.deactive_date),
-			notes: item.notes,
-			created: item.created,
-			createdBy: item.created_by,
-			usePagination: item.use_pagination == 1 ? true : false,
-			useAutoSpace: item.auto_space == 1 ? true : false,
-			useBoxControls: item.box_controls == 1 ? true : false,
-		  }];
-		return data;
-	  }
 	
 	  function translateUserTemplates (items) {
 		const item = JSON.parse(items[0]);
@@ -347,20 +326,14 @@ export default function TemplateGrid(props) {
 			return;
 		}
 		if (Array.isArray(items) && items.length > 0) {
-		  const db = JSON.stringify(items);
-		  const userItems = JSON.parse(db);
-		  if (items.length < 2) {
-			const data = translateUserTemplate (userItems);
+		  	const db = JSON.stringify(items);
+		  	const userItems = JSON.parse(db);
+		  	const data = translateUserTemplates(userItems);
 			setUserData(data);
 			setRows(data);
-		  } else {
-			const data = translateUserTemplates(userItems);
-			setUserData(data);
-			setRows(data);
-		  }
-		  if (isLoading) {
-			setLoading(false);
-		  }
+			if (isLoading) {
+				setLoading(false);
+			}
 		}
 	  };
 

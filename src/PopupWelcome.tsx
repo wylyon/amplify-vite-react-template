@@ -244,6 +244,11 @@ export default function PopupWelcome(props) {
     handleNext();
   }
 
+  const handleDone = (event) => {
+    props.onDone(false);
+    setOpenGenerate(false);
+  }
+
   function newQuestionSubmit (e) {
     setIsWizard(false);
     setNum(e.length);
@@ -434,7 +439,7 @@ export default function PopupWelcome(props) {
                   All steps completed and setup!  Press EXIT to use logit.pro.
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                  <Button variant="contained">Exit</Button>
+                  <Button variant="contained" onClick={handleDone}>Exit</Button>
                 </Box>
               </React.Fragment>
               ) : (

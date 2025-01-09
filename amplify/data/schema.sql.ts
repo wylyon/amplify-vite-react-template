@@ -131,7 +131,7 @@ export const schema = configure({
         deactive_date: a.datetime(),
         notes: a.string(),
         created: a.datetime().required(),
-        created_by: a.integer().required(),
+        created_by: a.string(),
         use_pagination: a.integer(),
         auto_space: a.integer(),
         box_controls: a.integer()
@@ -145,7 +145,7 @@ export const schema = configure({
         enabled_date: a.datetime(),
         verified_date: a.datetime(),
         created: a.datetime().required(),
-        created_by: a.integer().required()
+        created_by: a.string()
     }).identifier([
         "id"
     ]),
@@ -178,7 +178,7 @@ export const schema = configure({
         notes: a.string(),
         deactive_date: a.datetime(),
         created: a.datetime().required(),
-        created_by: a.integer().required(),
+        created_by: a.string(),
         trigger_value: a.string()
     }).identifier([
         "id"
@@ -194,7 +194,7 @@ export const schema = configure({
         deactive_date: a.datetime(),
         notes: a.string(),
         created: a.datetime().required(),
-        created_by: a.integer().required()
+        created_by: a.string()
     }).identifier([
         "id"
     ])

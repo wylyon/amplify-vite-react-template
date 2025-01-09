@@ -44,12 +44,12 @@ export default function PopupGenerate(props) {
   const [isAlert, setIsAlert] = useState(false);
   const [theSeverity, setTheSeverity] = useState('error');
   const [alertMessage, setAlertMessage] = useState('');
+  const [divisionId, setDivisionId] = useState('');
   const client = generateClient<Schema>();
   var isProfile = false;
-  var divisionId = null;
   var isTemplate = false;
 
-  const createTemplate = async() => {
+  const createTemplate = async(timer) => {
     if (isTemplate) {
       return;
     }
@@ -79,6 +79,7 @@ export default function PopupGenerate(props) {
 			setAlertMessage(errors[0].message);
       setTheSeverity('error');
 			setIsAlert(true);
+      clearInterval(timer);
 		} else {
       setAlertMessage('Setup Template(Logging App) Record.');
       setTheSeverity('success');
@@ -106,6 +107,7 @@ export default function PopupGenerate(props) {
           setAlertMessage(errors[0].message);
           setTheSeverity('error');
           setIsAlert(true);
+          clearInterval(timer);
         } else {
           numAdded++;
         }
@@ -114,11 +116,54 @@ export default function PopupGenerate(props) {
         setAlertMessage('Setup ' + numAdded + ' Questions for Logging App.');
         setTheSeverity('success');
         setIsAlert(true);
+
+        const firstLastName = props.contact.split(' ');
+        const { errors, data: user } = await client.models.user.create({
+          id: uuidv4(),
+          division_id: divisionId,
+          email_address: props.userId,
+          first_name: firstLastName[0],
+          last_name: firstLastName.length > 1 ? firstLastName[1] : firstLastName[0],
+          middle_name: '',
+          active_date: now.toISOString().slice(0, 10),
+          notes: '',
+          created: now,
+          created_by: props.userId			
+        });			
+        if (errors) {
+          setAlertMessage(errors[0].message);
+          setTheSeverity('error');
+          setIsAlert(true);
+          clearInterval(timer);
+        } else {
+          setAlertMessage('Setup User Record for Admin.');
+          setTheSeverity('success');
+          setIsAlert(true);
+
+          const { errors, data: newTemplatePermission } = await client.models.template_permissions.create({ 
+            id: uuidv4(),
+            template_id: template.id,
+            user_id: user.id,
+            enabled_date: now,
+            created: now,
+            created_by: props.userId
+          });
+          if (errors) {
+            setAlertMessage(errors[0].message);
+            setTheSeverity('error');
+            setIsAlert(true);
+            clearInterval(timer);
+          } else {
+            setAlertMessage('Setup Admin/User Permission for Logging App.');
+            setTheSeverity('success');
+            setIsAlert(true);
+          }
+        }
       }
     }
   }
 
-  const createCompanyDivisionAdminRow = async() => {
+  const createCompanyDivisionAdminRow = async(timer) => {
     if (isProfile) {
       return;
     }
@@ -142,6 +187,7 @@ export default function PopupGenerate(props) {
 			setAlertMessage(errors[0].message);
       setTheSeverity('error');
 			setIsAlert(true);
+      clearInterval(timer);
 		} else {
       setAlertMessage('Setup Company Record.');
       setTheSeverity('success');
@@ -166,11 +212,12 @@ export default function PopupGenerate(props) {
         setAlertMessage(errors[0].message);
         setTheSeverity('error');
         setIsAlert(true);
+        clearInterval(timer);
       } else {
         setAlertMessage('Setup Division Record.');
         setTheSeverity('success');
         setIsAlert(true);
-        divisionId = division.id;
+        setDivisionId(division.id);
         const firstLastName = props.contact.split(' ');
         const { errors, data: admin } = await client.models.admin.create({
           id: uuidv4(),
@@ -187,6 +234,7 @@ export default function PopupGenerate(props) {
           setAlertMessage(errors[0].message);
           setTheSeverity('error');
           setIsAlert(true);
+          clearInterval(timer);
         } else {
           setAlertMessage('Setup Admin Record.');
           setTheSeverity('success');
@@ -201,9 +249,9 @@ export default function PopupGenerate(props) {
       setProgress((prevProgress) => (prevProgress + 10));
     }, 800);
     if (progress == 10) {
-      createCompanyDivisionAdminRow();
+      createCompanyDivisionAdminRow(timer);
     } else if (progress == 30) {
-      createTemplate();
+      createTemplate(timer);
     } else if (progress >= 100) {
       clearInterval(timer);
       handleCloseValues();
