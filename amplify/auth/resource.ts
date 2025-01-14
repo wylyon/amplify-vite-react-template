@@ -7,10 +7,11 @@ import { defineAuth, secret } from '@aws-amplify/backend';
 export const auth = defineAuth({
   loginWith: {
     email: {
-      verificationEmailStyle: "LINK",
+      verificationEmailStyle: "CODE",
       verificationEmailSubject: "Invitation to Join LogIt Pro App",
-      verificationEmailBody: (createLink) => `You have been invited to join the LogIt Pro logging app by your admin and prompted to accept the invitation and create your account using the provided link: ${createLink()}.` +
-        "\nNote:\n\nIf you have any questions, reach out to your company's Admin.\nAccept the invitation to join the logging app and create your account using the provided email address and Google SSO.",
+      verificationEmailBody: (createCode) => 
+          `You have been invited to join the LogIt Pro logging app by your admin and prompted to accept the invitation and create your account, by going to https://main.dhhrhy5rbhj7h.amplifyapp.com/ with verification code ${createCode()}.<br/>` +
+        "Note:<br/><li>If you have any questions, reach out to your company's Admin.</li><br/><li>Accept the invitation to join the logging app and create your account using the provided email address and Google SSO.</li>",
     },
     externalProviders: {
       google: {
