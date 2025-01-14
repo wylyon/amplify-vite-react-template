@@ -113,9 +113,6 @@ export default function PopupNewUser(props) {
             email: username
           }, 
         },
-        autoSignIn: {
-          enabled: true,
-        }
       });
     } catch (error) {
       setError("Warning...could not signup on cloud...could already be defined.");
