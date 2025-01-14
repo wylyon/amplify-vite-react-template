@@ -55,6 +55,7 @@ interface EditToolbarProps {
 	filter: string;
 	arrayDivisions: [{}];
 	rows: GridRowsProp;
+	userId: string;
 	setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
 	setRowModesModel: (
 	  newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
@@ -62,7 +63,7 @@ interface EditToolbarProps {
   }
 
 function EditToolbar(props: EditToolbarProps) {
-	const { filter, arrayDivisions, rows, setRows, setRowModesModel } = props;
+	const { filter, arrayDivisions, rows, userId, setRows, setRowModesModel } = props;
 	const [openNew, setOpenNew] = useState(false);
 	const [openBuild, setOpenBuild] = useState(false);
 	const [item, setItem] = useState({});
@@ -142,7 +143,7 @@ function EditToolbar(props: EditToolbarProps) {
   
 	return (
 		<React.Fragment>
-			{openNew && <PopupNewTemplate props={props} arrayDivisions={arrayDivisions} rows={rows} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
+			{openNew && <PopupNewTemplate props={props} userId={userId} arrayDivisions={arrayDivisions} rows={rows} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
 			{openBuild && <SetupTemplate onSubmitAdd={handleUpdateOnCancel} 
 				onSubmitChange={handleUpdateOnCancel} 
 				name={item.title} 
@@ -179,6 +180,7 @@ export default function TemplateGrid(props) {
 	const [isAssociateUser, setIsAssociateUser] = useState(false);
 	const [isSetupTemplate, setIsSetupTemplate] = useState(false);
 	const [isEmpty, setIsEmpty] = useState(false);
+	const [userId, setUserId] = useState(props.userId);
 
 	const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
 	  if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -404,7 +406,7 @@ export default function TemplateGrid(props) {
 			prod_date: newRow.liveDate != null ? newRow.liveDate.toISOString().slice(0, 10) : now.toISOString().slice(0, 10),
 			notes: newRow.notes,
 			created: now,
-			created_by: 0,
+			created_by: props.userId,
 			use_pagination: newRow.usePagination ? 1 : 0,
 			auto_space: newRow.useAutoSpace ? 1 : 0,
 			box_controls: newRow.useBoxControls ? 1 : 0		
@@ -782,11 +784,12 @@ export default function TemplateGrid(props) {
 	  {isAssociateUser && <AssociateUsers 
 	  	onSubmitAdd={handleUpdateOnCancel} 
 		onSubmitChange={handleUpdateOnCancel} 
-		name={preHtml} id={htmlId} divisionId={postHtml}/>}
+		name={preHtml} id={htmlId} userId={userId} divisionId={postHtml}/>}
       {isSetupTemplate && <SetupTemplate onSubmitAdd={handleUpdateOnCancel} 
         onSubmitChange={handleUpdateOnCancel} 
         name={preHtml} 
 		isWizard={false}
+		userId={userId}
         templateId={htmlId} 
         divisionId={postHtml} 
         preLoadAttributes={''} 
@@ -819,7 +822,7 @@ export default function TemplateGrid(props) {
 				toolbar: EditToolbar as GridSlots['toolbar'],
 			  }}
 			slotProps={{
-				toolbar: { filter, arrayDivisions, rows, setRows, setRowModesModel },
+				toolbar: { filter, arrayDivisions, rows, userId, setRows, setRowModesModel },
 			}}
 			/>
 		</Paper>

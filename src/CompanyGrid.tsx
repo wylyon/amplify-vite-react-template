@@ -180,7 +180,7 @@ export default function CompanyGrid(props) {
 			ref_department: newRow.ref_department,
 			notes: newRow.notes,
 			created: now,
-			created_by: 0			
+			created_by: props.userId			
 		});
 		if (errors) {
 			setError(errors[0].message);

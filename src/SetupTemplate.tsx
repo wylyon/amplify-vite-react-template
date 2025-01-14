@@ -439,7 +439,7 @@ export default function SetupTemplate(props) {
         optional_flag: (!formData.optionalFlag ? 0 : 1),
         notes: '',
         created: now,
-        created_by: 0,
+        created_by: props.userId,
         trigger_value: formData.questionType == 'dialog_input' ? formData.questionValues : ''
       });
       if (errors) {

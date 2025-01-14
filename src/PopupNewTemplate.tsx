@@ -52,7 +52,10 @@ export default function PopupNewTemplate(props) {
     setArrayDivisions(props.arrayDivisions);
 	}, []);
 
-  const handleCloseValues = () => {
+  const handleCloseValues = (event: object, reason: string) => {
+    if (reason == "escapeKeyDown" || reason == "backdropClick") {
+      return;
+    }
     props.onClose();
     setOpen(false);
   }
@@ -87,7 +90,7 @@ export default function PopupNewTemplate(props) {
 			prod_date: now.toISOString().slice(0, 10),
 			notes: notes,
 			created: now,
-			created_by: 0,
+			created_by: props.userId,
 			use_pagination: isPagination ? 1 : 0,
 			auto_space: 1,
 			box_controls: 0		
@@ -189,8 +192,8 @@ export default function PopupNewTemplate(props) {
       </Box>
     </DialogContent>
     <DialogActions>
-      <Button onClick={handleCloseValues}>Cancel</Button>
-      <Button type="submit">Save</Button>
+      <Button onClick={handleCloseValues} variant="contained" color="error">Cancel</Button>
+      <Button type="submit" variant="contained" color="primary">Save</Button>
     </DialogActions>
   </Dialog>
 </React.Fragment>

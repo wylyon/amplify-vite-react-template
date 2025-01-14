@@ -153,7 +153,11 @@ export default function PopupAddUsers(props) {
     try {
       const  user  = await signUp({
         username,
-        password,
+        options: {
+          userAttributes: {
+            email: username
+          }
+        },
         autoSignIn: {
           enabled: true
         }

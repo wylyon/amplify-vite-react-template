@@ -133,16 +133,16 @@ export default function AdminSuper(props) {
 			<Tab label="Reports" {...a11yProps(4)} />
 		</Tabs>
 		<TabPanel value={value} index={0}>
-			<CompanyGrid props={props} onRowSelect={handleOnRowSelectCompany}/>
+			<CompanyGrid props={props} userId={props.userId} onRowSelect={handleOnRowSelectCompany}/>
 		</TabPanel>
 		<TabPanel value={value} index={1}>
-			<DivisionGrid props={props} filter={null} id={id} onRowSelect={handleOnRowSelectDivision}/>
+			<DivisionGrid props={props} userId={props.userId} filter={null} id={id} onRowSelect={handleOnRowSelectDivision}/>
 		</TabPanel>
 		<TabPanel value={value} index={2}>
-			<TemplateGrid props={props}  filter={null} id={id}/>
+			<TemplateGrid props={props} userId={props.userId} filter={null} id={id}/>
 		</TabPanel>
 		<TabPanel value={value} index={3}>
-			<UserGrid props={props} filter={null}/>
+			<UserGrid props={props} userId={props.userId} filter={null}/>
 		</TabPanel>
 		<TabPanel value={value} index={4}>
 			<Tabs

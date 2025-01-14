@@ -55,7 +55,10 @@ export default function PopupNewUser(props) {
     setArrayDivisions(props.arrayDivisions);
 	}, []);
 
-  const handleCloseValues = () => {
+  const handleCloseValues = (event: object, reason: string) => {
+    if (reason == "escapeKeyDown" || reason == "backdropClick") {
+      return;
+    }
     props.onClose();
     setOpen(false);
   }
@@ -105,8 +108,13 @@ export default function PopupNewUser(props) {
       const  user  = await signUp({
         username,
         password,
+        options: {
+          userAttributes: {
+            email: username
+          }, 
+        },
         autoSignIn: {
-          enabled: true
+          enabled: true,
         }
       });
     } catch (error) {
@@ -131,7 +139,7 @@ export default function PopupNewUser(props) {
           last_name: lastName,
           active_date: now.toISOString().slice(0, 10),
           created: now,
-          created_by: 0,         
+          created_by: props.userId,         
         }) : 
         await client.models.user.create({
           id: id,
@@ -143,7 +151,7 @@ export default function PopupNewUser(props) {
           active_date: now.toISOString().slice(0, 10),
           notes: notes,
           created: now,
-          created_by: 0,
+          created_by: props.userId,
         }) ;
 		if (errors) {
       setIsWaiting(false);
@@ -284,8 +292,8 @@ export default function PopupNewUser(props) {
       </Box>
     </DialogContent>
     <DialogActions>
-      <Button onClick={handleCloseValues}>Cancel</Button>
-      <Button type="submit">Save</Button>
+      <Button onClick={handleCloseValues} variant="contained" color="error">Cancel</Button>
+      <Button type="submit" variant="contained" color="primary">Save</Button>
     </DialogActions>
   </Dialog>
 </React.Fragment>

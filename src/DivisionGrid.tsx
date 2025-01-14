@@ -273,7 +273,7 @@ export default function DivisionGrid(props) {
 			ref_department: newRow.refDepartment,
 			notes: newRow.notes,
 			created: now,
-			created_by: 0			
+			created_by: props.userId			
 		});
 		if (errors) {
 			setError(errors[0].message);
@@ -426,10 +426,10 @@ export default function DivisionGrid(props) {
 		{ field: 'address1', headerName: 'Address-1', width: 150, headerClassName: 'grid-headers', editable: true },
 		{ field: 'address2', headerName: 'Address-2', width: 80, headerClassName: 'grid-headers', editable: true },
 		{ field: 'city', headerName: 'City', width: 120, headerClassName: 'grid-headers', editable: true  },
-		{ field: 'state', headerName: 'State', width: 50, headerClassName: 'grid-headers', 
+		{ field: 'state', headerName: 'State', width: 150, headerClassName: 'grid-headers', 
 			renderEditCell: renderSelectEditStateInputCell,
 			editable: true  },
-		{ field: 'zipcode', headerName: 'Zipcode', width: 70, headerClassName: 'grid-headers', editable: true },
+		{ field: 'zipcode', headerName: 'Zipcode', width: 90, headerClassName: 'grid-headers', editable: true },
 		{ field: 'isActive',
 			headerName: 'isActive',
 			width: 50,

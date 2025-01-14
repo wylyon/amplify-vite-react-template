@@ -108,8 +108,8 @@ export default function SignUp(props) {
     </Box>
   </DialogContent>
   <DialogActions>
-    <Button onClick={handleOnCancel}>Cancel</Button>
-    <Button type="submit">Save</Button>
+    <Button onClick={handleOnCancel} variant="contained" color="error">Cancel</Button>
+    <Button type="submit" variant="contained" color="primary">Save</Button>
   </DialogActions>
 </Dialog>
 )

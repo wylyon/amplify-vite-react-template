@@ -57,6 +57,7 @@ interface EditToolbarProps {
 	arrayDivisions: [{}];
 	rows: GridRowsProp;
 	isAdmin: boolean;
+	userId: string;
 	setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
 	setRowModesModel: (
 	  newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
@@ -64,7 +65,7 @@ interface EditToolbarProps {
   }
 
 function EditToolbar(props: EditToolbarProps) {
-	const { filter, arrayDivisions, rows, isAdmin, setRows, setRowModesModel } = props;
+	const { filter, arrayDivisions, rows, isAdmin, userId, setRows, setRowModesModel } = props;
 	const [openNew, setOpenNew] = useState(false);
 	const [item, setItem] = useState({});
  
@@ -146,7 +147,7 @@ function EditToolbar(props: EditToolbarProps) {
   
 	return (
 		<React.Fragment>
-			{openNew && <PopupNewUser props={props} arrayDivisions={arrayDivisions} company={filter} rows={rows} isAdmin={isAdmin} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
+			{openNew && <PopupNewUser props={props} arrayDivisions={arrayDivisions} company={filter} rows={rows} isAdmin={isAdmin} userId={userId} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
 			<GridToolbarContainer>
 			<Tooltip title="Add a new User">
 				<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
@@ -199,6 +200,7 @@ export default function UserGrid(props) {
 	  }]);
 	  const [checked, setChecked] = useState(true);
 	  const [rows, setRows] = useState<GridRowsProp>([]);
+	  const [userId, setUserId] = useState(props.userId);
 
 	const allCompanies = async () => {
 		const { data: items, errors } = await client.models.company.list();
@@ -411,7 +413,7 @@ export default function UserGrid(props) {
 				middle_name: newRow.middleName,
 				active_date: newRow.activeDate != null ? newRow.activeDate.toISOString().slice(0, 10) : null,
 				created: now,
-				created_by: 0			
+				created_by: props.userId		
 			});			
 			if (errors) {
 				setError(errors[0].message);
@@ -428,7 +430,7 @@ export default function UserGrid(props) {
 				notes: newRow.notes,
 				active_date: newRow.activeDate === undefined ? null : (newRow.activeDate != null ? newRow.activeDate.toISOString().slice(0, 10) : null),
 				created: now,
-				created_by: 0			
+				created_by: props.userId			
 			}); 		
 			if (errors) {
 				setError(errors[0].message);
@@ -750,7 +752,7 @@ export default function UserGrid(props) {
 				toolbar: EditToolbar as GridSlots['toolbar'],
 			  }}
 			slotProps={{
-				toolbar: { filter, arrayDivisions, rows,  isAdmin, setRows, setRowModesModel },
+				toolbar: { filter, arrayDivisions, rows,  isAdmin, userId, setRows, setRowModesModel },
 			}}
 			/>
 		</Paper>

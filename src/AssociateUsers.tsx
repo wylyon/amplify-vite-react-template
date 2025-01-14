@@ -118,7 +118,7 @@ export default function AssociateUsers(props) {
         user_id: userId,
         enabled_date: now,
 	      created: now,
-	      created_by: 0});
+	      created_by: props.userId});
       if (errors) {
         alert(errors[0].message);
       }
@@ -180,7 +180,7 @@ export default function AssociateUsers(props) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleOnCancel} autoFocus>
+          <Button onClick={handleOnCancel} autoFocus variant="contained" color="error">
             Close
           </Button>
         </DialogActions>

@@ -210,7 +210,10 @@ export default function SetupQuestion(props) {
     setOpenPreAttributes(true);
   }
 
-  const handleClose = () => {
+  const handleClose = (event: object, reason: string) => {
+    if (reason == "escapeKeyDown" || reason == "backdropClick") {
+      return;
+    }
     setOpen(false);
     props.onSubmitChange(formData);
   };
@@ -740,8 +743,8 @@ export default function SetupQuestion(props) {
           </Accordion>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button type="submit">Save</Button>
+          <Button onClick={handleClose} variant='contained' color='error'>Cancel</Button>
+          <Button type="submit" variant='contained' color='primary'>Save</Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
