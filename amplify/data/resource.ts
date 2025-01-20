@@ -16,7 +16,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .arguments({})
     .returns(a.json().array())
     .handler(a.handler.inlineSql(
-      "SELECT '" + secret('REGION').resolve.toString() + "' as region, '" + secret('ACCESS_KEY_ID').resolve.toString() + "' as access, '" + secret('SECRET_ACCESS_KEY').resolve.toString() + "' as secret;"
+      "SELECT '" + secret('REGION').resolve + "' as region, '" + secret('ACCESS_KEY_ID').resolve + "' as access, '" + secret('SECRET_ACCESS_KEY').resolve + "' as secret;"
     )).authorization(allow => allow.publicApiKey()),
     listAllAdmin: a.query()
     .arguments({})
