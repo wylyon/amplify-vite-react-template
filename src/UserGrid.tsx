@@ -147,7 +147,8 @@ function EditToolbar(props: EditToolbarProps) {
   
 	return (
 		<React.Fragment>
-			{openNew && <PopupNewUser props={props} arrayDivisions={arrayDivisions} company={filter} rows={rows} isAdmin={isAdmin} userId={userId} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
+			{openNew && <PopupNewUser props={props} 
+				arrayDivisions={arrayDivisions} company={filter} rows={rows} isAdmin={isAdmin} userId={userId} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
 			<GridToolbarContainer>
 			<Tooltip title="Add a new User">
 				<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>

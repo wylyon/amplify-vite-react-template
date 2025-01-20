@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aws-amplify/auth": "^6.10.0",
     "@aws-amplify/ui-react": "^6.1.9",
     "@aws-amplify/ui-react-storage": "^3.3.9",
     "@emotion/react": "^11.13.3",
@@ -22,7 +23,7 @@
     "@mui/x-date-pickers": "^7.22.2",
     "@react-google-maps/api": "^2.20.3",
     "@what3words/api": "^5.4.0",
-    "aws-amplify": "^6.8.0",
+    "aws-amplify": "^6.12.1",
     "axios": "^1.7.7",
     "dayjs": "^1.11.13",
     "file-saver": "^2.0.5",

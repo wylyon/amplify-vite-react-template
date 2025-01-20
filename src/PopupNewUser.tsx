@@ -1,8 +1,8 @@
 // @ts-nocheck
 import React from "react";
 import { useState, useEffect  } from "react";
-import { Amplify } from "aws-amplify"
-import { signUp } from "aws-amplify/auth";
+import { Amplify } from "aws-amplify";
+import { signUp, resetPassword } from "aws-amplify/auth";
 import CssBaseline from '@mui/material/CssBaseline';
 import Paper from '@mui/material/Paper';
 import Dialog from '@mui/material/Dialog';
@@ -119,6 +119,16 @@ export default function PopupNewUser(props) {
       setOpenError(true);
       return;
     }
+    try {
+      const reset = await resetPassword({
+        username,
+      });
+    } catch (error) {
+      setError("Warning...could not reset password.");
+      setOpenError(true);
+      return;
+    }
+
   }
 
   const handleAddRow = async(email, firstName, middleName, lastName, notes, password) => {

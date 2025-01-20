@@ -46,6 +46,7 @@ function App() {
   }
 
   const logOut = async() => {
+    setLoginId('');
     await signOut();
   }
 
@@ -63,23 +64,9 @@ function App() {
   return (
     <>
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
-    {!isAccessDisabled && <Authenticator
-      components={{
-        SignUp: {
-          FormFields() {
-            const { validationErrors } = useAuthenticator();
-            return (
-              <>
-              <Authenticator.SignUp.FormFields />
-              <TextField name="company" label="Company (or Name)" type="text" onBlur={handleCompanyName}/>
-              </>
-            )
-          }
-        }
-      }}
-    >
+    {!isAccessDisabled && <Authenticator>
       {({ signOut, user }) => (
-        fetchLogin() && loginId != '' && <DetermineMode userId={loginId} onSubmitChange={signOut} companyName={companyName} />
+        fetchLogin() && loginId != '' && <DetermineMode userId={loginId} onSubmitChange={logOut} companyName={companyName} />
       )}
     </Authenticator> }
     </>
