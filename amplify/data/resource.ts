@@ -1,6 +1,9 @@
 import { type ClientSchema, a, defineData, secret } from "@aws-amplify/backend";
 
 import { schema as generatedSqlSchema } from './schema.sql';
+const region = secret('REGION').resolve.toString();
+const access = secret('ACCESS_KEY_ID').resolve.toString();
+const secretKey = secret('SECRET_ACCESS_KEY').resolve.toString();
 const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey())
   .addQueries({
     listUserByEmail: a.query()
@@ -16,7 +19,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .arguments({})
     .returns(a.json().array())
     .handler(a.handler.inlineSql(
-      "SELECT '" + secret('REGION').resolve + "' as region, '" + secret('ACCESS_KEY_ID').resolve + "' as access, '" + secret('SECRET_ACCESS_KEY').resolve + "' as secret;"
+      "SELECT '" + region + "' as region, '" + access + "' as access, '" + secretKey + "' as secret;"
     )).authorization(allow => allow.publicApiKey()),
     listAllAdmin: a.query()
     .arguments({})
