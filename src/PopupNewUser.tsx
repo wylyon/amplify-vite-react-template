@@ -49,13 +49,24 @@ export default function PopupNewUser(props) {
 
   const client = generateClient<Schema>();
 
+  const getSDKparameters = async () => {
+		const { data: items, errors } = 
+			await client.queries.getSDKparameters();
+		if (errors) {
+			setError(errors[0].message);
+			setOpenError(true);
+		} else {
+			var array = [];
+		}
+		}
+
   const handleChange = (event: SelectChangeEvent) => {
     setSelectDivision(event.target.value as string);
   };
 
   useEffect(() => {
     setArrayDivisions(props.arrayDivisions);
-
+    getSDKparameters();
 	}, []);
 
   const handleCloseValues = (event: object, reason: string) => {
