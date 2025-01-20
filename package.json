@@ -24,6 +24,7 @@
     "@react-google-maps/api": "^2.20.3",
     "@what3words/api": "^5.4.0",
     "aws-amplify": "^6.12.1",
+    "aws-sdk": "^2.1692.0",
     "axios": "^1.7.7",
     "dayjs": "^1.11.13",
     "file-saver": "^2.0.5",

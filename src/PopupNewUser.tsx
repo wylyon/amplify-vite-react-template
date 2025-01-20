@@ -34,6 +34,8 @@ import { IconButton } from "@mui/material";
 import ConfirmPassword from "../src/ConfirmPassword";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 
+import AWS from 'aws-sdk';
+
 export default function PopupNewUser(props) {
   const [isWaiting, setIsWaiting] = useState(false);
   const [open, setOpen] = useState(true);
@@ -53,6 +55,7 @@ export default function PopupNewUser(props) {
 
   useEffect(() => {
     setArrayDivisions(props.arrayDivisions);
+
 	}, []);
 
   const handleCloseValues = (event: object, reason: string) => {

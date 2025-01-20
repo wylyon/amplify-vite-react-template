@@ -1,4 +1,4 @@
-import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { type ClientSchema, a, defineData, secret } from "@aws-amplify/backend";
 
 import { schema as generatedSqlSchema } from './schema.sql';
 const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey())
@@ -11,6 +11,12 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .handler(a.handler.inlineSql(
       "SELECT distinct u.id, u.division_id, u.email_address, u.first_name, u.last_name, u.middle_name, u.active_date, u.deactive_date, u.notes, u.created, u.created_by " +
       "FROM logistics.user u JOIN logistics.template_permissions p on p.user_id = u.id WHERE email_address = :email;"
+    )).authorization(allow => allow.publicApiKey()),
+    getSDKparameters: a.query()
+    .arguments({})
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT '" + secret('REGION') + "' as region, '" + secret('ACCESS_KEY_ID') + "' as access, '" + secret('SECRET_ACCESS_KEY') + "' as secret;"
     )).authorization(allow => allow.publicApiKey()),
     listAllAdmin: a.query()
     .arguments({})
