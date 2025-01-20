@@ -33,8 +33,10 @@ import type { Schema } from '../amplify/data/resource'; // Path to your backend 
 import { IconButton } from "@mui/material";
 import ConfirmPassword from "../src/ConfirmPassword";
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
-import AWS from 'aws-sdk';
+import { CognitoIdentityServiceProvider } from 'aws-sdk';
 
 export default function PopupNewUser(props) {
   const [isWaiting, setIsWaiting] = useState(false);
@@ -49,24 +51,12 @@ export default function PopupNewUser(props) {
 
   const client = generateClient<Schema>();
 
-  const getSDKparameters = async () => {
-		const { data: items, errors } = 
-			await client.queries.getSDKparameters();
-		if (errors) {
-			setError(errors[0].message);
-			setOpenError(true);
-		} else {
-			var array = [];
-		}
-		}
-
   const handleChange = (event: SelectChangeEvent) => {
     setSelectDivision(event.target.value as string);
   };
 
   useEffect(() => {
     setArrayDivisions(props.arrayDivisions);
-    getSDKparameters();
 	}, []);
 
   const handleCloseValues = (event: object, reason: string) => {
@@ -117,28 +107,28 @@ export default function PopupNewUser(props) {
 	  }
 
   const signThemUp = async(username, password) => {
+    const cognito = new CognitoIdentityServiceProvider({
+      region: 'us-east-1',
+      credentials: {
+        accessKeyId: '##',
+        secretAccessKey: '##'
+      }
+    });
 
     try {
-      const  user  = await signUp({
-        username,
-        password,
-        options: {
-          userAttributes: {
-            email: username
-          }, 
-        },
-      });
+      const response = await cognito.adminCreateUser({
+        UserPoolId: 'us-east-1_8oXeAfCNC',
+        Username: username,
+        UserAttributes: [{
+          Name: 'email',
+          Value: username
+        }],
+        TemporaryPassword: password,
+      }).promise();
+      console.log('User Created: ', response);
+
     } catch (error) {
       setError("Warning...could not signup on cloud...could already be defined.");
-      setOpenError(true);
-      return;
-    }
-    try {
-      const reset = await resetPassword({
-        username,
-      });
-    } catch (error) {
-      setError("Warning...could not reset password.");
       setOpenError(true);
       return;
     }
