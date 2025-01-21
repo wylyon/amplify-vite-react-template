@@ -193,7 +193,6 @@ export const schema = configure({
         id: a.string().required(),
         code: a.string().required(),
         value: a.string().required(),
-        secret: a.string(),
         created: a.datetime().required(),
         created_by: a.string().required()
     }).identifier([

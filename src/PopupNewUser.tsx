@@ -56,20 +56,19 @@ export default function PopupNewUser(props) {
     setSelectDivision(event.target.value as string);
   };
 
-  const allCreds = async () => {
-		const { data: items, errors } = 
-		  await client.queries.getCreds();
-		if (errors) {
-			setError(errors[0].message);
-			setOpenError(true);
-		} else {
-			setCreds(items);
-		}
-		}
+  const getAppSettings = async() => {
+    const { data: items, errors } = await client.models.app_settings.list();
+    if (errors) {
+      alert(errors[0].message);
+    } else {
+      const googleAPI = items.filter(map => map.code.includes('ACCESS'));
+      
+    }
+  }
 
   useEffect(() => {
     setArrayDivisions(props.arrayDivisions);
-    allCreds();
+    getAppSettings();
 	}, []);
 
   const handleCloseValues = (event: object, reason: string) => {
