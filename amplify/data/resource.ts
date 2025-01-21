@@ -245,7 +245,11 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     )).authorization(allow => allow.publicApiKey()),
     getCreds: a.query()
     .arguments({})
-    .returns(a.json().array())
+    .returns(a.customType({
+      k: a.string(),
+      s: a.string(),
+      r: a.string()
+    }))
     .handler(a.handler.function(getCreds))
     .authorization(allow => allow.publicApiKey()),
   }).addToSchema({

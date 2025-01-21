@@ -46,6 +46,7 @@ export default function PopupNewUser(props) {
   const [confirm, setConfirm] = useState(false);
   const [password, setPassword] = useState('');
   const [arrayDivisions, setArrayDivisions] = useState([{}]);
+  const [creds, setCreds] = useState({});
   const [selectDivision, setSelectDivision] = useState(props.arrayDivisions[0].id);
   const [textType, setTextType] = useState('password');
 
@@ -55,8 +56,20 @@ export default function PopupNewUser(props) {
     setSelectDivision(event.target.value as string);
   };
 
+  const allCreds = async () => {
+		const { data: items, errors } = 
+		  await client.queries.getCreds();
+		if (errors) {
+			setError(errors[0].message);
+			setOpenError(true);
+		} else {
+			setCreds(items);
+		}
+		}
+
   useEffect(() => {
     setArrayDivisions(props.arrayDivisions);
+    allCreds();
 	}, []);
 
   const handleCloseValues = (event: object, reason: string) => {
