@@ -1,6 +1,6 @@
 import { env } from '$amplify/env/get-creds';
 
-export const handler = async (event) => {
+export const handler = async () => {
   const request = new Request(env.NAME, {
     headers: {
       AccessKeyId: `${env.API_ACCESS_KEY_ID}`,
