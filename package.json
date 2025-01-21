@@ -26,6 +26,7 @@
     "aws-amplify": "^6.12.1",
     "aws-sdk": "^2.1692.0",
     "axios": "^1.7.7",
+    "crypto-js": "^4.2.0",
     "dayjs": "^1.11.13",
     "file-saver": "^2.0.5",
     "moment": "^2.30.1",
