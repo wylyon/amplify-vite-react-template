@@ -243,6 +243,11 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "actions_flag, notes, created, created_by, trigger_value FROM " +
       "logistics.template_question WHERE template_id = :templateId and deactive_date is null order by question_order;"
     )).authorization(allow => allow.publicApiKey()),
+    getCreds: a.query()
+    .arguments({})
+    .returns(a.json().array())
+    .handler(a.handler.function(getCreds))
+    .authorization(allow => allow.publicApiKey()),
   }).addToSchema({
     deleteQuestionById: a.mutation().arguments({
       questionId: a.string().required()
@@ -259,7 +264,6 @@ const schema = a.schema({
       isDisabled: a.boolean()
     })
     .authorization((allow) => [allow.publicApiKey()]),
-  getCreds: a.query().arguments({}).returns(a.json().array()).handler(a.handler.function(getCreds)),
 });
 
 const combinedSchema = a.combine([schema, sqlSchema]);
