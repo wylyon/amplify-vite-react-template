@@ -1,5 +1,5 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
-
+import { getCreds } from "../functions/get-creds/resource";
 import { schema as generatedSqlSchema } from './schema.sql';
 
 const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey())
@@ -259,6 +259,7 @@ const schema = a.schema({
       isDisabled: a.boolean()
     })
     .authorization((allow) => [allow.publicApiKey()]),
+  getCreds: a.query().arguments({}).returns(a.json().array()).handler(a.handler.function(getCreds)),
 });
 
 const combinedSchema = a.combine([schema, sqlSchema]);
