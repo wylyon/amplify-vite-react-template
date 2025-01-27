@@ -21,6 +21,8 @@ import Typography from '@mui/material/Typography';
 import { v4 as uuidv4 } from 'uuid';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
+import CryptoJS from 'crypto-js';
+import { CognitoIdentityServiceProvider } from 'aws-sdk';
 
 function LinearProgressWithLabel(props: LinearProgressProps & { value: number }) {
   return (
@@ -46,8 +48,62 @@ export default function PopupGenerate(props) {
   const [alertMessage, setAlertMessage] = useState('');
   const [divisionId, setDivisionId] = useState('');
   const client = generateClient<Schema>();
+  const [addedUsers, setAddedUsers] = useState([]);
+  const [access, setAccess] = useState('');
+  const [secret, setSecret] = useState('');
+  const [region, setRegion] = useState('');
+  const [ourWord, setOurWord] = useState('');
+  const [userPoolId, setUserPoolId] = useState('');
+
   var isProfile = false;
   var isTemplate = false;
+  var isLogins = false;
+
+  const getAppSettings = async() => {
+    const { data: items, errors } = await client.models.app_settings.list();
+    if (errors) {
+      alert(errors[0].message);
+    } else {
+      const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY0'));
+      if (what3words.length < 1) {
+        setError("Cant get credentials for Admin.");
+        setOpenError(true);    
+        return;   
+      }
+      setOurWord(what3words[0].value + what3words[0].value);
+      const userPool = items.filter(map => map.code.includes('USERPOOLID'));
+      if (userPool.length < 1) {
+        setError("Cant get userPool for Admin.");
+        setOpenError(true);    
+        return;   
+      }
+      setUserPoolId(userPool[0].value);
+      const creds = items.filter(map => map.code.includes('ACCESS'));
+      if (creds.length < 1) {
+        setError("Cant get access credentials for Admin.");
+        setOpenError(true);
+      } else {
+        const accessId = creds[0].value;
+        const secret = items.filter(map => map.code.includes('SECRET'));
+        if (secret.length < 1) {
+          setError("Cant get secret credentials for Admin.");
+          setOpenError(true);
+        } else {
+          const secretId = secret[0].value;
+          const region = items.filter(map => map.code.includes('REGION'));
+          if (region.length < 1) {
+            setError("Cant get region credentials for Admin.");
+            setOpenError(true);
+          } else {
+            const regionId = region[0].value;
+            setAccess(accessId);
+            setSecret(secretId);
+            setRegion(regionId);
+          }
+        }
+      }
+    }
+  }
 
   const createTemplate = async(timer) => {
     if (isTemplate) {
@@ -154,12 +210,105 @@ export default function PopupGenerate(props) {
             setIsAlert(true);
             clearInterval(timer);
           } else {
+            if (props.addedUsers && props.addedUsers.length > 0) {
+              // need to add additional users and link up their template(s)
+              for (var i = 0; i < props.addedUsers.length; i++) {
+                const { errors, data: user } = await client.models.user.create({
+                  id: props.addedUsers[i].id,
+                  division_id: divisionId,
+                  email_address: props.addedUsers[i].email,
+                  first_name: 'unknown',
+                  last_name: 'unknown',
+                  middle_name: '',
+                  active_date: now.toISOString().slice(0, 10),
+                  notes: '',
+                  created: now,
+                  created_by: props.userId			
+                });	
+                if (errors) {
+                  setAlertMessage(errors[0].message);
+                  setTheSeverity('error');
+                  setIsAlert(true);
+                  clearInterval(timer);
+                  i = props.addedUsers.length;
+                } else {
+                  const { errors, data: newTemplatePermission } = await client.models.template_permissions.create({ 
+                    id: uuidv4(),
+                    template_id: template.id,
+                    user_id: user.id,
+                    enabled_date: now,
+                    created: now,
+                    created_by: props.userId
+                  });
+                  if (errors) {
+                    setAlertMessage(errors[0].message);
+                    setTheSeverity('error');
+                    setIsAlert(true);
+                    clearInterval(timer);
+                    i = props.addedUsers.length;
+                  }
+                }
+              }
+            }
             setAlertMessage('Setup Admin/User Permission for Logging App.');
             setTheSeverity('success');
             setIsAlert(true);
           }
         }
       }
+    }
+  }
+
+  const createNewLogins = async(timer) => {
+    // this will create the new login's IF there was at least one template...otherwise adding them makes no sense.
+    if (isLogins) {
+      return;
+    }
+    isLogins = true;
+    if (!props.addedUsers || props.addedUsers.length < 1) {
+      setAlertMessage('Bypassing User(Logging App) Creation.');
+      setTheSeverity('success');
+      setIsAlert(true);
+      return;
+    }
+    if (!props.hasTemplate) {
+      setAlertMessage('Bypassing User(Logging App) Creation, since no templates');
+      setTheSeverity('success');
+      setIsAlert(true);
+      return;
+    }
+    const cognito = new CognitoIdentityServiceProvider({
+      region: region,
+      credentials: {
+        accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),
+        secretAccessKey: CryptoJS.AES.decrypt(secret, ourWord).toString(CryptoJS.enc.Utf8),
+      }
+    });
+    // now lets add the Cognito logins
+    var anyErrors = false;
+    for (var i = 0; i < props.addedUsers.length; i++) {
+      try {
+        const response = await cognito.adminCreateUser({
+          UserPoolId: userPoolId,
+          Username: props.addedUsers[i].email,
+          UserAttributes: [{
+            Name: 'email',
+            Value: props.addedUsers[i].email
+          }],
+          TemporaryPassword: 'tempPassword@123',
+        }).promise();
+  
+      } catch (error) {
+        setAlertMessage("Warning...some could not signup on cloud...could already be defined.");
+        setTheSeverity('error');
+        setIsAlert(true);
+        anyErrors = true;
+      }
+    }
+    if (!anyErrors) {
+      setAlertMessage('Setup Admin/User Permission for Logging App.');
+      setTheSeverity('success');
+      setIsAlert(true);
     }
   }
 
@@ -245,14 +394,19 @@ export default function PopupGenerate(props) {
 	}
 
   useEffect(() => {
+    var divId = null;
+    setAddedUsers(props.addedUsers);
+    getAppSettings();
     const timer = setInterval(() => {
       setProgress((prevProgress) => (prevProgress + 10));
     }, 800);
     if (progress == 10) {
       createCompanyDivisionAdminRow(timer);
-    } else if (progress == 30) {
+    } else if (divisionId != '' && progress == 30) {
       createTemplate(timer);
-    } else if (progress >= 100) {
+    } else if (divisionId != '' && userPoolId != '' && progress == 60) {
+      createNewLogins(timer);
+    } else if (divisionId != '' && userPoolId != '' && progress >= 100) {
       clearInterval(timer);
       handleCloseValues();
     }

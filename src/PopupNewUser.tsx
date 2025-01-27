@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React from "react";
-import { useState, useEffect  } from "react";
+import { useState, useEffect, useRef  } from "react";
 import { Amplify } from "aws-amplify";
 import { signUp, resetPassword } from "aws-amplify/auth";
 import CssBaseline from '@mui/material/CssBaseline';
@@ -35,7 +35,7 @@ import ConfirmPassword from "../src/ConfirmPassword";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-
+import CryptoJS from 'crypto-js';
 import { CognitoIdentityServiceProvider } from 'aws-sdk';
 
 export default function PopupNewUser(props) {
@@ -49,6 +49,12 @@ export default function PopupNewUser(props) {
   const [creds, setCreds] = useState({});
   const [selectDivision, setSelectDivision] = useState(props.arrayDivisions[0].id);
   const [textType, setTextType] = useState('password');
+  const [access, setAccess] = useState('');
+  const [secret, setSecret] = useState('');
+  const [region, setRegion] = useState('');
+  const [ourWord, setOurWord] = useState('');
+  const [userPoolId, setUserPoolId] = useState('');
+  const passwordRef = useRef(null);
 
   const client = generateClient<Schema>();
 
@@ -61,14 +67,63 @@ export default function PopupNewUser(props) {
     if (errors) {
       alert(errors[0].message);
     } else {
-      const googleAPI = items.filter(map => map.code.includes('ACCESS'));
-      
+      const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY0'));
+      if (what3words.length < 1) {
+        setError("Cant get credentials for Admin.");
+        setOpenError(true);    
+        return;   
+      }
+      setOurWord(what3words[0].value + what3words[0].value);
+      const userPool = items.filter(map => map.code.includes('USERPOOLID'));
+      if (userPool.length < 1) {
+        setError("Cant get userPool for Admin.");
+        setOpenError(true);    
+        return;   
+      }
+      setUserPoolId(userPool[0].value);
+      const creds = items.filter(map => map.code.includes('ACCESS'));
+      if (creds.length < 1) {
+        setError("Cant get access credentials for Admin.");
+        setOpenError(true);
+      } else {
+        const accessId = creds[0].value;
+        const secret = items.filter(map => map.code.includes('SECRET'));
+        if (secret.length < 1) {
+          setError("Cant get secret credentials for Admin.");
+          setOpenError(true);
+        } else {
+          const secretId = secret[0].value;
+          const region = items.filter(map => map.code.includes('REGION'));
+          if (region.length < 1) {
+            setError("Cant get region credentials for Admin.");
+            setOpenError(true);
+          } else {
+            const regionId = region[0].value;
+            setAccess(accessId);
+            setSecret(secretId);
+            setRegion(regionId);
+          }
+        }
+ //       try {
+ //         const encryptedText = CryptoJS.AES.encrypt('original', secretKey).toString();
+ //         const bytes = CryptoJS.AES.decrypt(encryptedText, secretKey);
+ //         const originalText = bytes.toString(CryptoJS.enc.Utf8);
+ //         console.log(originalText); 
+ //       } catch (error) {
+ //         console.error('Decryption error:', error);
+ //         setError(error);
+ //         setOpenError(true);
+ //       }
+      }
     }
   }
 
   useEffect(() => {
     setArrayDivisions(props.arrayDivisions);
     getAppSettings();
+    if (password == null) {
+      passwordRef.current.focus();
+    }
 	}, []);
 
   const handleCloseValues = (event: object, reason: string) => {
@@ -90,15 +145,21 @@ export default function PopupNewUser(props) {
   }
 
   const handleGoodPassword = (event) => {
-    event.preventDefault();
     setError('');
     setOpenError(false);
   }
 
   const handleBadPassword = (event) => {
-    event.preventDefault();
+    if (event == null) {
+      setOpenError(false);
+      setConfirm(false);
+      setPassword(null);
+      return;
+    }
     setError("Passwords don't match, please try again.")
     setOpenError(true);
+    setConfirm(false);
+    setPassword(null);
   }
 
   const handleSubmitValues = (item) => {
@@ -120,16 +181,16 @@ export default function PopupNewUser(props) {
 
   const signThemUp = async(username, password) => {
     const cognito = new CognitoIdentityServiceProvider({
-      region: 'us-east-1',
+      region: region,
       credentials: {
-        accessKeyId: '##',
-        secretAccessKey: '##'
+        accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),
+        secretAccessKey: CryptoJS.AES.decrypt(secret, ourWord).toString(CryptoJS.enc.Utf8),
       }
     });
 
     try {
       const response = await cognito.adminCreateUser({
-        UserPoolId: 'us-east-1_8oXeAfCNC',
+        UserPoolId: userPoolId,
         Username: username,
         UserAttributes: [{
           Name: 'email',
@@ -137,7 +198,6 @@ export default function PopupNewUser(props) {
         }],
         TemporaryPassword: password,
       }).promise();
-      console.log('User Created: ', response);
 
     } catch (error) {
       setError("Warning...could not signup on cloud...could already be defined.");
@@ -265,6 +325,7 @@ export default function PopupNewUser(props) {
             id="password"
             name="password"
             label="Password"
+            ref={passwordRef}
             type={textType}
             fullWidth
             variant="standard"

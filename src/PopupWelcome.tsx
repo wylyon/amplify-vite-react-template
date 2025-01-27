@@ -386,8 +386,9 @@ export default function PopupWelcome(props) {
             title={formData.templateName}
             description={formData.templateDescription} 
             hasTemplate={num > 0}
-            templateQuestions = {templateQuestion} />}
-        { isUserWizard && <PopupAddUsers props={props} onClose={addedUsersClose} addedUsers={addedUsers} title={formData.templateName} />}
+            templateQuestions = {templateQuestion} 
+            addedUsers={addedUsers} />}
+        { isUserWizard && <PopupAddUsers props={props} userId={props.userId} onClose={addedUsersClose} addedUsers={addedUsers} title={formData.templateName} />}
         {confirm && <ConfirmPassword props={props} password={password} onGoodPassword={handleGoodPassword} onBadPassword={handleBadPassword} />}
         <Stack direction="row" spacing={3}>
           <Paper elevation={3}>

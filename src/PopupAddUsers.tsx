@@ -42,6 +42,9 @@ import { FormLabel, IconButton } from "@mui/material";
 import ConfirmPassword from "../src/ConfirmPassword";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import SubjectIcon from '@mui/icons-material/Subject';
+import { useSvgRef } from "@mui/x-charts";
+import validator from "validator";
+import ClearIcon from '@mui/icons-material/Clear';
 
 export default function PopupAddUsers(props) {
   const [isWaiting, setIsWaiting] = useState(false);
@@ -51,7 +54,6 @@ export default function PopupAddUsers(props) {
   const [error, setError] = useState('');
   const [checked, setChecked] = useState(true);
   const [isAdd, setIsAdd] = useState(false);
-  const [tabValue, setTabValue] = useState('1');
   const [confirm, setConfirm] = useState(false);
   const [isDeleteActive, setIsDeleteActive] = useState(false);
   const [password, setPassword] = useState('');
@@ -60,10 +62,7 @@ export default function PopupAddUsers(props) {
   const [textType, setTextType] = useState('password');
   const [addedUsers, setAddedUsers] = useState([])
   const [selectedRows, setSelectedRows] = useState([]);
-  const [verificationSubject, setVerificationSubject] = useState("Welcome to " + props.title + " App!");
-  const [verificationBody, setVerificationBody] = useState('');
-  const [invitationSubject, setInvitationSubject] = useState("Welcome to " + props.title + " App!");
-  const [invitationBody, setInvitationBody] = useState('');
+  const [user, setUser] = useState<Schema["user"]["type"][]>([]);
 
   const client = generateClient<Schema>();
 
@@ -71,9 +70,20 @@ export default function PopupAddUsers(props) {
     setSelectDivision(event.target.value as string);
   };
 
+  const getUsers = async() => {
+    const { data: items, errors } = await client.models.user.list();
+    if (errors) {
+      setError(errors[0].message);
+      setOpenError(true);
+    } else {
+      setUser(items);
+    }
+  }
+
   useEffect(() => {
     setArrayDivisions(props.arrayDivisions);
     setAddedUsers(props.addedUsers);
+    getUsers();
 	}, []);
 
   const handleCloseValues = (event: object, reason: string) => {
@@ -84,31 +94,24 @@ export default function PopupAddUsers(props) {
     setOpen(false);
   }
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
-    setTabValue(newValue);
-  };
-
   const handleOnChange = (event) => {
-    setIsAdd(true);
-    setEmail(event.target.value as string);
+      setIsAdd(true);
+      setOpenError(false);
+      setEmail(event.target.value as string);
   }
 
-  const handleVerificationSubjectChange = (event) => {
-    setVerificationSubject(event.target.value as string);
+  const handleOnBlur = (event) => {
+    const value = event.target.value;
+    if (value != '' && value != null && !validator.isEmail(value.toString())) {
+      setError("Invalid email format");
+      setOpenError(true);
+    }
   }
 
-  const handleInvitationSubjectChange = (event) => {
-    setInvitationSubject(event.target.value as string);
+  const handleClearClick = (event) => {
+    setIsAdd(false);
+    setEmail('');
   }
-
-  const handleVerificationBodyChange = (event) => {
-    setVerificationBody(event.target.value as string);
-  }
-
-  const handleInvitationBodyChange = (event) => {
-    setInvitationBody(event.target.value as string);
-  }
-
   const handlePasswordConfirm = (event) => {
     event.preventDefault();
     setPassword(event.target.value as string);
@@ -180,6 +183,17 @@ export default function PopupAddUsers(props) {
       setError("Email address " + email + " Already Exists.");
       setOpenError(true);
       return;
+    }
+    const existingUser = user.filter(comp=>comp.email_address == email);
+    if (existingUser && existingUser.length > 0) {
+      setError("Email address " + email + " Already Exists.");
+      setOpenError(true);
+      return; 
+    }
+    if (email == props.userId) {
+      setError("Email address " + email + " Is Your Current Email, which will be automatically added.");
+      setOpenError(true);
+      return; 
     }
     setAddedUsers([...addedUsers, {
       id: uuidv4(),
@@ -314,7 +328,7 @@ export default function PopupAddUsers(props) {
     <DialogTitle>{props.props.isAdmin ? "Create a New Admin" : "Create a New User"}</DialogTitle>
     <DialogContent>
       <DialogContentText>
-        Enter Following Fields:
+        Enter Following Fields: <br /><br />
       </DialogContentText>
       <Box>
       {isWaiting && <CircularProgress />}
@@ -323,9 +337,9 @@ export default function PopupAddUsers(props) {
           </Alert>}
       {confirm && <ConfirmPassword props={props} password={password} onGoodPassword={handleGoodPassword} onBadPassword={handleBadPassword} />}
         <Stack direction="row" spacing={3} >
-          <Stack direction="column" spacing={2} >
             <Paper elevation={3} sx={{ height: '130px', width: '300px'}}>
               <br />
+              <Stack direction="row" spacing={1}>
               <TextField
                   autoFocus
                   margin="dense"
@@ -336,59 +350,20 @@ export default function PopupAddUsers(props) {
                   type="email"
                   fullWidth
                   onChange={handleOnChange}
+                  onBlur={handleOnBlur}
                   variant="standard"
-              />
+              /><IconButton color="primary" aria-label="clear contents" onClick={handleClearClick}><ClearIcon /></IconButton>
+              </Stack>
               <br />
               <Button variant="contained" color="primary" onClick={handleAddEmail} 
                 disabled={!isAdd}>Add User</Button>
             </Paper>
-            <Paper elevation={3} sx={{ height: '440px', width: '600px'}}>
-              <Typography variant="caption">Email Options...</Typography><br/>
-              <FormControlLabel control={<Checkbox defaultChecked checked={checked} onChange={handleCheckedChange} />} label="Default email settings" /> <br/>
-              {!checked ?
-              <TabContext value={tabValue}>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <TabList onChange={handleTabChange} aria-label="lab API tabs example">
-                    <Tab label="User Invitation-Email" value="1" />
-                  </TabList>
-                </Box>
-                <TabPanel value="1">
-                <TextField 
-                    margin="dense"
-                    id="invitationSubject"
-                    name="invitationSubject"
-                    value={invitationSubject}
-                    onChange={handleInvitationSubjectChange}
-                    label="Invitation Subject"
-                    type="text"
-                    fullWidth
-                    variant="standard"
-                  />
-                  <TextField 
-                    margin="dense"
-                    id="invitationBody"
-                    name="invitationBody"
-                    value={invitationBody}
-                    onChange={handleInvitationBodyChange}
-                    multiline
-                    maxRows={4}
-                    rows={4}
-                    label="Invitation Body"
-                    type="text"
-                    fullWidth
-                    variant="outlined"
-                  />
-                  <Typography variant="caption">NOTE:  Invitation body will automatically include "You can now login with email ### and temp password ###."</Typography>
-                </TabPanel>
-              </TabContext> : null }
-            </Paper>
-          </Stack>
-          <Box sx={{ bgcolor: '#52B2BF', width: '300px', height: '590px', 
+          <Box sx={{ bgcolor: '#52B2BF', width: '300px', height: '430px', 
               borderStyle: 'solid', borderWidth: '2px'}} >
             <h3>{"Added Users"}
               <Button variant="contained" color="error" disabled={!isDeleteActive} onClick={handleDelete}>Delete</Button>
             </h3>
-             <Paper sx={{ height: 500, width: '100%' }}>
+             <Paper sx={{ height: 350, width: '100%' }}>
               <DataGrid
                 rows={addedUsers}
                 columns={columns}

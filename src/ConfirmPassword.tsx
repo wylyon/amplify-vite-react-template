@@ -21,7 +21,15 @@ export default function ConfirmPassword(props) {
   useEffect(() => {
 	}, []);
 
-  const handleCloseValues = () => {
+  const handleCloseValues = (event: object, reason: string) => {
+    if (reason == "escapeKeyDown" || reason == "backdropClick") {
+      return;
+    }
+    setOpen(false);
+  }
+
+  const handleCancelClick = () => {
+    props.onBadPassword(null);
     setOpen(false);
   }
 
@@ -39,7 +47,7 @@ export default function ConfirmPassword(props) {
           const formJson = Object.fromEntries((formData as any).entries());
           const password = formJson.password;
           if (password === props.password) {
-            props.onGoodPassword(event);
+            props.onGoodPassword(password);
           } else {
             props.onBadPassword(event);
           }
@@ -67,8 +75,8 @@ export default function ConfirmPassword(props) {
     </Box>
     </DialogContent>
     <DialogActions>
-      <Button type="button" onClick={handleCloseValues}>Cancel</Button>
-      <Button type="submit">Save</Button>
+      <Button type="button" variant='contained' color='error' onClick={handleCancelClick}>Cancel</Button>
+      <Button type="submit" variant="contained" color='primary'>Save</Button>
     </DialogActions>
   </Dialog>
 </React.Fragment>
