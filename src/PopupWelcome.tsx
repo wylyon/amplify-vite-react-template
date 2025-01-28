@@ -94,7 +94,7 @@ export default function PopupWelcome(props) {
   const steps = ['Select your Profile', 'Build a Logging App', 'Setup Users for that Logging App'];
   const descriptions = ['The first step is to complete your profile.   We have your email and company name.   Please give us a contact name', 
     'Step 2 is to create a logging app to collect your data that you want captured.',
-    'Step 3 is define any users you want to run your application and capture their data.   Please note, this wizard will automatically add your email to this logging app, ' +
+    'Step 3 is define any users you want to run your application and capture their data.  Please note, this wizard will automatically add your email to this logging app, ' +
     'so you would only need to add other contributors.'];
 
   const isStepOptional = (step: number) => {
@@ -446,6 +446,9 @@ export default function PopupWelcome(props) {
               ) : (
               <React.Fragment>
                 <Typography sx={{ mt: 2, mb: 1 }}>{descriptions[activeStep]}</Typography>
+                {activeStep == 2 ?
+                <Typography variant="body1">Note...Add Users button will be greyed out if no logging app is created, since users are tied to a logging app.</Typography>
+                : null}
                 {activeStep == 1 || activeStep == 2 ?
                 <box>
                   <br/><Typography variant="body1">NOTE:  This is an optional step, as you can create a Logging App or Users later.</Typography> 
@@ -515,7 +518,7 @@ export default function PopupWelcome(props) {
                 : activeStep == 2 ?
                 <Box>
                   <Badge badgeContent={numUsers} color="primary">
-                    <Button variant="contained" onClick={handleUserWizard} startIcon={<PersonAddAltIcon />}>Add Users</Button> 
+                    <Button variant="contained" disabled={num<1} onClick={handleUserWizard} startIcon={<PersonAddAltIcon />}>Add Users</Button> 
                   </Badge>
                 </Box>
                 : null
