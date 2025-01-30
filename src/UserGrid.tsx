@@ -461,6 +461,55 @@ export default function UserGrid(props) {
 		getUsers(isAdmin, true);
 	}
 
+	const deleteAllReferences = async(id, emailAddress) => {
+		var deleteCognito = true;
+		if (!isAdmin) {
+		// first delete any links between a user and a template
+			const { errors, data: items } = await client.queries.listTemplatePermissionsByUser({
+				userId: id
+			});
+			if (errors) {
+			} else {
+				if (items) {
+					for (var indx = 0; indx < items.length; indx++) {
+						const { errors, data: deletedData } = await client.models.template_permissions.delete({
+							id: items[indx].id
+						});
+					}
+				}
+			}
+		} else {
+			const { errors, data: items } = await client.queries.listUserByEmail ({
+				email: emailAddress
+			});
+			if (errors) {
+			} else {
+				if (items && items.length > 0) {
+					// if a user as well as admin, then dont delete cognito row.
+					deleteCognito = false;
+				}
+			}
+		}
+		if (deleteCognito) {
+		// now delete the cognito row
+			const cognito = new CognitoIdentityServiceProvider({
+				region: region,
+				credentials: {
+					accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),
+					secretAccessKey: CryptoJS.AES.decrypt(secret, ourWord).toString(CryptoJS.enc.Utf8),
+				}
+				});
+			try {
+				const response = await cognito.adminDeleteUser({
+					UserPoolId: userPoolId,
+					Username: emailAddress
+				}).promise();
+
+			} catch (error) {
+			}
+		}
+	}
+
 	const handleDeleteRow = async(id) => {
 		const { errors, data: deletedData } = 
 		(isAdmin) ?
@@ -474,6 +523,8 @@ export default function UserGrid(props) {
 			setError(errors[0].message);
 			setOpen(true);
 		}
+		const row = rows.filter((row) => row.id === id);
+		deleteAllReferences(id, row[0].email);
 	}
 
 	const handleAddRow = async(newRow:GridRowModel) => {
@@ -781,8 +832,7 @@ export default function UserGrid(props) {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-			{error == '' ? "Are you sure you want to delete this record? (NOTE: " +
-			"This can orphan rows if there is activity against this user)" : error}
+			{error == '' ? "Are you sure you want to delete this record?" : error}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
