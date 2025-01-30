@@ -376,6 +376,16 @@ export default function TemplateGrid(props) {
 		if (errors) {
 			setError(errors[0].message);
 			setOpen(true);
+		} else {
+			await client.mutations.deletePermissionsByTemplateId({
+			  templateId: id
+			});
+			await client.mutations.deleteResultsByTemplateId({
+				templateId: id
+			  });
+			  await client.mutations.deleteQuestionByTemplateId({
+				templateId: id
+			  });
 		}
 	}
 
@@ -710,7 +720,7 @@ export default function TemplateGrid(props) {
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
 			{error == '' ? "Are you sure you want to delete this record? (NOTE: " +
-			"This can orphan rows if there is activity against this template)" : error}
+			"This delete will cascade delete all results and questions for this template)" : error}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
