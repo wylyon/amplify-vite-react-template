@@ -91,6 +91,14 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "SELECT id, division_id, title, description, pre_load_page_attributes, post_load_page_attributes, live_date, prod_date, deactive_date, notes, created, created_by, use_pagination, auto_space, box_controls " +
       " FROM logistics.template WHERE division_id = :divisionId;"
     )).authorization(allow => allow.publicApiKey()),
+    listTemplatePermissionsByUser: a.query()
+    .arguments({
+      userId: a.string().required(),
+    })
+    .returns(a.ref("template_permissions").array())
+    .handler(a.handler.inlineSql(
+      "SELECT id, template_id, user_id, enabled_date, verified_date, created, created_by FROM logistics.template_permissions WHERE user_id = :userId;"
+    )).authorization(allow => allow.publicApiKey()),
     listUserTemplatePermissions: a.query()
     .arguments({
       templateId: a.string().required(),

@@ -47,10 +47,11 @@ import Switch from '@mui/material/Switch';
 import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
 import PopupNewUser from '../src/PopupNewUser';
 import moment from 'moment';
-import SignUp from '../src/SignUp';
 import PasswordIcon from '@mui/icons-material/Password';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import { resetPassword } from 'aws-amplify/auth';
+import CryptoJS from 'crypto-js';
+import { CognitoIdentityServiceProvider } from 'aws-sdk';
 
 interface EditToolbarProps {
 	filter: string;
@@ -168,8 +169,7 @@ export default function UserGrid(props) {
 	const [open, setOpen] = useState(false);
 	const [error, setError] = useState('');
 	const [deleteId, setDeleteId] = useState('');
-	const [isSignUpTime, setIsSignUpTime] = useState(false);
-	const [signUpEmail, setSignUpEmail] = useState('');
+
 	const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
 
 	const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
@@ -202,6 +202,58 @@ export default function UserGrid(props) {
 	  const [checked, setChecked] = useState(true);
 	  const [rows, setRows] = useState<GridRowsProp>([]);
 	  const [userId, setUserId] = useState(props.userId);
+
+	  const [access, setAccess] = useState('');
+	  const [secret, setSecret] = useState('');
+	  const [region, setRegion] = useState('');
+	  const [ourWord, setOurWord] = useState('');
+	  const [userPoolId, setUserPoolId] = useState('');
+
+	  const getAppSettings = async() => {
+		const { data: items, errors } = await client.models.app_settings.list();
+		if (errors) {
+		  alert(errors[0].message);
+		} else {
+		  const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY0'));
+		  if (what3words.length < 1) {
+			setError("Cant get credentials for Admin.");
+			setOpenError(true);    
+			return;   
+		  }
+		  setOurWord(what3words[0].value + what3words[0].value);
+		  const userPool = items.filter(map => map.code.includes('USERPOOLID'));
+		  if (userPool.length < 1) {
+			setError("Cant get userPool for Admin.");
+			setOpenError(true);    
+			return;   
+		  }
+		  setUserPoolId(userPool[0].value);
+		  const creds = items.filter(map => map.code.includes('ACCESS'));
+		  if (creds.length < 1) {
+			setError("Cant get access credentials for Admin.");
+			setOpenError(true);
+		  } else {
+			const accessId = creds[0].value;
+			const secret = items.filter(map => map.code.includes('SECRET'));
+			if (secret.length < 1) {
+			  setError("Cant get secret credentials for Admin.");
+			  setOpenError(true);
+			} else {
+			  const secretId = secret[0].value;
+			  const region = items.filter(map => map.code.includes('REGION'));
+			  if (region.length < 1) {
+				setError("Cant get region credentials for Admin.");
+				setOpenError(true);
+			  } else {
+				const regionId = region[0].value;
+				setAccess(accessId);
+				setSecret(secretId);
+				setRegion(regionId);
+			  }
+			}
+		  }
+		}
+	  }
 
 	const allCompanies = async () => {
 		const { data: items, errors } = await client.models.company.list();
@@ -323,6 +375,7 @@ export default function UserGrid(props) {
 	  };
 
 	useEffect(() => {
+		getAppSettings();
 		getUsers(isAdmin, props.filter != null);
 		if (props.filter == null) {
 			allCompanies();
@@ -366,7 +419,7 @@ export default function UserGrid(props) {
 		getUsers(isAdmin, true);		
 	}
 
-	const handleDeactiveOrActivate = async(id, isDeactive) => {
+	const handleDeactiveOrActivate = async(id, isDeactive, emailAddress) => {
 		const now = new Date();
 		const { errors, data: updatedData } = 
 			(isAdmin) ? 	
@@ -381,6 +434,28 @@ export default function UserGrid(props) {
 		if (errors) {
 			setError(errors[0].message);
 			setOpen(true);
+		} else {
+			const cognito = new CognitoIdentityServiceProvider({
+				region: region,
+				credentials: {
+					accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),
+					secretAccessKey: CryptoJS.AES.decrypt(secret, ourWord).toString(CryptoJS.enc.Utf8),
+				}
+				});
+			try {
+				const response = (isDeactive) ? await cognito.adminDisableUser({
+					UserPoolId: userPoolId,
+					Username: emailAddress
+				}).promise() :
+					await cognito.adminEnableUser({
+						UserPoolId: userPoolId,
+						Username: emailAddress
+					}).promise();
+		
+			} catch (error) {
+				setError("Warning...Could not initiate reset password.");
+				setOpen(true);
+			}
 		}
 		setLoading(true);
 		getUsers(isAdmin, true);
@@ -469,33 +544,30 @@ export default function UserGrid(props) {
 		}
 	}
 
-	const handleSignOnCancel = (e) => {
-		setIsSignUpTime(false);
-		setSignUpEmail('');
-	 };
-
-	 const handleEnroll = (id: GridRowId) => () => {
-		const row = rows.filter((row) => row.id === id);
-		setSignUpEmail(row[0].email);
-		setIsSignUpTime(true);
-	 }
-
 	const handleDeactivate = (id: GridRowId) => () => {
-		handleDeactiveOrActivate(id, true);
+		const row = rows.filter((row) => row.id === id);
+		handleDeactiveOrActivate(id, true, row[0].email);
 	}
 
 	const handleResetPassword = async(emailAddress) => {
+		const cognito = new CognitoIdentityServiceProvider({
+			region: region,
+			credentials: {
+				accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),
+				secretAccessKey: CryptoJS.AES.decrypt(secret, ourWord).toString(CryptoJS.enc.Utf8),
+			}
+			});
 		try {
-		  const output = await resetPassword({
-		username: emailAddress
-		  });
-		  console.log(output.isPasswordReset);
+		const response = await cognito.adminResetUserPassword({
+			UserPoolId: userPoolId,
+			Username: emailAddress
+		}).promise();
+	
 		} catch (error) {
-			setError(error);
+			setError("Warning...Could not initiate reset password.");
 			setOpen(true);
 		}
 	  }
-	  
 
 	const handleReset = (id: GridRowId) => () => {
 		const row = rows.filter((row) => row.id === id);
@@ -503,7 +575,8 @@ export default function UserGrid(props) {
 	}
 
 	const handleActivate = (id: GridRowId) => () => {
-		handleDeactiveOrActivate(id, false);
+		const row = rows.filter((row) => row.id === id);
+		handleDeactiveOrActivate(id, false, row[0].email);
 	}
 	
 	const handleDeleteClick = (id: GridRowId) => () => {
@@ -680,8 +753,7 @@ export default function UserGrid(props) {
 				<GridActionsCellItem icon={<EditIcon />} label="Edit" color='primary' onClick={handleEditClick(id)} />,
 				<GridActionsCellItem icon={<SupervisedUserCircleIcon />} label="Make SuperAdmin" disabled 
 					onClick={handleMakeSuperAdmin(id)} showInMenu/>,
-				<GridActionsCellItem icon={<PasswordIcon />} label="Reset Password" onClick={handleReset(id)} disabled showInMenu />,
-				<GridActionsCellItem icon={<AssignmentIndIcon />} label="Enroll User" onClick={handleEnroll(id)} showInMenu />,
+				<GridActionsCellItem icon={<PasswordIcon />} label="Reset Password" onClick={handleReset(id)} showInMenu />,
 				<GridActionsCellItem icon={<DeleteOutlineIcon />} label="Deactivate" onClick={handleDeactivate(id)} showInMenu/>,
 				<GridActionsCellItem icon={<AddCircleOutlineIcon />} label="Activate" onClick={handleActivate(id)} showInMenu/>,
 				<GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={handleDelete(id)} showInMenu />,
@@ -721,7 +793,6 @@ export default function UserGrid(props) {
         </DialogActions>
       </Dialog>
 	<Stack>
-	{isSignUpTime && <SignUp email={signUpEmail} onSubmitChange={handleSignOnCancel} /> }
     <FormGroup>
       <Typography variant='subtitle1'>Company User 
 		<FormControlLabel control={<Switch defaultChecked={props.filter == null ? true : false} onChange={handleUserChange}/>} 

@@ -524,6 +524,7 @@ export default function PopupWelcome(props) {
                 : null
                 }
                 <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                  <Button color="error" variant="contained" onClick={handleCloseValues}>Cancel</Button>
                   <Button
                     color="primary"
                     variant="contained"
