@@ -33,8 +33,6 @@ import type { Schema } from '../amplify/data/resource'; // Path to your backend 
 import { IconButton } from "@mui/material";
 import ConfirmPassword from "../src/ConfirmPassword";
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
 import CryptoJS from 'crypto-js';
 import { CognitoIdentityServiceProvider } from 'aws-sdk';
 
