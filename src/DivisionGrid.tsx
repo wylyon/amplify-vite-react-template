@@ -42,6 +42,8 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SelectGridCustomer from '../src/SelectGridCustomer';
 import SelectGridState from '../src/SelectGridState';
 import PopupNewDivision from '../src/PopupNewDivision';
+import CryptoJS from 'crypto-js';
+import { CognitoIdentityServiceProvider } from 'aws-sdk';
 
 interface EditToolbarProps {
 	filter: string;
@@ -164,6 +166,58 @@ export default function DivisionGrid(props) {
 	const [rows, setRows] = useState<GridRowsProp>([]);
 	const [userId, setUserId] = useState(props.userId);
 
+	const [access, setAccess] = useState('');
+	const [secret, setSecret] = useState('');
+	const [region, setRegion] = useState('');
+	const [ourWord, setOurWord] = useState('');
+	const [userPoolId, setUserPoolId] = useState('');
+
+	const getAppSettings = async() => {
+		const { data: items, errors } = await client.models.app_settings.list();
+		if (errors) {
+		  alert(errors[0].message);
+		} else {
+		  const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY0'));
+		  if (what3words.length < 1) {
+			setError("Cant get credentials for Admin.");
+			setOpenError(true);    
+			return;   
+		  }
+		  setOurWord(what3words[0].value + what3words[0].value);
+		  const userPool = items.filter(map => map.code.includes('USERPOOLID'));
+		  if (userPool.length < 1) {
+			setError("Cant get userPool for Admin.");
+			setOpenError(true);    
+			return;   
+		  }
+		  setUserPoolId(userPool[0].value);
+		  const creds = items.filter(map => map.code.includes('ACCESS'));
+		  if (creds.length < 1) {
+			setError("Cant get access credentials for Admin.");
+			setOpenError(true);
+		  } else {
+			const accessId = creds[0].value;
+			const secret = items.filter(map => map.code.includes('SECRET'));
+			if (secret.length < 1) {
+			  setError("Cant get secret credentials for Admin.");
+			  setOpenError(true);
+			} else {
+			  const secretId = secret[0].value;
+			  const region = items.filter(map => map.code.includes('REGION'));
+			  if (region.length < 1) {
+				setError("Cant get region credentials for Admin.");
+				setOpenError(true);
+			  } else {
+				const regionId = region[0].value;
+				setAccess(accessId);
+				setSecret(secretId);
+				setRegion(regionId);
+			  }
+			}
+		  }
+		}
+	  }
+
 	const allCompanies = async () => {
 		const { data: items, errors } = 
 		props.id != null ?
@@ -250,6 +304,7 @@ export default function DivisionGrid(props) {
 	useEffect(() => {
 		getDivisions();
 		allCompanies();
+		getAppSettings();
 	  }, []);
 
 	  function handleRowClick (params, event, details) {
@@ -289,12 +344,64 @@ export default function DivisionGrid(props) {
 	}
 
 	const handleDeleteRow = async(id) => {
-		const { errors, data: deletedData } = await client.models.division.delete({
+		const { errors: divDeleteErrors, data: deletedData } = await client.models.division.delete({
 			id: id
 		});
-		if (errors) {
-			setError(errors[0].message);
+		if (divDeleteErrors) {
+			setError(divDeleteErrors[0].message);
 			setOpen(true);
+		} else {
+			const { errors: templateErrors, data: items } = await client.queries.listTemplateByDivisionId({
+				divisionId: id
+			})
+			if (templateErrors) {
+				setError("Can't cascade division delete due to error getting templates.");
+				setOpen(true);
+			} else {
+				const { errors: userErrors, data: itemsForUsers } = await client.queries.listUserByDivisionId({
+					divisionId: id
+				});
+				if (userErrors) {
+					setError("Can't cascade division due to error getting users.");
+					setOpen(true);
+				} else {
+					for (var indx = 0; indx < items.length; indx++) {
+						await client.mutations.deletePermissionsByTemplateId({
+							templateId: items[indx].id
+						  });
+						await client.mutations.deleteResultsByTemplateId({
+							templateId: items[indx].id
+						  });
+						await client.mutations.deleteQuestionByTemplateId({
+							templateId: items[indx].id
+						  });
+					}
+					await client.mutations.deleteTemplateByDivisionId({
+						divisionId: id
+					});
+					// now delete users from both Cognito and DB
+					const cognito = new CognitoIdentityServiceProvider({
+						region: region,
+						credentials: {
+							accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),
+							secretAccessKey: CryptoJS.AES.decrypt(secret, ourWord).toString(CryptoJS.enc.Utf8),
+						}
+						});
+					for (var i = 0; i < itemsForUsers.length; i++) {
+						try {
+							const response = await cognito.adminDeleteUser({
+								UserPoolId: userPoolId,
+								Username: itemsForUsers[i].email_address
+							}).promise();
+			
+						} catch (error) {
+						}
+					}
+					await client.mutations.deleteUserByDivisionId({
+						divisionId: id
+					})
+				}
+			}
 		}
 	}
 
@@ -545,7 +652,7 @@ export default function DivisionGrid(props) {
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
 			{error == '' ? "Are you sure you want to delete this record? (NOTE: " +
-			"This can orphan rows if there is activity against this division)" : error}
+			"This will cascade the delete for all users and templates on this division)" : error}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
