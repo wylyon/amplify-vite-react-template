@@ -284,6 +284,18 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     })
     .returns(a.json().array())
     .handler(a.handler.inlineSql("DELETE from logistics.question_result WHERE template_question_id in (SELECT id FROM logistics.template_question WHERE template_id = :templateId);"))
+    .authorization(allow => allow.publicApiKey()),
+    deleteTemplateByDivisionId: a.mutation().arguments({
+      divisionId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("DELETE from logistics.template WHERE division_id = :divisionId;"))
+    .authorization(allow => allow.publicApiKey()),
+    deleteUserByDivisionId: a.mutation().arguments({
+      divisionId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("DELETE from logistics.user WHERE division_id = :divisionId;"))
     .authorization(allow => allow.publicApiKey())
   })
 

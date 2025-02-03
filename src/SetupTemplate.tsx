@@ -74,6 +74,7 @@ export default function SetupTemplate(props) {
   const [dialogControls, setDialogControls] = useState({});
   const [isWizard, setIsWizard] = useState(false);
   const [openSetup, setOpenSetup] = useState(true);
+  const [isAdvanced, setIsAdvanced] = useState(false);
 
   const handleClickOpen = () => {
     if (formData.questionValues == '') {
@@ -628,6 +629,10 @@ export default function SetupTemplate(props) {
     }
   }
 
+  const handleAdvanced = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsAdvanced(event.target.checked);
+  }
+
   useEffect(() => {
     getQuestionsByTemplate(props.templateId);
   }, []);
@@ -684,7 +689,7 @@ export default function SetupTemplate(props) {
       <CssBaseline />
       {isWizard && <SetupQuestion props={props} isWizard={props.isWizard}
         onSubmitChange={newQuestionSubmit} 
-        nextOrder={templateQuestion.length+1}
+        nextOrder={templateQuestion ? templateQuestion.length+1 : 1}
       />}
       {preview && <PopupReview props={props} 
         onSubmitClose={handlePreviewClose}
@@ -883,13 +888,13 @@ export default function SetupTemplate(props) {
           </Alert>}
           <Box sx={{ bgcolor: '#C6DEFF', width: '600px', height: '520px', float: 'left', 
               borderStyle: 'solid', borderWidth: '2px' }} >
-            <h3>Add Questions/Controls: 
+            <h4>Add Questions/Controls: <br/><FormControlLabel control={<Checkbox checked={isAdvanced} onChange={handleAdvanced} inputProps={{ 'aria-label' : 'controlled'}} />} label="Show Advanced Controls" />
               <ButtonGroup variant="contained" aria-label="Question Input group" 
                 sx={{ float: 'right'}}>
                 <Button variant="contained" color="success" onClick={handleOnNew}>Add Wizard</Button>
                 <Button variant="contained" color="success" onClick={handleOnSave}>Save</Button>
               </ButtonGroup>
-            </h3>
+            </h4>
             <FormControl>
               <Stack direction="row" spacing={2}>
                 <Box>
@@ -898,7 +903,7 @@ export default function SetupTemplate(props) {
                     defaultValue="photo"
                     value={formData.questionType}
                     name="questionType" >
-                      {props.isWizard ? 
+                      {props.isWizard || !isAdvanced ? 
                       <Paper elevation={3}>
                         <Typography variant="h6" alignContent="center">Step 1: Select Control</Typography>
                         <Tooltip title="Select this to input a photo" placement="top">
@@ -1008,7 +1013,7 @@ export default function SetupTemplate(props) {
                   </RadioGroup>
                 </Box>
                 <Paper elevation={3}>
-                  {props.isWizard ?
+                  {props.isWizard || !isAdvanced ?
                   <Typography variant="h6" alignContent="center">Step 2: Enter Details</Typography>
                    : null}
                   <Tooltip title="Enter here a title of what this question is about." placement="top">
@@ -1016,20 +1021,20 @@ export default function SetupTemplate(props) {
                     label="Question Title" variant="outlined" required="true" size="small" 
                     sx={{ width: '250px'}} onChange={handleChange}/></Tooltip>
                   <FormLabel id="filler1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FormLabel>
-                  {props.isWizard && formData.questionOrder > 0 && !isUpdate ? null
+                  {(props.isWizard || !isAdvanced) && formData.questionOrder > 0 && !isUpdate ? null
                    :
                   <Tooltip title="Enter here the order of this question relative to others." placement="right">
                   <TextField id="question_order" name="questionOrder" value={formData.questionOrder} 
                     label="Order" variant="outlined" size="small" 
                     sx={{ width: '80px' }} required="true" onChange={handleChange}/></Tooltip> }
                   <br />
-                  {props.isWizard ? null :
+                  {(props.isWizard || !isAdvanced) ? null :
                   <Tooltip title="Enter here a fuller description of what this question is for and about." placement="right">
                   <TextField id="question_desc" name="description" value={formData.description} 
                     label="Description" variant="outlined" size="small" multiline
                     maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip> }
                   <br />
-                  {props.isWizard ? 
+                  {props.isWizard || !isAdvanced ? 
                   <Box>
                     <Tooltip title="Enter here any special HTML formatting, or text you want processed BEFORE control is rendered." placement="right">
                     <TextField id="question_pre" name="preLoadAttributes" value={formData.preLoadAttributes} 

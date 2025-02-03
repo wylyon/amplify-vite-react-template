@@ -23,6 +23,8 @@ export default function SelectGridState(props: GridRenderCellParams) {
     <Select
       value={value}
       onChange={handleChange}
+      name='state'
+      id='state'
       size="small"
       sx={{ height: 1 }}
       native

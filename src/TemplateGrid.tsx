@@ -147,6 +147,7 @@ function EditToolbar(props: EditToolbarProps) {
 			{openBuild && <SetupTemplate onSubmitAdd={handleUpdateOnCancel} 
 				onSubmitChange={handleUpdateOnCancel} 
 				name={item.title} 
+				isWizard={false}
 				templateId={item.id} 
 				divisionId={item.division_id} 
 				preLoadAttributes={''} 

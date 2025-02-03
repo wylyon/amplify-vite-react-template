@@ -41,8 +41,11 @@ import CancelIcon from '@mui/icons-material/Close';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SelectGridCustomer from '../src/SelectGridCustomer';
 import SelectGridState from '../src/SelectGridState';
+import PopupNewDivision from '../src/PopupNewDivision';
 
 interface EditToolbarProps {
+	filter: string;
+	rows: GridRowsProp;
 	setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
 	setRowModesModel: (
 	  newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
@@ -50,9 +53,41 @@ interface EditToolbarProps {
   }
 
 function EditToolbar(props: EditToolbarProps) {
-	const { setRows, setRowModesModel } = props;
-  
+	const { filter, rows, userId, setRows, setRowModesModel } = props;
+	const [openNew, setOpenNew] = useState(false);
+	const [item, setItem] = useState({});
+
+	const handleOnClose = () => {
+		setOpenNew(false);
+	}
+
+	const handleOnSubmit = (item) => {
+		setItem(item);
+		setRows((oldRows) => [
+			...oldRows,
+			{ id: item.id, 
+				companyId: filter.id,
+				company: filter.name,
+				name: item.name,
+				email: item.email,
+				address1: item.address1,
+				address2: item.address2,
+				city: item.city,
+				state: item.state,
+				zipcode: item.zipcode,
+				refDepartment: item.ref_department,
+				notes: item.notes,
+				isNew: false
+			},
+		  ]);
+		  setOpenNew(false);
+	}
+
 	const handleClick = () => {
+		if (filter != null) {
+			setOpenNew(true);
+			return;
+		}
 		const id = uuidv4();
 		setRows((oldRows) => [
 		  ...oldRows,
@@ -78,20 +113,25 @@ function EditToolbar(props: EditToolbarProps) {
 	  };
   
 	return (
-	  <GridToolbarContainer>
-		<Tooltip title="Add a new Division">
-			<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-		  	Add Division
-			</Button>
-		</Tooltip>
-		<GridToolbar />
-	  </GridToolbarContainer>
+		<React.Fragment>
+			{openNew && <PopupNewDivision props={props} 
+				rows={rows} company={filter} userId={userId} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
+			<GridToolbarContainer>
+			<Tooltip title="Add a new Division">
+				<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
+				Add Division
+				</Button>
+			</Tooltip>
+			<GridToolbar />
+		</GridToolbarContainer>
+		</React.Fragment>
 	);
   }
 
 export default function DivisionGrid(props) {
 	const [loading, setLoading] = useState(true);
 	const [open, setOpen] = useState(false);
+	const [filter, setFilter] = useState(props.filter);
 	const [error, setError] = useState('');
 	const [deleteId, setDeleteId] = useState('');
 	const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
@@ -122,6 +162,7 @@ export default function DivisionGrid(props) {
 		createdBy: ''
 	  }]);
 	const [rows, setRows] = useState<GridRowsProp>([]);
+	const [userId, setUserId] = useState(props.userId);
 
 	const allCompanies = async () => {
 		const { data: items, errors } = 
@@ -540,7 +581,7 @@ export default function DivisionGrid(props) {
 				toolbar: EditToolbar as GridSlots['toolbar'],
 			  }}
 			slotProps={{
-				toolbar: { setRows, setRowModesModel },
+				toolbar: { filter, rows, userId, setRows, setRowModesModel },
 			}}
 			/>
 		</Paper>
