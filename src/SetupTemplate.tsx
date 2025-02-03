@@ -888,7 +888,9 @@ export default function SetupTemplate(props) {
           </Alert>}
           <Box sx={{ bgcolor: '#C6DEFF', width: '600px', height: '520px', float: 'left', 
               borderStyle: 'solid', borderWidth: '2px' }} >
-            <h4>Add Questions/Controls: <br/><FormControlLabel control={<Checkbox checked={isAdvanced} onChange={handleAdvanced} inputProps={{ 'aria-label' : 'controlled'}} />} label="Show Advanced Controls" />
+            <h4>Add Questions/Controls: <br/>
+            {props.isWizard ? null :
+            <FormControlLabel control={<Checkbox checked={isAdvanced} onChange={handleAdvanced} inputProps={{ 'aria-label' : 'controlled'}} />} label="Show Advanced Controls" /> }
               <ButtonGroup variant="contained" aria-label="Question Input group" 
                 sx={{ float: 'right'}}>
                 <Button variant="contained" color="success" onClick={handleOnNew}>Add Wizard</Button>
