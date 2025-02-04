@@ -75,7 +75,8 @@ export default function DetermineMode(props) {
 	        return false;
 	      }
       }
-      setWelcome(true);
+      setMode(2);
+    //  setWelcome(true);
       return true
     }
     if (!filterAdmin[0].company_id) {

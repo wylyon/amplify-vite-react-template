@@ -258,13 +258,14 @@ export default function SetupTemplate(props) {
     });
   }
 
-  const getQuestionsByTemplate = async (tempId) => {
+  const getQuestionsByTemplate = async (tempId, isAdd) => {
     if (props.isWizard) {
       setTemplateQuestion(props.templateQuestions);
       setFormDataFields(props.templateQuestions == [] ? 1 : props.templateQuestions.length + 1, 'order');
       setFiltered(props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')));
       return;
     }
+    var nextOrder;
     const { data: items, errors } = await client.queries.listQuestionsByTemplateId({
       templateId: tempId
     });
@@ -276,14 +277,16 @@ export default function SetupTemplate(props) {
     if (items.length < 1) {
       setIsPreviewActive(false);
       setFormDataFields(1, 'order');
+      nextOrder = 1;
     } else {
       setIsPreviewActive(true);
       // get next order#
-      const nextOrder = items[items.length-1].question_order + 1;
+      nextOrder = items[items.length-1].question_order + 1;
       setFormDataFields(nextOrder, 'order');
     }
     setTemplateQuestion(items);
     setFiltered(items.filter(comp => !comp.question_type.includes('dialog_input')));
+    resetQuestions(nextOrder);
   };
 
   const handleChange = (e) => {
@@ -413,7 +416,7 @@ export default function SetupTemplate(props) {
         setIsAlert(true);
         return;
       }
-      getQuestionsByTemplate(props.templateId);
+      getQuestionsByTemplate(props.templateId, false);
   }
     setAlertMessage("Question " + formData.title + " Updated");
     setTheSeverity("success");
@@ -448,7 +451,7 @@ export default function SetupTemplate(props) {
         setIsAlert(true);
         return;
       }
-      getQuestionsByTemplate(props.templateId);
+      getQuestionsByTemplate(props.templateId, true);
     }
     setAlertMessage("Question " + formData.title + " Added");
     setTheSeverity("success");
@@ -562,7 +565,7 @@ export default function SetupTemplate(props) {
       deleteQuestions(selectedRows[i]);
     }
     if (!props.isWizard) {
-      getQuestionsByTemplate(props.templateId); 
+      getQuestionsByTemplate(props.templateId, false); 
     }
   }
 
@@ -634,7 +637,7 @@ export default function SetupTemplate(props) {
   }
 
   useEffect(() => {
-    getQuestionsByTemplate(props.templateId);
+    getQuestionsByTemplate(props.templateId, false);
   }, []);
 
   const columns: GridColDef[] = [

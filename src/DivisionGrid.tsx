@@ -365,6 +365,7 @@ export default function DivisionGrid(props) {
 					setError("Can't cascade division due to error getting users.");
 					setOpen(true);
 				} else {
+					// delete template related table data
 					for (var indx = 0; indx < items.length; indx++) {
 						await client.mutations.deletePermissionsByTemplateId({
 							templateId: items[indx].id
