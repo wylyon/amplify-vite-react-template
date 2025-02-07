@@ -43,7 +43,7 @@ import SelectGridCustomer from '../src/SelectGridCustomer';
 import SelectGridState from '../src/SelectGridState';
 import PopupNewDivision from '../src/PopupNewDivision';
 import CryptoJS from 'crypto-js';
-import { CognitoIdentityServiceProvider } from 'aws-sdk';
+import { CognitoIdentityServiceProvider } from '@aws-sdk/client-cognito-identity-provider';
 
 interface EditToolbarProps {
 	filter: string;

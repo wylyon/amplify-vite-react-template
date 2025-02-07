@@ -34,7 +34,7 @@ import { IconButton } from "@mui/material";
 import ConfirmPassword from "../src/ConfirmPassword";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CryptoJS from 'crypto-js';
-import { CognitoIdentityServiceProvider } from 'aws-sdk';
+import { CognitoIdentityServiceProvider } from '@aws-sdk/client-cognito-identity-provider';
 
 export default function PopupNewUser(props) {
   const [isWaiting, setIsWaiting] = useState(false);

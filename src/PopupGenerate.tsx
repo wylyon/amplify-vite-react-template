@@ -22,7 +22,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import CryptoJS from 'crypto-js';
-import { CognitoIdentityServiceProvider } from 'aws-sdk';
+import { CognitoIdentityServiceProvider } from '@aws-sdk/client-cognito-identity-provider';
 
 function LinearProgressWithLabel(props: LinearProgressProps & { value: number }) {
   return (

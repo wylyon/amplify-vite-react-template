@@ -51,7 +51,7 @@ import PasswordIcon from '@mui/icons-material/Password';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import { resetPassword } from 'aws-amplify/auth';
 import CryptoJS from 'crypto-js';
-import { CognitoIdentityServiceProvider } from 'aws-sdk';
+import { CognitoIdentityServiceProvider } from '@aws-sdk/client-cognito-identity-provider';
 
 interface EditToolbarProps {
 	filter: string;
