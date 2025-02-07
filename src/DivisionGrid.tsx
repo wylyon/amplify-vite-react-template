@@ -43,7 +43,7 @@ import SelectGridCustomer from '../src/SelectGridCustomer';
 import SelectGridState from '../src/SelectGridState';
 import PopupNewDivision from '../src/PopupNewDivision';
 import CryptoJS from 'crypto-js';
-import { CognitoIdentityServiceProvider } from '@aws-sdk/client-cognito-identity-provider';
+import { CognitoIdentityProvider } from '@aws-sdk/client-cognito-identity-provider';
 
 interface EditToolbarProps {
 	filter: string;
@@ -381,7 +381,7 @@ export default function DivisionGrid(props) {
 						divisionId: id
 					});
 					// now delete users from both Cognito and DB
-					const cognito = new CognitoIdentityServiceProvider({
+					const cognito = new CognitoIdentityProvider({
 						region: region,
 						credentials: {
 							accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),

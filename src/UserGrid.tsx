@@ -51,7 +51,7 @@ import PasswordIcon from '@mui/icons-material/Password';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import { resetPassword } from 'aws-amplify/auth';
 import CryptoJS from 'crypto-js';
-import { CognitoIdentityServiceProvider } from '@aws-sdk/client-cognito-identity-provider';
+import { CognitoIdentityProvider } from '@aws-sdk/client-cognito-identity-provider';
 
 interface EditToolbarProps {
 	filter: string;
@@ -435,7 +435,7 @@ export default function UserGrid(props) {
 			setError(errors[0].message);
 			setOpen(true);
 		} else {
-			const cognito = new CognitoIdentityServiceProvider({
+			const cognito = new CognitoIdentityProvider({
 				region: region,
 				credentials: {
 					accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),
@@ -492,7 +492,7 @@ export default function UserGrid(props) {
 		}
 		if (deleteCognito) {
 		// now delete the cognito row
-			const cognito = new CognitoIdentityServiceProvider({
+			const cognito = new CognitoIdentityProvider({
 				region: region,
 				credentials: {
 					accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),
@@ -601,7 +601,7 @@ export default function UserGrid(props) {
 	}
 
 	const handleResetPassword = async(emailAddress) => {
-		const cognito = new CognitoIdentityServiceProvider({
+		const cognito = new CognitoIdentityProvider({
 			region: region,
 			credentials: {
 				accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),

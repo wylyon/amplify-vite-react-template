@@ -34,7 +34,7 @@ import { IconButton } from "@mui/material";
 import ConfirmPassword from "../src/ConfirmPassword";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CryptoJS from 'crypto-js';
-import { CognitoIdentityServiceProvider } from '@aws-sdk/client-cognito-identity-provider';
+import { CognitoIdentityProvider } from '@aws-sdk/client-cognito-identity-provider';
 
 export default function PopupNewUser(props) {
   const [isWaiting, setIsWaiting] = useState(false);
@@ -178,7 +178,7 @@ export default function PopupNewUser(props) {
 	  }
 
   const signThemUp = async(username, password) => {
-    const cognito = new CognitoIdentityServiceProvider({
+    const cognito = new CognitoIdentityProvider({
       region: region,
       credentials: {
         accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),
