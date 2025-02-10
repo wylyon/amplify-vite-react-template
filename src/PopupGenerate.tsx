@@ -133,6 +133,7 @@ export default function PopupGenerate(props) {
 		});
 		if (errors) {
 			setAlertMessage(errors[0].message);
+      console.log("template.create." + errors[0].message);
       setTheSeverity('error');
 			setIsAlert(true);
       clearInterval(timer);
@@ -161,6 +162,7 @@ export default function PopupGenerate(props) {
         });
         if (errors) {
           setAlertMessage(errors[0].message);
+          console.log("template_question.create." + errors[0].message);
           setTheSeverity('error');
           setIsAlert(true);
           clearInterval(timer);
@@ -188,6 +190,7 @@ export default function PopupGenerate(props) {
         });			
         if (errors) {
           setAlertMessage(errors[0].message);
+          console.log("user.create." + errors[0].message);
           setTheSeverity('error');
           setIsAlert(true);
           clearInterval(timer);
@@ -206,6 +209,7 @@ export default function PopupGenerate(props) {
           });
           if (errors) {
             setAlertMessage(errors[0].message);
+            console.log("template_permission.create." + errors[0].message);
             setTheSeverity('error');
             setIsAlert(true);
             clearInterval(timer);
@@ -227,6 +231,7 @@ export default function PopupGenerate(props) {
                 });	
                 if (errors) {
                   setAlertMessage(errors[0].message);
+                  console.log("user.create." + errors[0].message);
                   setTheSeverity('error');
                   setIsAlert(true);
                   clearInterval(timer);
@@ -242,6 +247,7 @@ export default function PopupGenerate(props) {
                   });
                   if (errors) {
                     setAlertMessage(errors[0].message);
+                    console.log("template_permissions.create." + errors[0].message);
                     setTheSeverity('error');
                     setIsAlert(true);
                     clearInterval(timer);
@@ -300,6 +306,8 @@ export default function PopupGenerate(props) {
   
       } catch (error) {
         setAlertMessage("Warning...some could not signup on cloud...could already be defined.");
+        console.log("cognito.adminCreateUser.error");
+        console.log(error);
         setTheSeverity('error');
         setIsAlert(true);
         anyErrors = true;
@@ -334,6 +342,7 @@ export default function PopupGenerate(props) {
 		});
 		if (errors) {
 			setAlertMessage(errors[0].message);
+      console.log("company.create." + errors[0].message);
       setTheSeverity('error');
 			setIsAlert(true);
       clearInterval(timer);
@@ -359,6 +368,7 @@ export default function PopupGenerate(props) {
       });
       if (errors) {
         setAlertMessage(errors[0].message);
+        console.log("division.create." + errors[0].message);
         setTheSeverity('error');
         setIsAlert(true);
         clearInterval(timer);
@@ -381,6 +391,7 @@ export default function PopupGenerate(props) {
         });			
         if (errors) {
           setAlertMessage(errors[0].message);
+          console.log("admin.create." + errors[0].message);
           setTheSeverity('error');
           setIsAlert(true);
           clearInterval(timer);
