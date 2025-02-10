@@ -305,12 +305,6 @@ export default function PopupGenerate(props) {
         }).promise();
   
       } catch (error) {
-        setAlertMessage("Warning...some could not signup on cloud...could already be defined.");
-        console.log("cognito.adminCreateUser.error");
-        console.log(error);
-        setTheSeverity('error');
-        setIsAlert(true);
-        anyErrors = true;
       }
     }
     if (!anyErrors) {
