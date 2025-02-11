@@ -45,6 +45,30 @@ export const schema = configure({
         }
     }
 }).schema({
+    "admin": a.model({
+        id: a.string().required(),
+        username: a.string(),
+        email_address: a.string().required(),
+        company_id: a.string(),
+        first_name: a.string().required(),
+        last_name: a.string().required(),
+        middle_name: a.string(),
+        active_date: a.date(),
+        deactive_date: a.datetime(),
+        created: a.datetime().required(),
+        created_by: a.string()
+    }).identifier([
+        "id"
+    ]),
+    "app_settings": a.model({
+        id: a.string().required(),
+        code: a.string().required(),
+        value: a.string().required(),
+        created: a.datetime().required(),
+        created_by: a.string().required()
+    }).identifier([
+        "id"
+    ]),
     "company": a.model({
         id: a.string().required(),
         name: a.string().required(),
@@ -54,6 +78,24 @@ export const schema = configure({
         city: a.string().required(),
         state: a.string().required(),
         zipcode: a.string().required(),
+        ref_department: a.string(),
+        notes: a.string(),
+        deactive_date: a.datetime(),
+        created: a.datetime().required(),
+        created_by: a.string()
+    }).identifier([
+        "id"
+    ]),
+    "division": a.model({
+        id: a.string().required(),
+        company_id: a.string().required(),
+        name: a.string().required(),
+        email: a.string(),
+        address1: a.string(),
+        address2: a.string(),
+        city: a.string(),
+        state: a.string(),
+        zipcode: a.string(),
         ref_department: a.string(),
         notes: a.string(),
         deactive_date: a.datetime(),
@@ -77,39 +119,6 @@ export const schema = configure({
     }).identifier([
         "id"
     ]),
-    "division": a.model({
-        id: a.string().required(),
-        company_id: a.string().required(),
-        name: a.string().required(),
-        email: a.string(),
-        address1: a.string(),
-        address2: a.string(),
-        city: a.string(),
-        state: a.string(),
-        zipcode: a.string(),
-        ref_department: a.string(),
-        notes: a.string(),
-        deactive_date: a.datetime(),
-        created: a.datetime().required(),
-        created_by: a.string()
-    }).identifier([
-        "id"
-    ]),
-    "admin": a.model({
-        id: a.string().required(),
-        username: a.string(),
-        email_address: a.string().required(),
-        company_id: a.string(),
-        first_name: a.string().required(),
-        last_name: a.string().required(),
-        middle_name: a.string(),
-        active_date: a.date(),
-        deactive_date: a.datetime(),
-        created: a.datetime().required(),
-        created_by: a.string()
-    }).identifier([
-        "id"
-    ]),
     "template": a.model({
         id: a.string().required(),
         division_id: a.string().required(),
@@ -129,6 +138,17 @@ export const schema = configure({
     }).identifier([
         "id"
     ]),
+    "template_permissions": a.model({
+        id: a.string().required(),
+        template_id: a.string().required(),
+        user_id: a.string().required(),
+        enabled_date: a.datetime(),
+        verified_date: a.datetime(),
+        created: a.datetime().required(),
+        created_by: a.string()
+    }).identifier([
+        "id"
+    ]),
     "template_question": a.model({
         id: a.string().required(),
         template_id: a.string().required(),
@@ -136,21 +156,7 @@ export const schema = configure({
         pre_load_attributes: a.string(),
         title: a.string().required(),
         description: a.string(),
-        question_type: a.enum([
-            "photo",
-            "dropdown",
-            "multiple_dropdown",
-            "radiobox",
-            "input",
-            "text",
-            "datepicker",
-            "button",
-            "checkbox_button",
-            "contained_button_color",
-            "switch",
-            "toggle_button",
-            "dialog_input"
-        ]),
+        question_type: a.ref("Template_questionQuestion_type"),
         question_values: a.string(),
         post_load_attributes: a.string(),
         optional_flag: a.integer(),
@@ -160,6 +166,16 @@ export const schema = configure({
         created: a.datetime().required(),
         created_by: a.string(),
         trigger_value: a.string()
+    }).identifier([
+        "id"
+    ]),
+    "transactions": a.model({
+        id: a.string().required(),
+        gps_lat: a.float(),
+        gps_long: a.float(),
+        what3words: a.string(),
+        created: a.datetime().required(),
+        created_by: a.string().required()
     }).identifier([
         "id"
     ]),
@@ -178,24 +194,19 @@ export const schema = configure({
     }).identifier([
         "id"
     ]),
-    "template_permissions": a.model({
-        id: a.string().required(),
-        template_id: a.string().required(),
-        user_id: a.string().required(),
-        enabled_date: a.datetime(),
-        verified_date: a.datetime(),
-        created: a.datetime().required(),
-        created_by: a.string()
-    }).identifier([
-        "id"
-    ]),
-    "app_settings": a.model({
-        id: a.string().required(),
-        code: a.string().required(),
-        value: a.string().required(),
-        created: a.datetime().required(),
-        created_by: a.string().required()
-    }).identifier([
-        "id"
+    Template_questionQuestion_type: a.enum([
+        "photo",
+        "dropdown",
+        "multiple_dropdown",
+        "radiobox",
+        "input",
+        "text",
+        "datepicker",
+        "button",
+        "checkbox_button",
+        "contained_button_color",
+        "switch",
+        "toggle_button",
+        "dialog_input"
     ])
 });

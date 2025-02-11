@@ -296,6 +296,23 @@ export default function DisplayUser(props) {
 		return new Date(value);
 	  }
 
+  const saveTransaction = async(lat, long, what3words) => {
+    const now = new Date();
+    const { errors, data: items } = await client.models.transactions.create({
+      id: props.transaction,
+      gps_lat: lat,
+      gps_long: long,
+      what3words: what3words,
+      created: now,
+      created_by: props.userId		
+    });
+    if (errors) {
+      setTheSeverity("error");
+      setAlertMessage(errors[0].message);
+      setIsAlert(true);
+    }
+  }
+
   const saveResults = async(id, value, type, file, lat, long, what3words) => {
     if (file != null) {
       try {
@@ -342,6 +359,23 @@ export default function DisplayUser(props) {
       event.preventDefault();
  //     const formData = new FormData(event.currentTarget);
  //     const formJson = Object.fromEntries((formData as any).entries());
+      var lt = null;
+      var lg = null;
+      var w3w = null;
+      results.map(comp => {
+        if (comp.type == 'photo') {
+          lt = comp.lat;
+          lg = comp.long;
+          w3w = comp.what3words; 
+        } else {
+          if (lt == null) {
+            lt = comp.lat;
+            lg = comp.long;
+            w3w = comp.what3words; 
+          }
+        }
+      });
+      saveTransaction(lt, lg, w3w);
       results.map(comp => 
         comp.type != 'dialog_input' ? 
           (comp.value != null ?
