@@ -97,6 +97,7 @@ function EditToolbar(props: EditToolbarProps) {
 				middleName: item.middle_name,
 				lastName: item.last_name,
 				activeDate: getDate(item.active_date),
+				userStatus: 'User added...',
 				notes: item.notes,
 				isNew: false
 			} :
@@ -111,6 +112,7 @@ function EditToolbar(props: EditToolbarProps) {
 			  middleName: item.middle_name,
 			  lastName: item.last_name,
 			  activeDate: getDate(item.active_date),
+			  userStatus: 'User added...',
 			  notes: item.notes,
 			  isNew: false
 			},
@@ -205,7 +207,7 @@ export default function UserGrid(props) {
 
 	  const [access, setAccess] = useState('');
 	  const [secret, setSecret] = useState('');
-	  const [region, setRegion] = useState('');
+	  const [region, setRegion] = useState(null);
 	  const [ourWord, setOurWord] = useState('');
 	  const [userPoolId, setUserPoolId] = useState('');
 
@@ -303,24 +305,52 @@ export default function UserGrid(props) {
 		return new Date(formattedDate);
 	  }
 	
+	  const getUserStatus = async (data) => {
+		const cognito = new CognitoIdentityProvider({
+			region: region,
+			credentials: {
+				accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),
+				secretAccessKey: CryptoJS.AES.decrypt(secret, ourWord).toString(CryptoJS.enc.Utf8),
+			}
+		});
+		var dataStatus = [];
+		for (var i=0; i < data.length; i++) {
+			var userStatus = null;
+			try {
+				const response = await cognito.adminGetUser({
+					UserPoolId: userPoolId,
+					Username: data[i].email
+				});
+				userStatus = response.UserStatus;
+			} catch (error) {
+				console.log(error);
+			}
+			dataStatus.push({
+				id: data[i].id,
+				company: data[i].company,
+				divisionId: data[i].divisionId,
+				division: data[i].division,
+				companyId: data[i].companyId,
+				email: data[i].email,
+				firstName: data[i].firstName,
+				lastName: data[i].lastName,
+				middleName: data[i].middleName,
+				activeDate: data[i].activeDate,
+				deactiveDate: data[i].deactiveDate,
+				userStatus: userStatus,
+				notes: data[i].notes,
+				created: data[i].created,
+				createdBy: data[i].createdBy,
+			})
+		}
+		setUserData(dataStatus);
+		setRows(dataStatus);
+	  }
+
 	  function translateUserTemplates (items) {
 		const item = JSON.parse(items[0]);
-		var data = [{id: item.id, 
-			company: item.company, 
-			divisionId: item.division_id,
-			division: item.division,
-			companyId: item.company_id,
-			email: item.email_address,
-			firstName: item.first_name,
-			lastName: item.last_name,
-			middleName: item.middle_name,
-			activeDate: getDate(item.active_date),
-			deactiveDate: getDate(item.deactive_date),
-			notes: item.notes,
-			created: item.created,
-			createdBy: item.created_by,
-		  }];
-		for (var i=1; i < items.length; i++) {
+		var data = [];
+		for (var i=0; i < items.length; i++) {
 		  const item = JSON.parse(items[i]);
 		  data.push(
 			{id: item.id, 
@@ -334,6 +364,7 @@ export default function UserGrid(props) {
 				middleName: item.middle_name,
 				activeDate: getDate(item.active_date),
 				deactiveDate: getDate(item.deactive_date),
+				userStatus: null,
 				notes: item.notes,
 				created: item.created,
 				createdBy: item.created_by,}
@@ -366,8 +397,7 @@ export default function UserGrid(props) {
 				const db = JSON.stringify(items);
 				const userItems = JSON.parse(db);
 				const data = translateUserTemplates(userItems);
-				setUserData(data);
-				setRows(data);
+				getUserStatus(data);
 			  }
 		}
 		if (isLoading) {
@@ -377,12 +407,14 @@ export default function UserGrid(props) {
 
 	useEffect(() => {
 		getAppSettings();
-		getUsers(isAdmin, props.filter != null);
-		if (props.filter == null) {
-			allCompanies();
+		if (region) {
+			getUsers(isAdmin, props.filter != null);
+			if (props.filter == null) {
+				allCompanies();
+			}
+			allDivisions();
 		}
-		allDivisions();
-	  }, []);
+	  }, [region]);
 
 	  function handleRowClick (params, event, details) {
 	}
@@ -775,6 +807,7 @@ export default function UserGrid(props) {
 				return 'grid-alert';
 			},
 			editable: false  },
+		{ field: 'userStatus', type: 'string', headerName: 'User Status', width: 250, headerClassName: 'grid-headers', editable: false},
 		{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
 			type: 'actions',
 			width: 80,
