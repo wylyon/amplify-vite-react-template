@@ -221,7 +221,8 @@ export default function UserGrid(props) {
 			return;   
 		  }
 		  setOurWord(what3words[0].value + what3words[0].value);
-		  const userPool = items.filter(map => map.code.includes('USERPOOLID'));
+		  const domain = window.location.hostname;
+		  const userPool = domain.includes('localhost') ? items.filter(map => map.code.includes('USERPOOLID-DEV')) : items.filter(map => map.code.includes('USERPOOLID'));
 		  if (userPool.length < 1) {
 			setError("Cant get userPool for Admin.");
 			setOpenError(true);    
