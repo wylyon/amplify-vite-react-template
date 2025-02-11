@@ -73,7 +73,7 @@ export default function PopupNewUser(props) {
       }
       setOurWord(what3words[0].value + what3words[0].value);
       const domain = window.location.hostname;
-      const userPool = domain.includes('localhost') ? items.filter(map => map.code.includes('USERPOOLID-DEV')) : items.filter(map => map.code.includes('USERPOOLID'));
+      const userPool = domain.includes('localhost') ? items.filter(map => map.code.includes('USERPOOLID-DEV')) : items.filter(map => map.code.includes('USERPOOLID-PRD'));
       if (userPool.length < 1) {
         setError("Cant get userPool for Admin.");
         setOpenError(true);    
