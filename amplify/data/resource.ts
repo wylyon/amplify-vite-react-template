@@ -296,7 +296,67 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     })
     .returns(a.json().array())
     .handler(a.handler.inlineSql("DELETE from logistics.user WHERE division_id = :divisionId;"))
-    .authorization(allow => allow.publicApiKey())
+    .authorization(allow => allow.publicApiKey()),
+    backupTemplatePermissionsByUserId: a.mutation().arguments({
+      userId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.template_permissions_delete SELECT * FROM logistics.template_permissions WHERE user_id = :userId;"))
+    .authorization(allow => allow.publicApiKey()),
+    backupTemplatePermissionsByTemplateId: a.mutation().arguments({
+      templateId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.template_permissions_delete SELECT * FROM logistics.template_permissions WHERE template_id = :templateId;"))
+    .authorization(allow => allow.publicApiKey()),
+    backupAdminById: a.mutation().arguments({
+      id: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.admin_delete SELECT * FROM logistics.admin WHERE id = :id;"))
+    .authorization(allow => allow.publicApiKey()),
+    backupUserById: a.mutation().arguments({
+      id: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.user_delete SELECT * FROM logistics.user WHERE id = :id;"))
+    .authorization(allow => allow.publicApiKey()),
+    backupResultsByTemplate: a.mutation().arguments({
+      templateId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.question_result_delete (SELECT * FROM logistics.question_result WHERE template_question_id in (SELECT id FROM logistics.template_question WHERE template_id = :templateId));"))
+    .authorization(allow => allow.publicApiKey()),
+    backupQuestionsByTemplate: a.mutation().arguments({
+      templateId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.template_question_delete SELECT * FROM logistics.template_question WHERE template_id = :templateId;"))
+    .authorization(allow => allow.publicApiKey()),
+    backupTemplateById: a.mutation().arguments({
+      id: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.template_delete SELECT * FROM logistics.template WHERE id = :id;"))
+    .authorization(allow => allow.publicApiKey()),
+    backupTemplateByDivision: a.mutation().arguments({
+      divisionId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.template_delete SELECT * FROM logistics.template WHERE division_id = :divisionId;"))
+    .authorization(allow => allow.publicApiKey()),
+    backupUserByDivision: a.mutation().arguments({
+      divisionId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.user_delete SELECT * FROM logistics.user WHERE division_id = :divisionId;"))
+    .authorization(allow => allow.publicApiKey()),
+    backupDivisionById: a.mutation().arguments({
+      id: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.division_delete SELECT * FROM logistics.division WHERE id = :id;"))
+    .authorization(allow => allow.publicApiKey()),
   })
 
 const schema = a.schema({

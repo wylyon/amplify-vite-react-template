@@ -208,5 +208,20 @@ export const schema = configure({
         "switch",
         "toggle_button",
         "dialog_input"
+    ]),
+    Template_question_deleteQuestion_type: a.enum([
+        "photo",
+        "dropdown",
+        "multiple_dropdown",
+        "radiobox",
+        "input",
+        "text",
+        "datepicker",
+        "button",
+        "checkbox_button",
+        "contained_button_color",
+        "switch",
+        "toggle_button",
+        "dialog_input"
     ])
 });
