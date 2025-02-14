@@ -40,9 +40,14 @@ function App() {
   };
 
   const fetchLogin = async () => {
-    const { email } = await fetchUserAttributes();
-    setLoginId(email);
-    return email;
+    try {
+      const { email } = await fetchUserAttributes();
+      setLoginId(email);
+      return email;
+    } catch (error) {
+      setLoginId('');
+      await signOut();
+    }
   }
 
   const logOut = async() => {

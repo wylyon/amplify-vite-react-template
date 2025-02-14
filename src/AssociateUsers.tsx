@@ -39,22 +39,9 @@ export default function AssociateUsers(props) {
   const [filtered, setFiltered] = useState('');
   const [templatePermissions, setTemplatePermissions] = useState<Schema["template_permissions"]["type"][]>([]);
 
-  function translateUserPermission (item) {
-    const data = [{id: item.id, firstName: item.first_name, lastName: item.last_name, templateUserId: item.template_user_id,
-      enabledDate: item.enabled_date, verifiedDate: item.verified_date, emailAddress: item.email_address}];
-    return data;
-  }
-
   function translateUserPermissions (items) {
-    var item = JSON.parse(items[0]);
-    var data = [{id: item.id, 
-      firstName: item.first_name, 
-      lastName: item.last_name, 
-      templateUserId: item.template_user_id,
-      enabledDate: item.enabled_date, 
-      verifiedDate: item.verified_date, 
-      emailAddress: item.email_address}];
-    for (var i=1; i < items.length; i++) {
+    var data = [];
+    for (var i=0; i < items.length; i++) {
       const item = JSON.parse(items[i]);
       data.push(
         {id: item.id, 
@@ -77,11 +64,7 @@ export default function AssociateUsers(props) {
     if (Array.isArray(items) && items.length > 0) {
       const db = JSON.stringify(items);
       const userItems = JSON.parse(db);
-      if (items.length < 2) {
-        setUserData(translateUserPermission (userItems));
-      } else {
-        setUserData(translateUserPermissions (userItems));
-      }
+      setUserData(translateUserPermissions (userItems));
     }
   };
 

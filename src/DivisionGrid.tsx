@@ -171,12 +171,21 @@ export default function DivisionGrid(props) {
 	const [region, setRegion] = useState('');
 	const [ourWord, setOurWord] = useState('');
 	const [userPoolId, setUserPoolId] = useState('');
+	const [isBackups, setIsBackups] = useState(true);
 
 	const getAppSettings = async() => {
 		const { data: items, errors } = await client.models.app_settings.list();
 		if (errors) {
 		  alert(errors[0].message);
 		} else {
+			const backupDeletes = items.filter(map => map.code == 'BACKUP');
+			if (backupDeletes.length < 1) {
+				setIsBackups(false);
+			} else {
+				if (backupDeletes[0].value != 'true') {
+					setIsBackups(false);
+				}
+			}
 		  const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY0'));
 		  if (what3words.length < 1) {
 			setError("Cant get credentials for Admin.");
@@ -407,6 +416,41 @@ export default function DivisionGrid(props) {
 		}
 	}
 
+	const handleDeletePrep = async(id) => {
+		if (isBackups) {
+			const { errors: err, data: items } =
+				await client.mutations.backupDivisionById({
+					id: id
+				});
+			await client.mutations.backupTemplateByDivision({
+				divisionId: id
+			});
+			await client.mutations.backupUserByDivision({
+				divisionId: id
+			});
+			const { errors: templateErrors, data: templateItems } = await client.queries.listTemplateByDivisionId({
+				divisionId: id
+			})
+			if (templateErrors) {
+			} else {
+				for (var indx = 0; indx < templateItems.length; indx++) {
+					await client.mutations.backupTemplatePermissionsByTemplateId({
+						templateId: templateItems[indx].id
+					});
+					await client.mutations.backupResultsByTemplate({
+						templateId: templateItems[indx].id
+					});
+					await client.mutations.backupQuestionsByTemplate({
+						templateId: templateItems[indx].id
+					});
+				}
+			}
+			handleDeleteRow(id);
+		} else {
+			handleDeleteRow(id);
+		}
+	}
+
 	const handleAddRow = async(newRow:GridRowModel) => {
 		const now = new Date();
 		const companyArr = newRow.company.split("|");
@@ -464,7 +508,7 @@ export default function DivisionGrid(props) {
 		setOpen(false);
 		setError('');
 		setRows(rows.filter((row) => row.id !== id));
-		handleDeleteRow(id);
+		handleDeletePrep(id);
 	};	
 
 	const handleDelete = (id: GridRowId) => () => {

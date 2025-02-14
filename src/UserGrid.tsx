@@ -210,12 +210,21 @@ export default function UserGrid(props) {
 	  const [region, setRegion] = useState(null);
 	  const [ourWord, setOurWord] = useState('');
 	  const [userPoolId, setUserPoolId] = useState('');
+	  const [isBackups, setIsBackups] = useState(true);
 
 	  const getAppSettings = async() => {
 		const { data: items, errors } = await client.models.app_settings.list();
 		if (errors) {
 		  alert(errors[0].message);
 		} else {
+			const backupDeletes = items.filter(map => map.code == 'BACKUP');
+			if (backupDeletes.length < 1) {
+				setIsBackups(false);
+			} else {
+				if (backupDeletes[0].value != 'true') {
+					setIsBackups(false);
+				}
+			}
 		  const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY0'));
 		  if (what3words.length < 1) {
 			setError("Cant get credentials for Admin.");
@@ -543,6 +552,17 @@ export default function UserGrid(props) {
 		}
 	}
 
+	const deletePrepAllReferences = async(id, emailAddress) => {
+		if (isBackups && !isAdmin) {
+			const { errors, data } = await client.mutations.backupTemplatePermissionsByUserId ({
+				userId: id
+			});
+			deleteAllReferences(id, emailAddress);
+		} else {
+			deleteAllReferences(id, emailAddress);
+		}
+	}
+
 	const handleDeleteRow = async(id) => {
 		const { errors, data: deletedData } = 
 		(isAdmin) ?
@@ -557,7 +577,23 @@ export default function UserGrid(props) {
 			setOpen(true);
 		}
 		const row = rows.filter((row) => row.id === id);
-		deleteAllReferences(id, row[0].email);
+		deletePrepAllReferences(id, row[0].email);
+	}
+
+	const handleDeletePrep = async(id) => {
+		if (isBackups) {
+			const { errors: err, data: items } =
+			(isAdmin) ?
+				await client.mutations.backupAdminById({
+					id: id
+				}) :
+				await client.mutations.backupUserById({
+					id: id
+				});
+			handleDeleteRow(id);
+		} else {
+			handleDeleteRow(id);
+		}
 	}
 
 	const handleAddRow = async(newRow:GridRowModel) => {
@@ -667,7 +703,7 @@ export default function UserGrid(props) {
 		setOpen(false);
 		setError('');
 		setRows(rows.filter((row) => row.id !== id));
-		handleDeleteRow(id);
+		handleDeletePrep(id);
 	};	
 
 	const handleDelete = (id: GridRowId) => () => {

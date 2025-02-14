@@ -213,6 +213,67 @@ export default function TemplateGrid(props) {
 	  const [rows, setRows] = useState<GridRowsProp>([]);
 	  const [filter, setFilter] = useState(props.filter);
 	  const [filtered, setFiltered] = useState<Schema["template_question"]["type"][]>([]);
+	  const [access, setAccess] = useState('');
+	  const [secret, setSecret] = useState('');
+	  const [region, setRegion] = useState(null);
+	  const [ourWord, setOurWord] = useState('');
+	  const [userPoolId, setUserPoolId] = useState('');
+	  const [isBackups, setIsBackups] = useState(true);
+
+	  const getAppSettings = async() => {
+		const { data: items, errors } = await client.models.app_settings.list();
+		if (errors) {
+		  alert(errors[0].message);
+		} else {
+			const backupDeletes = items.filter(map => map.code == 'BACKUP');
+			if (backupDeletes.length < 1) {
+				setIsBackups(false);
+			} else {
+				if (backupDeletes[0].value != 'true') {
+					setIsBackups(false);
+				}
+			}
+		  const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY0'));
+		  if (what3words.length < 1) {
+			setError("Cant get credentials for Admin.");
+			setOpenError(true);    
+			return;   
+		  }
+		  setOurWord(what3words[0].value + what3words[0].value);
+		  const domain = window.location.hostname;
+		  const userPool = domain.includes('localhost') ? items.filter(map => map.code.includes('USERPOOLID-DEV')) : items.filter(map => map.code.includes('USERPOOLID-PRD'));
+		  if (userPool.length < 1) {
+			setError("Cant get userPool for Admin.");
+			setOpenError(true);    
+			return;   
+		  }
+		  setUserPoolId(userPool[0].value);
+		  const creds = items.filter(map => map.code.includes('ACCESS'));
+		  if (creds.length < 1) {
+			setError("Cant get access credentials for Admin.");
+			setOpenError(true);
+		  } else {
+			const accessId = creds[0].value;
+			const secret = items.filter(map => map.code.includes('SECRET'));
+			if (secret.length < 1) {
+			  setError("Cant get secret credentials for Admin.");
+			  setOpenError(true);
+			} else {
+			  const secretId = secret[0].value;
+			  const region = items.filter(map => map.code.includes('REGION'));
+			  if (region.length < 1) {
+				setError("Cant get region credentials for Admin.");
+				setOpenError(true);
+			  } else {
+				const regionId = region[0].value;
+				setAccess(accessId);
+				setSecret(secretId);
+				setRegion(regionId);
+			  }
+			}
+		  }
+		}
+	  }
 
 	  const getQuestionsByTemplate = async (tempId) => {
 		const { data: items, errors } = await client.queries.listQuestionsByTemplateId({
@@ -341,6 +402,7 @@ export default function TemplateGrid(props) {
 	  };
 
 	useEffect(() => {
+		getAppSettings();
 		getTemplates(false);
 		allDivisions();
 	  }, []);
@@ -370,6 +432,18 @@ export default function TemplateGrid(props) {
 		getTemplates(true);
 	}
 
+	const handleDeleteCascade = async(id) => {
+		await client.mutations.deletePermissionsByTemplateId({
+			templateId: id
+		  });
+		  await client.mutations.deleteResultsByTemplateId({
+			  templateId: id
+			});
+			await client.mutations.deleteQuestionByTemplateId({
+			  templateId: id
+			});
+	}
+
 	const handleDeleteRow = async(id) => {
 		const { errors, data: deletedData } = await client.models.template.delete({
 			id: id
@@ -378,15 +452,32 @@ export default function TemplateGrid(props) {
 			setError(errors[0].message);
 			setOpen(true);
 		} else {
-			await client.mutations.deletePermissionsByTemplateId({
-			  templateId: id
-			});
-			await client.mutations.deleteResultsByTemplateId({
-				templateId: id
-			  });
-			  await client.mutations.deleteQuestionByTemplateId({
-				templateId: id
-			  });
+			if (isBackups) {
+				await client.mutations.backupTemplatePermissionsByTemplateId({
+					templateId: id
+				});
+				await client.mutations.backupResultsByTemplate({
+					templateId: id
+				});
+				await client.mutations.backupQuestionsByTemplate({
+					templateId: id
+				});
+				handleDeleteCascade(id);
+			} else {
+				handleDeleteCascade(id);
+			}
+		}
+	}
+
+	const handlePreDeleteRow = async(id) => {
+		if (isBackups) {
+			const { errors: err, data: items } =
+				await client.mutations.backupTemplateById({
+					id: id
+				});
+			handleDeleteRow(id);
+		} else {
+			handleDeleteRow(id);
 		}
 	}
 
@@ -461,7 +552,7 @@ export default function TemplateGrid(props) {
 		setOpen(false);
 		setError('');
 		setRows(rows.filter((row) => row.id !== id));
-		handleDeleteRow(id);
+		handlePreDeleteRow(id);
 	};	
 
 	const handleDelete = (id: GridRowId) => () => {
