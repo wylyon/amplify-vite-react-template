@@ -1,5 +1,4 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
-import { getCreds } from "../functions/get-creds/resource";
 import { schema as generatedSqlSchema } from './schema.sql';
 
 const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey())
@@ -251,15 +250,6 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "actions_flag, notes, created, created_by, trigger_value FROM " +
       "logistics.template_question WHERE template_id = :templateId and deactive_date is null order by question_order;"
     )).authorization(allow => allow.publicApiKey()),
-    getCreds: a.query()
-    .arguments({})
-    .returns(a.customType({
-      k: a.string(),
-      s: a.string(),
-      r: a.string()
-    }))
-    .handler(a.handler.function(getCreds))
-    .authorization(allow => allow.publicApiKey()),
   }).addToSchema({
     deleteQuestionById: a.mutation().arguments({
       questionId: a.string().required()
