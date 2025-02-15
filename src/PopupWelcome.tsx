@@ -92,13 +92,13 @@ export default function PopupWelcome(props) {
 
   const client = generateClient<Schema>();
   const steps = ['Select your Profile', 'Build a Logging App', 'Setup Users for that Logging App'];
-  const descriptions = ['The first step is to complete your profile.   We have your email and company name.   Please give us a contact name', 
-    'Step 2 is to create a logging app to collect your data that you want captured.',
+  const descriptions = ['The first step is to complete your profile.   Please enter the name of the Company and a Contact, that will be associated with this account.', 
+    'Step 2 is to create a logging app to collect your data that you want captured.  Do not worry, you can always change or delete this later, but we want to walk you through how easy it is.',
     'Step 3 is define any users you want to run your application and capture their data.  Please note, this wizard will automatically add your email to this logging app, ' +
     'so you would only need to add other contributors.'];
 
   const isStepOptional = (step: number) => {
-    return step === 2 || step === 1;
+    return step === 2 ;
   };
 
   const isStepSkipped = (step: number) => {
@@ -161,18 +161,11 @@ export default function PopupWelcome(props) {
   };
 
   useEffect(() => {
-    if (props.companyName === null || props.companyName === '') {
-      setOpenName(true);
-    } else {
-      setName(props.companyName);
-    }
 	}, []);
-
   const handleCloseValues = () => {
     props.onClose();
     setOpen(false);
   }
-
   const handleSubmitValues = (item) => {
     props.onSubmit(item);
     setOpen(false);
@@ -277,10 +270,6 @@ export default function PopupWelcome(props) {
     setOpenError(true);
   }
 
-  const handleCloseName = () => {
-    setOpenName(false);
-  };
-
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
@@ -289,48 +278,16 @@ export default function PopupWelcome(props) {
     }));
   };
 
+  const handleNameChange = (e) => {
+    setName(e.target.value.toString());
+  }
+
   function createMarkup(dirty) {
     return { __html: dirty };
   }
 
   return (
     <React.Fragment>
-      <Dialog
-        open={openName}
-        onClose={handleCloseName}
-        PaperProps={{
-          component: 'form',
-          onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-            event.preventDefault();
-            const formData = new FormData(event.currentTarget);
-            const formJson = Object.fromEntries((formData as any).entries());
-            setName(formJson.name);
-            handleCloseName();
-          },
-        }}
-      >
-        <DialogTitle>Need Name</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Please enter a company name or personal name
-          </DialogContentText>
-          <TextField
-            autoFocus
-            required
-            margin="dense"
-            id="name"
-            name="name"
-            label="Company (or Personal Name)"
-            type="text"
-            fullWidth
-            variant="standard"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseValues} variant="contained" color="error">Cancel</Button>
-          <Button type="submit" variant="contained">Ok</Button>
-        </DialogActions>
-      </Dialog>
       <Dialog
         open={open}
         onClose={handleCloseValues}
@@ -400,18 +357,45 @@ export default function PopupWelcome(props) {
                     label="Primary Email Address"
                     type="email"
                     fullWidth
-                    variant="standard"
+                    variant="filled"
+                    slotProps={{
+                      input: {
+                        readOnly: true,
+                      },
+                    }}
                   />
-            <TextField
+            <Stack direction="row" spacing={2}>
+              { name == '' ? null : <TextField
+                      margin="dense"
+                      id="company"
+                      name="company"
+                      label="Company Name"
+                      type="text"
+                      value={name}
+                      variant="filled"
+                      slotProps={{
+                        input: {
+                          readOnly: true,
+                        },
+                      }}
+                    />      } 
+              { formData.name == '' ? null :
+                    <TextField
                     margin="dense"
-                    id="company"
-                    name="company"
-                    label="Company Name"
+                    id="companyName"
+                    name="companyName"
+                    slotProps={{
+                      input: {
+                        readOnly: true,
+                      },
+                    }}
+                    label="Contact Name"
                     type="text"
-                    value={name}
-                    fullWidth
-                    variant="standard"
-                  />             
+                    value={formData.name}
+                    variant="filled"
+                  />            
+              }
+            </Stack>      
             <Box sx={{ width: '100%', border: '1px dashed grey' }}>
               <Stepper activeStep={activeStep}>
                 {steps.map((label, index) => {
@@ -449,7 +433,11 @@ export default function PopupWelcome(props) {
                 {activeStep == 2 ?
                 <Typography variant="body1">Note...Add Users button will be greyed out if no logging app is created, since users are tied to a logging app.</Typography>
                 : null}
-                {activeStep == 1 || activeStep == 2 ?
+                {activeStep == 1 ?
+                <Box>
+                  <br/><Typography variant="body1">NOTE:  You will be able to create more Logging Apps once you are in the main admin page.</Typography> 
+                </Box> : null}
+                {activeStep == 2 ?
                 <box>
                   <br/><Typography variant="body1">NOTE:  This is an optional step, as you can create a Logging App or Users later.</Typography> 
                 </box>
@@ -458,7 +446,24 @@ export default function PopupWelcome(props) {
                 {activeStep == 0 ?
                 <Box>
                   <TextField
-                      autoFocus
+                    autoFocus
+                    required
+                    margin="dense"
+                    id="name"
+                    name="name"
+                    value={name}
+                    label="Company (or Personal Name)"
+                    type="text"
+                    slotProps={{
+                      inputLabel: {
+                        shrink: true,
+                      },
+                    }}
+                    fullWidth
+                    variant="standard"
+                    onChange={handleNameChange}
+                  />
+                  <TextField
                       margin="dense"
                       required
                       id="name"
@@ -495,22 +500,6 @@ export default function PopupWelcome(props) {
                       fullWidth
                       variant="standard"
                     />
-                  <TextField
-                      margin="dense"
-                      id="templateDescription"
-                      name="templateDescription"
-                      label="Note (Optional)"
-                      slotProps={{
-                        inputLabel: {
-                          shrink: true,
-                        },
-                      }}
-                      type="text"
-                      onChange={handleFormChange}
-                      value={formData.templateDescription}
-                      fullWidth
-                      variant="standard"
-                    />
                     <Badge badgeContent={num} color="primary">
                       <Button variant="contained" disabled={formData.templateName == ''} onClick={handleTemplateWizard} startIcon={<BuildIcon />}>Build App</Button>
                   </Badge>
@@ -540,7 +529,10 @@ export default function PopupWelcome(props) {
                       Skip
                     </Button>
                   )}
-                  <Button onClick={activeStep === steps.length - 1 ? handleFinish : handleNext} variant="contained" color={activeStep === steps.length - 1 ? 'success' : 'primary'} disabled={formData.name == ''}>
+                  <Button onClick={activeStep === steps.length - 1 ? handleFinish : handleNext} 
+                    variant="contained" 
+                    color={activeStep === steps.length - 1 ? 'success' : 'primary'} 
+                    disabled={(activeStep == 0 && formData.name == '') || (activeStep == 1 && formData.templateName == '')}>
                     {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
                   </Button>
                 </Box>
