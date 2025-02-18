@@ -75,6 +75,7 @@ export default function SetupTemplate(props) {
   const [isWizard, setIsWizard] = useState(false);
   const [openSetup, setOpenSetup] = useState(true);
   const [isAdvanced, setIsAdvanced] = useState(false);
+  const [isValueFocus, setIsValueFocus] = useState(false);
 
   const handleClickOpen = () => {
     if (formData.questionValues == '') {
@@ -92,9 +93,9 @@ export default function SetupTemplate(props) {
         setDialogPrompt(newText);
       }
     }
-    
     setOpen(true);
   };
+
 
   const handleClose = () => {
     setOpen(false);
@@ -640,6 +641,10 @@ export default function SetupTemplate(props) {
     getQuestionsByTemplate(props.templateId, false);
   }, []);
 
+  const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
+    id: false
+  });
+
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 70 },
     { field: 'title', headerName: 'Question', width: 130 },
@@ -884,6 +889,8 @@ export default function SetupTemplate(props) {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
+            {props.isWizard ?
+            <Typography variant="body1">NOTE:  In this step you will be adding the questions that your end user will complete for you.</Typography> : null }
       <Container>
         <div>
           {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
@@ -894,11 +901,8 @@ export default function SetupTemplate(props) {
             <h4>Add Questions/Controls: <br/>
             {props.isWizard ? null :
             <FormControlLabel control={<Checkbox checked={isAdvanced} onChange={handleAdvanced} inputProps={{ 'aria-label' : 'controlled'}} />} label="Show Advanced Controls" /> }
-              <ButtonGroup variant="contained" aria-label="Question Input group" 
-                sx={{ float: 'right'}}>
-                <Button variant="contained" color="success" onClick={handleOnNew}>Add Wizard</Button>
-                <Button variant="contained" color="success" onClick={handleOnSave}>Save</Button>
-              </ButtonGroup>
+            {props.isWizard ? null :
+              <Button variant="contained" color="success" onClick={handleOnNew}>Add Wizard</Button> }
             </h4>
             <FormControl>
               <Stack direction="row" spacing={2}>
@@ -910,7 +914,9 @@ export default function SetupTemplate(props) {
                     name="questionType" >
                       {props.isWizard || !isAdvanced ? 
                       <Paper elevation={3}>
+                        <Tooltip title="Select a Control here.   A control is the type of input you want your user to use." placement="top">
                         <Typography variant="h6" alignContent="center">Step 1: Select Control</Typography>
+                        </Tooltip>
                         <Tooltip title="Select this to input a photo" placement="top">
                         <FormControlLabel value="photo"
                           control={(formData.questionType=="photo") ? <Radio checked="true" size="small"/> : <Radio size="small"/>} 
@@ -1021,10 +1027,19 @@ export default function SetupTemplate(props) {
                   {props.isWizard || !isAdvanced ?
                   <Typography variant="h6" alignContent="center">Step 2: Enter Details</Typography>
                    : null}
-                  <Tooltip title="Enter here a title of what this question is about." placement="top">
-                  <TextField id="question_title" name="title" value={formData.title} 
-                    label="Question Title" variant="outlined" required="true" size="small" 
-                    sx={{ width: '250px'}} onChange={handleChange}/></Tooltip>
+                  <Stack direction="row" spacing={3}>
+                    <Tooltip title="Enter here a title of what this question is about." placement="top">
+                      <TextField id="question_title" name="title" value={formData.title} 
+                        label="Question Title" variant="outlined" required="true" size="small" 
+                        sx={{ width: '250px'}} onChange={handleChange}/>
+                    </Tooltip>
+                    <Button variant="contained" color="success" 
+                      disabled={(formData.title == '' && whichControl == '') ||
+                        (whichControl == 'Dropdown' && (formData.title == '' || formData.questionValues == '' ) ||
+                        (whichControl.startsWith('Toggle') && (formData.title == '' || formData.questionValues == '')))
+                      } 
+                      onClick={handleOnSave}>Add</Button>
+                  </Stack>
                   <FormLabel id="filler1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FormLabel>
                   {(props.isWizard || !isAdvanced) && formData.questionOrder > 0 && !isUpdate ? null
                    :
@@ -1041,18 +1056,29 @@ export default function SetupTemplate(props) {
                   <br />
                   {props.isWizard || !isAdvanced ? 
                   <Box>
-                    <Tooltip title="Enter here any special HTML formatting, or text you want processed BEFORE control is rendered." placement="right">
+                    <Tooltip 
+                      title={props.isWizard ? "Enter instructions, label, or text you want before this control" : "Enter here any special HTML formatting, or text you want shown BEFORE control is rendered."}
+                      placement="right">
                     <TextField id="question_pre" name="preLoadAttributes" value={formData.preLoadAttributes} 
-                      label="Enter any label before your control" variant="outlined" size="small" multiline
+                      label="Enter any instruction/label before your control" variant="outlined" size="small" multiline
                       maxRows={4} sx={{ width: "350px"}} 
-                      onClick={handleClickOpenPre} onChange={handleChange}/></Tooltip>
-                    <br />  
-                    <Tooltip title="Enter here control values (ie. dropdown or radio values)." placement="right">
-                    <TextField id="question_values" name="questionValues" value={formData.questionValues} 
-                      label="dropdown/button list values" 
-                      disabled={isValuesDisabled} variant="outlined" size="small" multiline
-                      maxRows={4} sx={{ width: "350px"}} onClick={handleClickOpen} onChange={handleChange}/></Tooltip>   
-                    <br />
+                      onChange={handleChange}/></Tooltip>
+                    <br />  <br /> 
+                    {whichControl == '' ? null :
+                      <Tooltip title="Click here to set values (ie. dropdown or radio values)." placement="right">
+                        <Button variant="contained" disabled={isValuesDisabled} color="primary" onClick={handleClickOpen}>Set Values</Button>
+                      </Tooltip>  }
+                      {formData.questionValues == '' ? null :
+                        <TextField id="question_values" name="questionValues" value={formData.questionValues.split("|")} 
+                          label="dropdown/button list values" 
+                          slotProps={{
+                            input: {
+                              readOnly: true,
+                            },
+                          }}
+                          disabled={isValuesDisabled} variant="filled" size="small" multiline
+                          maxRows={4} />
+                      }  
                   </Box>
                   :
                   <Box>
@@ -1090,7 +1116,7 @@ export default function SetupTemplate(props) {
             <h3>{(props.name.length > 18) ? props.name.substring(0, 18) + "... Questions" : props.name + " Questions"}
               <ButtonGroup variant="contained" aria-label="Question View group"  sx={{ float: 'right'}}>
                 <Button variant="contained" disabled={!isDeleteActive} color="error" onClick={handleDelete}>Delete</Button>
-                <Button variant="contained" disabled={!isPreviewActive} color="success" onClick={handleClickOpenPreview}>Preview</Button>
+                <Button variant="contained" disabled={templateQuestion.length == 0} color="success" onClick={handleClickOpenPreview}>Preview</Button>
               </ButtonGroup>
             </h3>
              <Paper sx={{ height: 400, width: '100%' }}>
@@ -1098,6 +1124,10 @@ export default function SetupTemplate(props) {
                 rows={templateQuestion}
                 columns={columns}
                 initialState={{ pagination: { paginationModel } }}
+                columnVisibilityModel={columnVisibilityModel}
+                onColumnVisibilityModelChange={(newRow) =>
+                  setColumnVisibilityModel(newRow)
+                }
                 pageSizeOptions={[5, 10]}
                 checkboxSelection
                 onRowClick={handleRowClick}

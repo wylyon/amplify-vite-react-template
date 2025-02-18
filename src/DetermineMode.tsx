@@ -61,9 +61,11 @@ export default function DetermineMode(props) {
       setWhat3WordsAPIKey(what3wordsAPI == null || what3wordsAPI.length < 1 ? null : what3wordsAPI[0].value);
     }
   }
-  const fetchAdmins = (emailId, items, isValid) => {
-    if (items.length < 1 || isSuperAdmin || mode != 9) {
-      return false;
+  const fetchAdmins = (emailId, items, isValid, isRecycle) => {
+    if (!isRecycle) {
+      if (items.length < 1 || isSuperAdmin || mode != 9) {
+        return false;
+      }
     }
     const filterAdmin = items.filter(comp => comp.email_address.includes(emailId));
     if (filterAdmin == null || filterAdmin.length < 1 || !filterAdmin[0].active_date) {
@@ -91,7 +93,9 @@ export default function DetermineMode(props) {
         return false;
       }
     }
-    setOpen(true);
+    if (isMobile()) {
+      setOpen(true);
+    } 
     setMode(0);
     return false;
   };
@@ -104,7 +108,19 @@ export default function DetermineMode(props) {
       setIsDisabledUser(true);
     } else {
       setAdmin(items);
-      fetchAdmins (userId, items, isValid);
+      fetchAdmins (userId, items, isValid, false);
+    }
+  }
+
+  const allAdminsAfterWelcome = async (isValid, userId) => {
+    const { data: items, errors } = await client.models.admin.list();
+    if (errors) {
+      alert(errors[0].message);
+      setDisableMsg("Cannot access Admins.");
+      setIsDisabledUser(true);
+    } else {
+      setAdmin(items);
+      fetchAdmins (userId, items, isValid, true);
     }
   }
 
@@ -139,6 +155,11 @@ export default function DetermineMode(props) {
   const handleOnCancel = (e) => {
     props.onSubmitChange(false);
   };
+
+  const handleOnDone = (e) => {
+    setIsValidUser(true);
+    allAdminsAfterWelcome(true, props.userId);
+  }
 
   const handleSuperClose = () => {
     setOpen(false);
@@ -228,7 +249,7 @@ export default function DetermineMode(props) {
       </List>
     </Dialog>
     {isDisabledUser && <DisableMode userId={props.userId} onSubmitChange={handleOnCancel} message={disableMsg} /> }
-    {!isDisabledUser && mode == 2 && <PopupWelcome userId={props.userId} companyName={props.companyName} onClose={handleWelcomeClose} onDone={handleOnCancel} />}
+    {!isDisabledUser && mode == 2 && <PopupWelcome userId={props.userId} companyName={props.companyName} onClose={handleWelcomeClose} onDone={handleOnDone} />}
     {!isDisabledUser && mode == 0 && <AdminMode userId={props.userId} googleAPI={googleAPIKey} onSubmitChange={handleOnCancel} 
 	          companyId={filtered.length> 0 ? filtered[0].company_id : null} isSuperAdmin={isSuperAdmin} adminLength={admin.length} />}
     {!isDisabledUser && mode == 1 && <UserMode userId={props.userId} what3words={what3WordsAPIKey} onSubmitChange={handleOnCancel} />}        

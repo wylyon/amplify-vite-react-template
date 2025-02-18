@@ -57,7 +57,6 @@ export default function PopupWelcome(props) {
   const [error, setError] = useState('');
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set<number>());
-  const [isWizard, setIsWizard] = useState(false);
   const [isUserWizard, setIsUserWizard] = useState(false);
   const [textType, setTextType] = useState('password');
   const [confirm, setConfirm] = useState(false);
@@ -91,14 +90,15 @@ export default function PopupWelcome(props) {
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const client = generateClient<Schema>();
-  const steps = ['Select your Profile', 'Build a Logging App', 'Setup Users for that Logging App'];
+  const steps = ['Select your Profile', 'Build a Logging App - Define', 'Build a Logging App - Create', 'Setup Users for that Logging App'];
   const descriptions = ['The first step is to complete your profile.   Please enter the name of the Company and a Contact, that will be associated with this account.', 
-    'Step 2 is to create a logging app to collect your data that you want captured.  Do not worry, you can always change or delete this later, but we want to walk you through how easy it is.',
-    'Step 3 is define any users you want to run your application and capture their data.  Please note, this wizard will automatically add your email to this logging app, ' +
+    'Step 2 is to define a logging app to collect your data that you want captured.  Do not worry, you can always change or delete this later, but we want to walk you through how easy it is.',
+    'Step 3 is to create the logging app controls and characteristics.',
+    'Step 4 is define any users you want to run your application and capture their data.  Please note, this wizard will automatically add your email to this logging app, ' +
     'so you would only need to add other contributors.'];
 
   const isStepOptional = (step: number) => {
-    return step === 2 ;
+    return step === 6 ;
   };
 
   const isStepSkipped = (step: number) => {
@@ -110,7 +110,7 @@ export default function PopupWelcome(props) {
   }
 
   const handleNext = () => {
-    setPrevent(false);
+    setPrevent(true);
     let newSkipped = skipped;
     if (isStepSkipped(activeStep)) {
       newSkipped = new Set(newSkipped.values());
@@ -127,7 +127,7 @@ export default function PopupWelcome(props) {
   }
 
   const handleBack = () => {
-    setPrevent(false);
+    setPrevent(true);
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
@@ -211,12 +211,6 @@ export default function PopupWelcome(props) {
     handleSubmitValues(item);
 	}
 
-  const handleTemplateWizard = (e) => {
-    e.preventDefault();
-    setPrevent(true);
-    setIsWizard(true);
-  }
-
   const handleUserWizard = (e) => {
     e.preventDefault();
     setPrevent(true);
@@ -243,9 +237,13 @@ export default function PopupWelcome(props) {
   }
 
   function newQuestionSubmit (e) {
-    setIsWizard(false);
     setNum(e.length);
     setTemplateQuestion(e);
+    if (e.length == 0) {
+      setActiveStep(1);
+    } else {
+      setActiveStep(3);
+    }
   }
 
   const handlePasswordVisibility = (event) => {
@@ -322,19 +320,6 @@ export default function PopupWelcome(props) {
         {openError &&  <Alert severity="error" onClose={handleCloseError}>
               {error}
             </Alert>}
-        { isWizard && <SetupTemplate props={props} 
-                isWizard={true}
-                onSubmitChange={newQuestionSubmit} 
-                onSubmitAdd={newQuestionSubmit}
-                nextOrder={1}
-                name={formData.templateName}
-                templateQuestions = {templateQuestion}
-                templateId={formData.templateId}
-                divisionId={props.divisionId}
-                preLoadAttributes={''}
-                postLoadAttributes={''}
-                usePages={true}
-              />}
         { openGenerate && <PopupGenerate props={props} 
             onClose={generateClose} 
             userId={props.userId} 
@@ -395,6 +380,23 @@ export default function PopupWelcome(props) {
                     variant="filled"
                   />            
               }
+              { formData.templateName == '' ? null :
+                  <TextField
+                  required
+                  margin="dense"
+                  id="templateAppName"
+                  name="templateAppName"
+                  label="Logging App Title"
+                  slotProps={{
+                    input: {
+                      readOnly: true,
+                    },
+                  }}
+                  type="text"
+                  value={formData.templateName}
+                  variant="filled"
+                />              
+              }
             </Stack>      
             <Box sx={{ width: '100%', border: '1px dashed grey' }}>
               <Stepper activeStep={activeStep}>
@@ -429,20 +431,16 @@ export default function PopupWelcome(props) {
               </React.Fragment>
               ) : (
               <React.Fragment>
-                <Typography sx={{ mt: 2, mb: 1 }}>{descriptions[activeStep]}</Typography>
-                {activeStep == 2 ?
-                <Typography variant="body1">Note...Add Users button will be greyed out if no logging app is created, since users are tied to a logging app.</Typography>
-                : null}
+                {activeStep < 3 ?
+                  <Typography sx={{ mt: 2, mb: 1 }}>{descriptions[activeStep]}</Typography> :
+                  <Typography sx={{ mt: 2, mb: 1 }}>Step 4:  In this step you are going to add users who will be able to use the Logging App {formData.templateName} you are creating. <br />
+                    You can always add, delete, or change users in the admin page later.   Please note, anyone you add will get an invite to use the app in their email. <br />
+                    You will automatically be added to the Logging App {formData.templateName}, so you don't have to add yourself.</Typography> 
+                }
                 {activeStep == 1 ?
                 <Box>
                   <br/><Typography variant="body1">NOTE:  You will be able to create more Logging Apps once you are in the main admin page.</Typography> 
                 </Box> : null}
-                {activeStep == 2 ?
-                <box>
-                  <br/><Typography variant="body1">NOTE:  This is an optional step, as you can create a Logging App or Users later.</Typography> 
-                </box>
-                : null
-              }
                 {activeStep == 0 ?
                 <Box>
                   <TextField
@@ -500,12 +498,24 @@ export default function PopupWelcome(props) {
                       fullWidth
                       variant="standard"
                     />
-                    <Badge badgeContent={num} color="primary">
-                      <Button variant="contained" disabled={formData.templateName == ''} onClick={handleTemplateWizard} startIcon={<BuildIcon />}>Build App</Button>
-                  </Badge>
                 </Box>
                 : activeStep == 2 ?
+                  <SetupTemplate props={props} 
+                    isWizard={true}
+                    onSubmitChange={newQuestionSubmit} 
+                    onSubmitAdd={newQuestionSubmit}
+                    nextOrder={1}
+                    name={formData.templateName}
+                    templateQuestions = {templateQuestion}
+                    templateId={formData.templateId}
+                    divisionId={props.divisionId}
+                    preLoadAttributes={''}
+                    postLoadAttributes={''}
+                    usePages={true}
+                  />
+                : activeStep == 3 ?
                 <Box>
+                  <PopupAddUsers props={props} userId={props.userId} onClose={addedUsersClose} addedUsers={addedUsers} title={formData.templateName} />
                   <Badge badgeContent={numUsers} color="primary">
                     <Button variant="contained" disabled={num<1} onClick={handleUserWizard} startIcon={<PersonAddAltIcon />}>Add Users</Button> 
                   </Badge>
@@ -540,7 +550,7 @@ export default function PopupWelcome(props) {
             )}
           </Box>
         </Paper>
-        {activeStep == 2 || (activeStep == 1 && templateQuestion.length > 0) ?
+        {activeStep == 3 || templateQuestion.length > 0 ?
         <Paper elevation={3}>
           <Box sx={{ width: '400px' }}>
             <Typography variant="caption">Preview</Typography>

@@ -315,7 +315,7 @@ export default function PopupAddUsers(props) {
     <CssBaseline />
     <Dialog
       open={open}
-      maxWidth="lg"
+      maxWidth="sm"
       onClose={handleCloseValues}
       PaperProps={{
         component: 'form',
