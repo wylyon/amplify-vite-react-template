@@ -423,10 +423,10 @@ export default function PopupWelcome(props) {
               {activeStep === steps.length ? (
               <React.Fragment>
                 <Typography sx={{ mt: 2, mb: 1 }}>
-                  All steps completed and setup!  Press EXIT to use logit.pro.
+                  All steps completed and setup!  Press EXIT Wizard to use logit.pro.
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                  <Button variant="contained" onClick={handleDone}>Exit</Button>
+                  <Button variant="contained" onClick={handleDone}>Exit Wizard</Button>
                 </Box>
               </React.Fragment>
               ) : (
@@ -515,9 +515,8 @@ export default function PopupWelcome(props) {
                   />
                 : activeStep == 3 ?
                 <Box>
-                  <PopupAddUsers props={props} userId={props.userId} onClose={addedUsersClose} addedUsers={addedUsers} title={formData.templateName} />
                   <Badge badgeContent={numUsers} color="primary">
-                    <Button variant="contained" disabled={num<1} onClick={handleUserWizard} startIcon={<PersonAddAltIcon />}>Add Users</Button> 
+                    <Button variant="contained" disabled={num<1} onClick={handleUserWizard} startIcon={<PersonAddAltIcon />}>Add More Users</Button> 
                   </Badge>
                 </Box>
                 : null

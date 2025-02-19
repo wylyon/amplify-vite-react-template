@@ -76,6 +76,7 @@ export default function SetupTemplate(props) {
   const [openSetup, setOpenSetup] = useState(true);
   const [isAdvanced, setIsAdvanced] = useState(false);
   const [isValueFocus, setIsValueFocus] = useState(false);
+  const [sortDirection, setSortDirection] = useState('none');
 
   const handleClickOpen = () => {
     if (formData.questionValues == '') {
@@ -679,6 +680,14 @@ export default function SetupTemplate(props) {
     }
   }
 
+  const handleSort = (e) => {
+    if (e.target.checked) {
+      setSortDirection('ascending');
+    } else {
+      setSortDirection('none');
+    }
+  }
+
   const paginationModel = { page: 0, pageSize: 5 };
   const marks = [
     { value: 0, label: '0'},
@@ -818,12 +827,14 @@ export default function SetupTemplate(props) {
                   setDialogResult(textArr[0]);
                   setFormDataFields(textArr[0], 'values');
                 } else {
-                  var newText = textArr[0];
-                  for (var i = 1; i < textArr.length; i++) {
-                    newText = newText + "|" + textArr[i];
+                  const textArray = (sortDirection == 'none') ? textArr : textArr.sort();
+                  var newText = textArray[0];
+                  for (var i = 1; i < textArray.length; i++) {
+                    newText = newText + "|" + textArray[i];
                   }
                   setDialogResult(newText);
                   setFormDataFields(newText, 'values');
+                  setSortDirection('none');
                 }
               }
             }
@@ -848,17 +859,20 @@ export default function SetupTemplate(props) {
               label="Color"
             />
           :
-          <TextField
-            autoFocus
-            defaultValue={dialogPrompt}
-            required
-            margin="dense"
-            id="name"
-            name="textValues"
-            label={whichControl.startsWith('Dialog') ? "Value" : "Values"}
-            multiline={whichControl.startsWith('Dialog') ? false : true}
-            rows={whichControl.startsWith('Dialog') ? 1 : 8}
-          /> }
+          <Stack direction="row" spacing={2}>
+            <TextField
+              autoFocus
+              defaultValue={dialogPrompt}
+              required
+              margin="dense"
+              id="name"
+              name="textValues"
+              label={whichControl.startsWith('Dialog') ? "Value" : "Values"}
+              multiline={whichControl.startsWith('Dialog') ? false : true}
+              rows={whichControl.startsWith('Dialog') ? 1 : 8}
+            />
+            <FormControlLabel control={<Checkbox onClick={handleSort} />} label="Sort" />
+          </Stack> }
           {whichControl.startsWith("Button") || whichControl.startsWith("Color") ?
             <TextField
             autoFocus
@@ -1038,7 +1052,7 @@ export default function SetupTemplate(props) {
                         (whichControl == 'Dropdown' && (formData.title == '' || formData.questionValues == '' ) ||
                         (whichControl.startsWith('Toggle') && (formData.title == '' || formData.questionValues == '')))
                       } 
-                      onClick={handleOnSave}>Add</Button>
+                      onClick={handleOnSave}>{isUpdate ? 'Update' : 'Add'}</Button>
                   </Stack>
                   <FormLabel id="filler1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FormLabel>
                   {(props.isWizard || !isAdvanced) && formData.questionOrder > 0 && !isUpdate ? null
