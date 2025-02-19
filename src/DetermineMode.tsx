@@ -32,6 +32,7 @@ export default function DetermineMode(props) {
 
   var companyId = '';
   const [admin, setAdmin] = useState<Schema["admin"]["type"][]>([]);
+  const [filtered, setFiltered] = useState<Schema["admin"]["type"][]>([])
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isDisabledUser, setIsDisabledUser] = useState(false);
   const [userEmail, setUserEmail] = useState('');
@@ -107,6 +108,7 @@ export default function DetermineMode(props) {
       setDisableMsg("Cannot access Admins.");
       setIsDisabledUser(true);
     } else {
+      setFiltered(items.filter(comp => comp.email_address.includes(userEmail)));
       setAdmin(items);
       fetchAdmins (userId, items, isValid, false);
     }
@@ -119,6 +121,7 @@ export default function DetermineMode(props) {
       setDisableMsg("Cannot access Admins.");
       setIsDisabledUser(true);
     } else {
+      setFiltered(items.filter(comp => comp.email_address.includes(userEmail)));
       setAdmin(items);
       fetchAdmins (userId, items, isValid, true);
     }
@@ -189,8 +192,6 @@ export default function DetermineMode(props) {
       setIsSuperAdmin(false);
     }
   };
-
-  const filtered = admin.filter(comp => comp.email_address.includes(userEmail));
 
   return (
     <>

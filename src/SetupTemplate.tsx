@@ -31,6 +31,7 @@ import { AuthType } from "aws-cdk-lib/aws-stepfunctions-tasks";
 import Typography from "@mui/material/Typography";
 import Slider from "@mui/material/Slider";
 import Stack from '@mui/material/Stack';
+import DisplayQuestion from "../src/DisplayQuestion";
 import Pagination from '@mui/material/Pagination';
 import PopupReview from "../src/PopupPreview";
 import { min } from "moment";
@@ -63,12 +64,11 @@ export default function SetupTemplate(props) {
   const [alertMessage, setAlertMessage] = useState('');
   const [isUpdate, setIsUpdate] = useState(false);
   const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(1);
   const [openPreAttributes, setOpenPreAttributes] = useState(false);
   const [whichControl, setWhichControl] = useState('');
   const [dialogResult, setDialogResult] = useState('');
   const [dialogPrompt, setDialogPrompt] = useState('');
-  const [preview, setPreview] = useState(false);
-  const [isPreviewActive, setIsPreviewActive] = useState(false);
   const [isDeleteActive, setIsDeleteActive] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [dialogControls, setDialogControls] = useState({});
@@ -101,10 +101,6 @@ export default function SetupTemplate(props) {
   const handleClose = () => {
     setOpen(false);
   };
-
-  const handleClickOpenPreview = () => {
-    setPreview(true);
-  }
 
   const handlePreClose = () => {
     setOpenPreAttributes(false);
@@ -238,8 +234,8 @@ export default function SetupTemplate(props) {
     setOpenPreAttributes(true);
   }
 
-  const handlePreviewClose = () => {
-    setPreview(false);
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
   }
 
   function setFormDataFields (value, field) {
@@ -277,11 +273,9 @@ export default function SetupTemplate(props) {
       return;
     }
     if (items.length < 1) {
-      setIsPreviewActive(false);
       setFormDataFields(1, 'order');
       nextOrder = 1;
     } else {
-      setIsPreviewActive(true);
       // get next order#
       nextOrder = items[items.length-1].question_order + 1;
       setFormDataFields(nextOrder, 'order');
@@ -579,12 +573,10 @@ export default function SetupTemplate(props) {
     if (rowSelectionModel.length == 0) {
       setIsUpdate(false);
       resetQuestions(templateQuestion.length + 1);
-      setIsPreviewActive(true);
       setIsDeleteActive(false);
       setSelectedRows([]);
     } else {
       if (rowSelectionModel.length == 1) {
-        setIsPreviewActive(true);
         setIsDeleteActive(true);
         setSelectedRows([ { id: rowSelectionModel[0]}]);
         const filteredId = templateQuestion.filter(comp => comp.id.includes(rowSelectionModel[0]));
@@ -623,7 +615,6 @@ export default function SetupTemplate(props) {
           setIsValuesDisabled(false);
         }
       } else {
-        setIsPreviewActive(true);
         setIsDeleteActive(true);
         var rowIds = [];
         for (var i = 0; i < rowSelectionModel.length; i++) {
@@ -701,20 +692,16 @@ export default function SetupTemplate(props) {
     return `${value}°C`;
   }
 
+  function createMarkup(dirty) {
+    return { __html: dirty };
+  }
+
   return (
     <React.Fragment>
       <CssBaseline />
       {isWizard && <SetupQuestion props={props} isWizard={props.isWizard}
         onSubmitChange={newQuestionSubmit} 
         nextOrder={templateQuestion ? templateQuestion.length+1 : 1}
-      />}
-      {preview && <PopupReview props={props} 
-        onSubmitClose={handlePreviewClose}
-        preLoadAttributes={props.preLoadAttributes}
-        usePages={props.usePages}
-        name={props.name}
-        filtered={filtered}
-        postLoadAttributes={props.postLoadAttributes}
       />}
       <Dialog
         open={openPreAttributes}
@@ -893,7 +880,7 @@ export default function SetupTemplate(props) {
         open={openSetup}
         fullWidth
         keepMounted
-        maxWidth='lg'
+        maxWidth='xl'
         onClose={handleOnCancel}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
@@ -903,14 +890,11 @@ export default function SetupTemplate(props) {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
+          {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>{alertMessage}</Alert>}  
             {props.isWizard ?
             <Typography variant="body1">NOTE:  In this step you will be adding the questions that your end user will complete for you.</Typography> : null }
-      <Container>
-        <div>
-          {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
-            {alertMessage}
-          </Alert>}
-          <Box sx={{ bgcolor: '#C6DEFF', width: '600px', height: '520px', float: 'left', 
+            <Stack direction="row" spacing={3}>      
+          <Box sx={{ bgcolor: '#C6DEFF', width: '600px', height: '540px', 
               borderStyle: 'solid', borderWidth: '2px' }} >
             <h4>Add Questions/Controls: <br/>
             {props.isWizard ? null :
@@ -920,7 +904,7 @@ export default function SetupTemplate(props) {
             </h4>
             <FormControl>
               <Stack direction="row" spacing={2}>
-                <Box>
+                <Box sx={{ width: '200px'}}>
                   <RadioGroup
                     aria-labelledby="question-group-label"
                     defaultValue="photo"
@@ -1037,7 +1021,7 @@ export default function SetupTemplate(props) {
                       </Box> }
                   </RadioGroup>
                 </Box>
-                <Paper elevation={3}>
+                <Paper elevation={3} >
                   {props.isWizard || !isAdvanced ?
                   <Typography variant="h6" alignContent="center">Step 2: Enter Details</Typography>
                    : null}
@@ -1045,7 +1029,7 @@ export default function SetupTemplate(props) {
                     <Tooltip title="Enter here a title of what this question is about." placement="top">
                       <TextField id="question_title" name="title" value={formData.title} 
                         label="Question Title" variant="outlined" required="true" size="small" 
-                        sx={{ width: '250px'}} onChange={handleChange}/>
+                        sx={{ width: '200px'}} onChange={handleChange}/>
                     </Tooltip>
                     <Button variant="contained" color="success" 
                       disabled={(formData.title == '' && whichControl == '') ||
@@ -1075,7 +1059,7 @@ export default function SetupTemplate(props) {
                       placement="right">
                     <TextField id="question_pre" name="preLoadAttributes" value={formData.preLoadAttributes} 
                       label="Enter any instruction/label before your control" variant="outlined" size="small" multiline
-                      maxRows={4} sx={{ width: "350px"}} 
+                      maxRows={4} sx={{ width: "300px"}} 
                       onChange={handleChange}/></Tooltip>
                     <br />  <br /> 
                     {whichControl == '' ? null :
@@ -1125,12 +1109,11 @@ export default function SetupTemplate(props) {
               </Stack>
             </FormControl>
           </Box>
-          <Box sx={{ bgcolor: '#52B2BF', width: '500px', height: '500px', marginLeft: '620px',
+          <Box sx={{ bgcolor: '#52B2BF', width: '400px', height: '500px', 
               borderStyle: 'solid', borderWidth: '2px'}} >
             <h3>{(props.name.length > 18) ? props.name.substring(0, 18) + "... Questions" : props.name + " Questions"}
               <ButtonGroup variant="contained" aria-label="Question View group"  sx={{ float: 'right'}}>
                 <Button variant="contained" disabled={!isDeleteActive} color="error" onClick={handleDelete}>Delete</Button>
-                <Button variant="contained" disabled={templateQuestion.length == 0} color="success" onClick={handleClickOpenPreview}>Preview</Button>
               </ButtonGroup>
             </h3>
              <Paper sx={{ height: 400, width: '100%' }}>
@@ -1150,8 +1133,36 @@ export default function SetupTemplate(props) {
               />
             </Paper>
           </Box>
-        </div>
-      </Container>
+          <Box sx={{  width: '400px' }}>
+            <Typography variant="caption">Preview</Typography>
+            <div className="startPreview" dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes)} /><br/><br/><br/>
+            {templateQuestion == null || templateQuestion.length == 0 ?
+              <Typography variant="h4">No Preview Available</Typography>
+            :
+              <Stack spacing={2}>
+                <Typography variant="h6">
+                  {props.name}
+                </Typography>
+                <Box component="section" sx={{ p: 2, border: '1px dashed grey'}}>
+                  <Stack direction="row" spacing={1} >
+                    <Paper elevation={0}>
+                      <DisplayQuestion props={props} question = {templateQuestion[page-1]}  useBox={false}  useSpacing={false} isPreview = {true}/>
+                    </Paper>
+                    <Paper elevation={0}>
+                      <Typography variant="caption" gutterBottom>{"<---" + templateQuestion[page-1].title}</Typography>
+                    </Paper>
+                  </Stack>
+                </Box>
+                <Pagination count={templateQuestion.length} 
+                  page={page} 
+                  onChange={handlePageChange} 
+                  showFirstButton 
+                  showLastButton
+                  color="primary"
+                />
+              </Stack>       }     
+          </Box>
+        </Stack>
       </DialogContentText>
         </DialogContent>
         <DialogActions>
