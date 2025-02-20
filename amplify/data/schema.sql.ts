@@ -171,6 +171,7 @@ export const schema = configure({
     ]),
     "transactions": a.model({
         id: a.string().required(),
+        template_id: a.string(),
         gps_lat: a.float(),
         gps_long: a.float(),
         what3words: a.string(),
