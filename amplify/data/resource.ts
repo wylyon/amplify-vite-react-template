@@ -224,6 +224,24 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id WHERE t.id = :templateId group by c.name, t.title, r.transaction_id) a " +
       "group by company, company_id, title, template_id;"
     )).authorization(allow => allow.publicApiKey()),
+    transactionsByCompanyId: a.query()
+    .arguments({
+      companyId: a.string().required(),
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT c.name as company, c.id as company_id, t.title, tt.template_id, tt.id, tt.gps_lat, tt.gps_long, tt.created, tt.created_by FROM " +
+      "logistics.transactions tt join logistics.template t on t.id = tt.template_id join logistics.division d on d.id = t.division_id " +
+      "join logistics.company c on c.id = d.company_id WHERE c.id = :companyId;"
+    )).authorization(allow => allow.publicApiKey()),
+    transactionsByTemplateId: a.query()
+    .arguments({
+      templateId: a.string().required(),
+    })
+    .returns(a.ref("transactions").array())
+    .handler(a.handler.inlineSql(
+      "SELECT id, template_id, gps_lat, gps_long, what3words, created, created_by FROM logistics.transactions WHERE template_id = :templateId;"
+    )).authorization(allow => allow.publicApiKey()),
     listDivisionByCompanyId: a.query()
     .arguments({
       companyId: a.string().required(),

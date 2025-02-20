@@ -300,6 +300,7 @@ export default function DisplayUser(props) {
     const now = new Date();
     const { errors, data: items } = await client.models.transactions.create({
       id: props.transaction,
+      template_id: props.templateId,
       gps_lat: lat,
       gps_long: long,
       what3words: what3words,
