@@ -108,7 +108,7 @@ export default function DetermineMode(props) {
       setDisableMsg("Cannot access Admins.");
       setIsDisabledUser(true);
     } else {
-      setFiltered(items.filter(comp => comp.email_address.includes(userEmail)));
+      setFiltered(items.filter(comp => comp.email_address.includes(props.userId)));
       setAdmin(items);
       fetchAdmins (userId, items, isValid, false);
     }
@@ -121,7 +121,7 @@ export default function DetermineMode(props) {
       setDisableMsg("Cannot access Admins.");
       setIsDisabledUser(true);
     } else {
-      setFiltered(items.filter(comp => comp.email_address.includes(userEmail)));
+      setFiltered(items.filter(comp => comp.email_address.includes(props.userId)));
       setAdmin(items);
       fetchAdmins (userId, items, isValid, true);
     }

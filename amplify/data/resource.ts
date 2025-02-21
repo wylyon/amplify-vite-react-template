@@ -234,6 +234,14 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "logistics.transactions tt join logistics.template t on t.id = tt.template_id join logistics.division d on d.id = t.division_id " +
       "join logistics.company c on c.id = d.company_id WHERE c.id = :companyId;"
     )).authorization(allow => allow.publicApiKey()),
+    transactionsAllCompanies: a.query()
+    .arguments({})
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql(
+      "SELECT c.name as company, c.id as company_id, t.title, tt.template_id, tt.id, tt.gps_lat, tt.gps_long, tt.created, tt.created_by FROM " +
+      "logistics.transactions tt join logistics.template t on t.id = tt.template_id join logistics.division d on d.id = t.division_id " +
+      "join logistics.company c on c.id = d.company_id;"
+    )).authorization(allow => allow.publicApiKey()),
     transactionsByTemplateId: a.query()
     .arguments({
       templateId: a.string().required(),
