@@ -168,7 +168,7 @@ export default function AdminSuper(props) {
 				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} transactionId={templateId}  onRowSelect={handleOnRowSelectResults} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={3}>
-				<TransactionsAllByCompany props={props} filter={null} templateId={templateId} />
+				<TransactionsAllByCompany props={props} filter={null} googleAPI={props.googleAPI} templateId={templateId} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={4}>
 				<ResultSummary props={props} filter={null} templateId={templateId}/>

@@ -43,9 +43,13 @@ import CancelIcon from '@mui/icons-material/Close';
 import { v4 as uuidv4 } from 'uuid';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { MenuItem } from '@mui/material';
+import { IconButton, MenuItem } from '@mui/material';
 import moment from 'moment';
 import SelectCustomer from '../src/SelectCustomer';
+import Divider from '@mui/material/Divider';
+import MapMultipleWithGoogle from '../src/MapMultipleWithGoogle';
+import MapIcon from '@mui/icons-material/Map';
+import { Row } from 'aws-cdk-lib/aws-cloudwatch';
 
 export default function TransactionsAllByCompany(props) {
 	const [loading, setLoading] = useState(true);
@@ -53,6 +57,12 @@ export default function TransactionsAllByCompany(props) {
 	const [error, setError] = useState('');
 	const [deleteId, setDeleteId] = useState('');
 	const [companyId, setCompanyId] = useState(props.filter == null ? '' : props.filter.id);
+	const [startDate, setStartDate] = useState(null);
+	const [endDate, setEndDate] = useState(null);
+	const [lat, setLat] = useState('');
+	const [lng, setLng] = useState('');
+	const [mapKeyId, setMapKeyId] = useState('');
+	const [openMap, setOpenMap] = useState(false);
 
 	const client = generateClient<Schema>();
 	const [userData, setUserData] = useState([{
@@ -61,9 +71,21 @@ export default function TransactionsAllByCompany(props) {
 		companyId: '',
 		title: '',
 		templateId: '',
-		numTransactions: 0,
-		latestPosting: null,
-		earliestPosting: null, 
+		gpsLat: 0,
+		gpsLong: 0,
+		created: null, 
+		createdBy: null
+	  }]);
+	  const [filterData, setFilterData] = useState([{
+		id: '',
+		company: '',
+		companyId: '',
+		title: '',
+		templateId: '',
+		gpsLat: 0,
+		gpsLong: 0,
+		created: null, 
+		createdBy: null
 	  }]);
 
 	  function getDate(value) {
@@ -95,10 +117,12 @@ export default function TransactionsAllByCompany(props) {
 		return data;
 	  }
 
-	const allResults = async () => {
-		const { data: items, errors } = await client.queries.transactionsByCompanyId({
+	const allResults = async (companyId) => {
+		const { data: items, errors } = 
+		 companyId == 'All' ? await client.queries.transactionsAllCompanies()
+			:  await client.queries.transactionsByCompanyId({
 			companyId: companyId
-		});
+		}) ;
 		if (errors) {
 			setError(errors[0].message);
 			setOpen(true);
@@ -108,6 +132,10 @@ export default function TransactionsAllByCompany(props) {
 				const userItems = JSON.parse(db);
 				const data = translateUserTemplates(userItems);
 				setUserData(data);
+				setFilterData(data);
+			  } else {
+				setUserData([]);
+				setFilterData([]);
 			  }
 		}
 		setLoading(false);
@@ -116,9 +144,10 @@ export default function TransactionsAllByCompany(props) {
 	useEffect(() => {
 		if (companyId != '') {
 			setLoading(true);
-			allResults();
+			allResults(companyId);
 		} else {
-			setLoading(false);
+			setLoading(true);
+			allResults('All');
 		}
 	  }, []);
 
@@ -138,6 +167,32 @@ export default function TransactionsAllByCompany(props) {
 	  }
 	}
 
+	function calcDateFilters (start, end) {
+		if (start == null && end == null) {
+			setFilterData(userData);
+		} else if (start != null && end == null) {
+			setFilterData(userData.filter((row) => row.created >= start));
+		} else if (start == null && end != null) {
+			setFilterData(userData.filter((row) => row.created <= start));
+		} else {
+			setFilterData(userData.filter((row) => row.created >= start && row.created <= end));
+		}
+	}
+
+	const handleStartDate = (e) => {
+		if (!isNaN(Date.parse(e.target.value))) {
+			setStartDate(getDate(e.target.value));
+			calcDateFilters(getDate(e.target.value), endDate);
+		}
+	}
+
+	const handleEndDate = (e) => {
+		if (!isNaN(Date.parse(e.target.value))) {
+			setEndDate(getDate(e.target.value));
+			calcDateFilters(startDate, getDate(e.target.value));
+		}
+	}
+
 	const handleRowChangeEvent: GridEventListener<'rowCountChange'> = (params, event, details) => {
 		//setLoading(false);
 	}
@@ -149,15 +204,21 @@ export default function TransactionsAllByCompany(props) {
     });
 
 	const handleSelectChange = (e) => {
-		setCompanyId(e.split("|")[1]);
+		setLoading(true);
+		allResults(e.split("|")[1]);
 	  };
 
 	function handleRowClick (params, event, details) {
 	}
 
+	const handleCloseMap = () => {
+		setOpenMap(false);
+		setLat(0);
+		setLng(0);
+	}
 
 	const exportToExcel = () => {
-		const worksheet = XLSX.utils.json_to_sheet(userData);
+		const worksheet = XLSX.utils.json_to_sheet(filterData);
 		const workbook = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 	
@@ -165,7 +226,7 @@ export default function TransactionsAllByCompany(props) {
 		const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
 		const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
 	
-		saveAs(blob, "Log Tool Summary Results.xlsx");
+		saveAs(blob, "Log Tool Transaction Detail.xlsx");
 		};
 
 
@@ -202,6 +263,18 @@ export default function TransactionsAllByCompany(props) {
 		setError('');
 		setDeleteId('');
 	};
+
+	const handleMapIt = () => () => {
+		if (userData.length > 0) {
+			setLoading(true);
+			const row = userData.filter((row) => row.gpsLat > 0);
+			setMapKeyId(row[0].id);
+			setLat(row[0].gpsLat);
+			setLng(row[0].gpsLong);
+			setOpenMap(true);
+			setLoading(false);
+		}
+	}
 
 	function CustomToolbar() {
 		return (
@@ -243,11 +316,51 @@ export default function TransactionsAllByCompany(props) {
           </Button>
         </DialogActions>
       </Dialog>
-		<Stack>
+      <Dialog
+        open={openMap}
+        onClose={handleCloseMap}
+        aria-labelledby="map-dialog-title"
+        aria-describedby="map-dialog-description"
+      >
+        <DialogTitle id="map-dialog-title">
+          {"Map of " + lat + "," + lng}
+        </DialogTitle>
+        <DialogContent>
+			<MapMultipleWithGoogle props={props} markers={filterData} googleAPI={props.googleAPI} />		
+        </DialogContent>
+        <DialogActions>
+          <Button variant='contained' color='error' onClick={handleCloseMap} autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+		<Stack direction="column" spacing={3} divider={<Divider orientation='horizontal' flexItem />} >
 			{companyId == '' && <SelectCustomer  props={props} selected="All" onSelectCompany={handleSelectChange} />}
+			<Paper elevation={3}>
+				<Typography variant='body1'>Filter By Date</Typography>
+				<Stack direction='row' spacing={4}>
+					<Typography variant='body1'>Start Date: </Typography>
+					<input
+						type="date"
+						name="startDate"
+						placeholder="Start Date"
+						size="20"
+						onChange={handleStartDate}
+					/>
+					<Typography variant='body1'>End Date: </Typography>
+					<input
+						type="date"
+						name="endDate"
+						placeholder="End Date"
+						size="20"
+						onChange={handleEndDate}
+					/>
+					<IconButton aria-label="map" color="primary" onClick={handleMapIt()}><MapIcon /></IconButton>
+				</Stack>
+			</Paper>
 			<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 				<DataGrid
-					rows={userData}
+					rows={filterData}
 					slots={{ toolbar: CustomToolbar}}
 					loading={loading}
 					columns={columns}
