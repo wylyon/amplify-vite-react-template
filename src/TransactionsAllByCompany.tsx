@@ -59,8 +59,6 @@ export default function TransactionsAllByCompany(props) {
 	const [companyId, setCompanyId] = useState(props.filter == null ? '' : props.filter.id);
 	const [startDate, setStartDate] = useState(null);
 	const [endDate, setEndDate] = useState(null);
-	const [lat, setLat] = useState('');
-	const [lng, setLng] = useState('');
 	const [mapKeyId, setMapKeyId] = useState('');
 	const [openMap, setOpenMap] = useState(false);
 
@@ -74,7 +72,8 @@ export default function TransactionsAllByCompany(props) {
 		gpsLat: 0,
 		gpsLong: 0,
 		created: null, 
-		createdBy: null
+		createdBy: null,
+		locationId: 0
 	  }]);
 	  const [filterData, setFilterData] = useState([{
 		id: '',
@@ -85,7 +84,8 @@ export default function TransactionsAllByCompany(props) {
 		gpsLat: 0,
 		gpsLong: 0,
 		created: null, 
-		createdBy: null
+		createdBy: null,
+		locationId: 0
 	  }]);
 
 	  function getDate(value) {
@@ -111,7 +111,8 @@ export default function TransactionsAllByCompany(props) {
 				gpsLat: item.gps_lat,
 				gpsLong: item.gps_long,
 				created: getDate(item.created),
-				createdBy: item.created_by,}
+				createdBy: item.created_by,
+				locationId: i+1}
 		  );
 		}
 		return data;
@@ -213,8 +214,6 @@ export default function TransactionsAllByCompany(props) {
 
 	const handleCloseMap = () => {
 		setOpenMap(false);
-		setLat(0);
-		setLng(0);
 	}
 
 	const exportToExcel = () => {
@@ -269,8 +268,6 @@ export default function TransactionsAllByCompany(props) {
 			setLoading(true);
 			const row = userData.filter((row) => row.gpsLat > 0);
 			setMapKeyId(row[0].id);
-			setLat(row[0].gpsLat);
-			setLng(row[0].gpsLong);
 			setOpenMap(true);
 			setLoading(false);
 		}
@@ -318,12 +315,13 @@ export default function TransactionsAllByCompany(props) {
       </Dialog>
       <Dialog
         open={openMap}
+		maxWidth="xl"
         onClose={handleCloseMap}
         aria-labelledby="map-dialog-title"
         aria-describedby="map-dialog-description"
       >
         <DialogTitle id="map-dialog-title">
-          {"Map of " + lat + "," + lng}
+          Map of Transactions
         </DialogTitle>
         <DialogContent>
 			<MapMultipleWithGoogle props={props} markers={filterData} googleAPI={props.googleAPI} />		
@@ -338,8 +336,8 @@ export default function TransactionsAllByCompany(props) {
 			{companyId == '' && <SelectCustomer  props={props} selected="All" onSelectCompany={handleSelectChange} />}
 			<Paper elevation={3}>
 				<Typography variant='body1'>Filter By Date</Typography>
-				<Stack direction='row' spacing={4}>
-					<Typography variant='body1'>Start Date: </Typography>
+				<Stack direction='row' spacing={2}>
+					<Typography variant='body1'>Start Date:</Typography>
 					<input
 						type="date"
 						name="startDate"
@@ -347,7 +345,7 @@ export default function TransactionsAllByCompany(props) {
 						size="20"
 						onChange={handleStartDate}
 					/>
-					<Typography variant='body1'>End Date: </Typography>
+					<Typography variant='body1'>End Date:</Typography>
 					<input
 						type="date"
 						name="endDate"
@@ -355,7 +353,10 @@ export default function TransactionsAllByCompany(props) {
 						size="20"
 						onChange={handleEndDate}
 					/>
-					<IconButton aria-label="map" color="primary" onClick={handleMapIt()}><MapIcon /></IconButton>
+					<Typography variant='body1'>Heat Map:</Typography>
+					<Tooltip title="Press to see heat map of each transaction" placement="top">
+						<IconButton aria-label="map" color="primary" size="large" onClick={handleMapIt()}><MapIcon /></IconButton>
+					</Tooltip>
 				</Stack>
 			</Paper>
 			<Paper sx={{ height: 600, width: '100%' }} elevation={4}>

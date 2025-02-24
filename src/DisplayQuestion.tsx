@@ -130,7 +130,7 @@ export default function DisplayQuestion(props) {
     var html;
     if (theQuestion.pre_load_attributes != null && theQuestion.pre_load_attributes != '') {
       // we want to add any pre attributes for HTML
-      html = ((isPreview) ? theQuestion.pre_load_attributes : 
+      html = ((isPreview) ? (theQuestion.pre_load_attributes + "<br/>") : 
         ("<label for=\"photo" + theQuestion.question_order + "\">" + theQuestion.pre_load_attributes + "</label>")) +
         getHTMLforType(theQuestion.question_type, theQuestion.question_order, theQuestion.question_values, isPreview) + 
         theQuestion.post_load_attributes;

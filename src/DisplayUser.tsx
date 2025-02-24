@@ -438,7 +438,9 @@ export default function DisplayUser(props) {
           </Button>
         </DialogActions>
       </Dialog>
-      <div key="preLoadAttributes" className="startProgram" dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes)} />
+      <div key="preLoadAttributes" 
+        className="startProgram" 
+        dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes != null && props.preLoadAttributes != '' ? (props.preLoadAttributes + '<br/>') : props.preLoadAttributes)} />
       {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
           </Alert>}

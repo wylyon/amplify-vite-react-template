@@ -858,7 +858,7 @@ export default function SetupTemplate(props) {
               multiline={whichControl.startsWith('Dialog') ? false : true}
               rows={whichControl.startsWith('Dialog') ? 1 : 8}
             />
-            <FormControlLabel control={<Checkbox onClick={handleSort} />} label="Sort" />
+            <FormControlLabel control={<Checkbox onClick={handleSort} />} label="Sort(asc)" />
           </Stack> }
           {whichControl.startsWith("Button") || whichControl.startsWith("Color") ?
             <TextField
@@ -1134,7 +1134,7 @@ export default function SetupTemplate(props) {
             </Paper>
           </Box>
           <Box sx={{  width: '400px' }}>
-            <Typography variant="caption">Preview</Typography>
+            <Typography variant="caption">Preview (This is a preview of what your app will look like on phone)</Typography>
             <div className="startPreview" dangerouslySetInnerHTML={createMarkup(props.preLoadAttributes)} /><br/><br/><br/>
             {templateQuestion == null || templateQuestion.length == 0 ?
               <Typography variant="h4">No Preview Available</Typography>

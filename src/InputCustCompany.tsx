@@ -34,6 +34,26 @@ export default function InputCustCompany(props) {
     }));
   };
 
+  const verifyCompany = async() => {
+    const { errors, data: items} = await client.queries.listAllDivisionsByCompanyId({
+      companyId: props.company.id
+    });
+    if (errors) {
+      setAlertMessage(errors[0].message);
+      setIsAlertError(true);
+      setIsAlert(true);
+      return;
+    }
+    if (items && items.length > 0) {
+      setAlertMessage("Divisions exist.   Please DELETE all Divisions before deleting Company.");
+      setIsAlertError(true);
+      setIsAlert(true);
+      return;
+    }
+    // here we can delete the company and admin rows
+
+  }
+
   const updateCompany = async() => {
     const now = new Date();
     const currentDateTime = now.toLocaleString();
@@ -71,6 +91,10 @@ export default function InputCustCompany(props) {
   const handleOnCancel = (e) => {
     props.onSubmitChange(false);
   };
+
+  const handleOnDelete = (e) => {
+    props.onSubmitChange(false);
+  }
 
   return (
     <div>
@@ -157,8 +181,9 @@ export default function InputCustCompany(props) {
 	 onChange={handleChange} 
 	/>
 	<div className="button-container">
-  	  <button type="submit" style={{ margin: '8px 0', padding: '5px' }}>Update</button>
+  	<button type="submit" style={{ margin: '8px 0', padding: '5px' }}>Update</button>
 	  <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>
+    <button className="cancelButton" onClick={verifyCompany}>Delete</button>
 	</div>
       </form>
       {isAlert && <Alert severity={isAlertError ? "error" : "success"} onClose={() => {setIsAlert(false)}} >{alertMessage}</Alert>}

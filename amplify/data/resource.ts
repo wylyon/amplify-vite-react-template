@@ -313,6 +313,18 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .returns(a.json().array())
     .handler(a.handler.inlineSql("DELETE from logistics.user WHERE division_id = :divisionId;"))
     .authorization(allow => allow.publicApiKey()),
+    deleteAdminByCompanyId: a.mutation().arguments({
+      companyId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("DELETE from logistics.admin WHERE company_id = :companyId;"))
+    .authorization(allow => allow.publicApiKey()),
+    deleteCompanyById: a.mutation().arguments({
+      id: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("DELETE from logistics.company WHERE id = :id;"))
+    .authorization(allow => allow.publicApiKey()),
     backupTemplatePermissionsByUserId: a.mutation().arguments({
       userId: a.string().required()
     })
@@ -330,6 +342,12 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     })
     .returns(a.json().array())
     .handler(a.handler.inlineSql("INSERT into logistics.admin_delete SELECT * FROM logistics.admin WHERE id = :id;"))
+    .authorization(allow => allow.publicApiKey()),
+    backupAdminByCompanyId: a.mutation().arguments({
+      companyId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.admin_delete SELECT * FROM logistics.admin WHERE company_id = :companyId;"))
     .authorization(allow => allow.publicApiKey()),
     backupUserById: a.mutation().arguments({
       id: a.string().required()
@@ -372,6 +390,12 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     })
     .returns(a.json().array())
     .handler(a.handler.inlineSql("INSERT into logistics.division_delete SELECT * FROM logistics.division WHERE id = :id;"))
+    .authorization(allow => allow.publicApiKey()),
+    backupCompanyById: a.mutation().arguments({
+      id: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.company_delete SELECT * FROM logistics.company WHERE id = :id;"))
     .authorization(allow => allow.publicApiKey()),
   })
 

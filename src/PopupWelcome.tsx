@@ -54,6 +54,7 @@ export default function PopupWelcome(props) {
   const [openName, setOpenName] = useState(false);
   const [checked, setChecked] = useState(true);
   const [openError, setOpenError] = useState(false);
+  const [openCancel, setOpenCancel] = useState(false);
   const [error, setError] = useState('');
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set<number>());
@@ -162,10 +163,21 @@ export default function PopupWelcome(props) {
 
   useEffect(() => {
 	}, []);
+
+  const handleShowWarning = () => {
+    setOpenCancel(true);
+  }
+  
   const handleCloseValues = () => {
+    setOpenCancel(false);
     props.onClose();
     setOpen(false);
   }
+
+  const handleCancel = () => {
+    setOpenCancel(false);
+  }
+
   const handleSubmitValues = (item) => {
     props.onSubmit(item);
     setOpen(false);
@@ -286,6 +298,26 @@ export default function PopupWelcome(props) {
 
   return (
     <React.Fragment>
+      <Dialog
+        open={openCancel}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {error == '' ? "Are You Sure?" : "ERROR"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            This will throw out all your planned changes (new app and users).  Are you sure you want to do this?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+			    <Button variant='contained' color='success' onClick={handleCloseValues}>Confirm</Button>
+          <Button variant='contained' color='error' onClick={handleCancel} autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog
         open={open}
         onClose={handleCloseValues}
@@ -433,9 +465,9 @@ export default function PopupWelcome(props) {
               <React.Fragment>
                 {activeStep < 3 ?
                   <Typography sx={{ mt: 2, mb: 1 }}>{descriptions[activeStep]}</Typography> :
-                  <Typography sx={{ mt: 2, mb: 1 }}>Step 4:  In this step you are going to add users who will be able to use the Logging App {formData.templateName} you are creating. <br />
+                  <Typography sx={{ mt: 2, mb: 1 }}>Step 4:  In this step you are going to add users who will be able to use the new app {formData.templateName} you created. <br />
                     You can always add, delete, or change users in the admin page later.   Please note, anyone you add will get an invite to use the app in their email. <br />
-                    You will automatically be added to the Logging App {formData.templateName}, so you don't have to add yourself.</Typography> 
+                    You have automatically been added to the  {formData.templateName}, so you don't have to add yourself.</Typography> 
                 }
                 {activeStep == 1 ?
                 <Box>
@@ -522,7 +554,7 @@ export default function PopupWelcome(props) {
                 : null
                 }
                 <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                  <Button color="error" variant="contained" onClick={handleCloseValues}>Cancel</Button>
+                  <Button color="error" variant="contained" onClick={handleShowWarning}>Cancel</Button>
                   <Button
                     color="primary"
                     variant="contained"
