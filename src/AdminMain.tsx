@@ -199,7 +199,7 @@ export default function AdminMain(props) {
 		</TabPanel>
 		<TabPanel value={value} index={4}>
 			<InputCustCompany props={props} 
-				company={company} isAddMode = {false} />
+				company={company} isAddMode = {false} onSubmitChange={handleOnSignOut}/>
 		</TabPanel>
 	</Box>
 	</Stack>

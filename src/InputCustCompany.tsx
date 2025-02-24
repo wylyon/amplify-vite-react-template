@@ -1,6 +1,6 @@
 
 // @ts-nocheck
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import Alert from '@mui/material/Alert';
@@ -25,6 +25,78 @@ export default function InputCustCompany(props) {
   const [isAlert, setIsAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [isAlertError, setIsAlertError] = useState(false);
+  const [isPrevent, setIsPrevent] = useState(true);
+
+  const [access, setAccess] = useState('');
+	const [secret, setSecret] = useState('');
+	const [region, setRegion] = useState('');
+	const [ourWord, setOurWord] = useState('');
+	const [userPoolId, setUserPoolId] = useState('');
+	const [isBackups, setIsBackups] = useState(true);
+
+  const getAppSettings = async() => {
+		const { data: items, errors } = await client.models.app_settings.list();
+		if (errors) {
+		  alert(errors[0].message);
+		} else {
+			const backupDeletes = items.filter(map => map.code == 'BACKUP');
+			if (backupDeletes.length < 1) {
+				setIsBackups(false);
+			} else {
+				if (backupDeletes[0].value != 'true') {
+					setIsBackups(false);
+				}
+			}
+		  const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY0'));
+		  if (what3words.length < 1) {
+        setAlertMessage("Cant get credentials for Admin.");
+        setIsAlertError(true);
+        setIsAlert(true);
+        return;   
+		  }
+		  setOurWord(what3words[0].value + what3words[0].value);
+		  const domain = window.location.hostname;
+		  const userPool = domain.includes('localhost') ? items.filter(map => map.code.includes('USERPOOLID-DEV')) : items.filter(map => map.code.includes('USERPOOLID-PRD'));
+		  if (userPool.length < 1) {
+        setAlertMessage("Cant get userPool for Admin.");
+        setIsAlertError(true);
+        setIsAlert(true);
+        return;   
+		  }
+		  setUserPoolId(userPool[0].value);
+		  const creds = items.filter(map => map.code.includes('ACCESS'));
+		  if (creds.length < 1) {
+        setAlertMessage("Cant get access credentials for Admin.");
+        setIsAlertError(true);
+        setIsAlert(true);
+		  } else {
+        const accessId = creds[0].value;
+        const secret = items.filter(map => map.code.includes('SECRET'));
+        if (secret.length < 1) {
+          setAlertMessage("Cant get secret credentials for Admin.");
+          setIsAlertError(true);
+          setIsAlert(true);
+        } else {
+          const secretId = secret[0].value;
+          const region = items.filter(map => map.code.includes('REGION'));
+          if (region.length < 1) {
+            setAlertMessage("Cant get region credentials for Admin.");
+            setIsAlertError(true);
+            setIsAlert(true);
+          } else {
+            const regionId = region[0].value;
+            setAccess(accessId);
+            setSecret(secretId);
+            setRegion(regionId);
+          }
+        }
+		  }
+		}
+	}
+
+  useEffect(() => {
+		getAppSettings();
+	  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,6 +105,16 @@ export default function InputCustCompany(props) {
       [name]: value,
     }));
   };
+
+  const deleteCompany = async() => {
+    await client.mutations.deleteAdminByCompanyId({
+      companyId: props.company.id
+    });
+    await client.models.company.delete({
+      id: props.company.id
+    });
+    props.onSubmitChange(false);
+  }
 
   const verifyCompany = async() => {
     const { errors, data: items} = await client.queries.listAllDivisionsByCompanyId({
@@ -51,7 +133,15 @@ export default function InputCustCompany(props) {
       return;
     }
     // here we can delete the company and admin rows
-
+    if (isBackups) {
+      await client.mutations.backupAdminByCompanyId({
+				companyId: props.company.id
+			});
+      await client.mutations.backupCompanyById({
+        id: props.company.id
+      });
+    }
+    deleteCompany();
   }
 
   const updateCompany = async() => {
@@ -82,19 +172,23 @@ export default function InputCustCompany(props) {
     setIsAlert(true);
   }
 
+  const handleUpdate = (e) => {
+    setIsPrevent(false);
+    //handleSubmit(e);
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (isPrevent) {
+      return;
+    }
     (props.isAddMode || isGoAdd) ? createCompany() : updateCompany();
-    props.onSubmitChange(false);
+    setIsPrevent(true);
   };
 
   const handleOnCancel = (e) => {
-    props.onSubmitChange(false);
+    setIsPrevent(true);
   };
-
-  const handleOnDelete = (e) => {
-    props.onSubmitChange(false);
-  }
 
   return (
     <div>
@@ -174,14 +268,14 @@ export default function InputCustCompany(props) {
         />
       <label>. Notes: </label>
 	<input type="text" 
-	 name="notes" 
-	 placeholder="Notes for this entry" 
-	 size="80"
-	 value={formData.notes} 
-	 onChange={handleChange} 
+    name="notes" 
+    placeholder="Notes for this entry" 
+    size="80"
+    value={formData.notes} 
+    onChange={handleChange} 
 	/>
 	<div className="button-container">
-  	<button type="submit" style={{ margin: '8px 0', padding: '5px' }}>Update</button>
+  	<button type="submit" style={{ margin: '8px 0', padding: '5px' }} onClick={handleUpdate}>Update</button>
 	  <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>
     <button className="cancelButton" onClick={verifyCompany}>Delete</button>
 	</div>

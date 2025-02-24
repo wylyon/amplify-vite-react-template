@@ -24,7 +24,7 @@ export default function AdminMode(props) {
 		<Stack>
 			<Typography variant="h4" sx={{textAlign: 'center', bgcolor: 'background.paper'}}>Log/Report Capture Tool</Typography>
 			{props.isSuperAdmin && <AdminSuper props={props} userId={props.userId} googleAPI={props.googleAPI} /> }
-			{!props.isSuperAdmin && <AdminMain props={props} userId={props.userId} googleAPI={props.googleAPI} companyId={props.companyId}/> }
+			{!props.isSuperAdmin && <AdminMain props={props} userId={props.userId} googleAPI={props.googleAPI} companyId={props.companyId} onSubmitChange={handleOnSignOut}/> }
 		</Stack>
     </main> 
   );
