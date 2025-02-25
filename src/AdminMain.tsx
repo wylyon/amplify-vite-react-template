@@ -182,19 +182,19 @@ export default function AdminMain(props) {
 				<Tab label="Other Analytics" {...a11yHProps(4)} />
 			</Tabs>
 			<CustomTabPanel value={hValue} index={0}>
-				<SummaryAllResults props={props} filter={null} onRowSelect={handleOnRowSelectSummaryAll} />
+				<SummaryAllResults props={props} filter={company} onRowSelect={handleOnRowSelectSummaryAll} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={1}>
-				<SummaryByTemplate props={props} filter={null} googleAPI={props.googleAPI} templateId={templateId} onRowSelect={handleOnRowSelectSummaryTemplate} />
+				<SummaryByTemplate props={props} filter={company} googleAPI={props.googleAPI} templateId={templateId} onRowSelect={handleOnRowSelectSummaryTemplate} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={2}>
-				<ResultsByTemplate props={props} filter={null} googleAPI={props.googleAPI} transactionId={templateId} onRowSelect={handleOnRowSelectResults} />
+				<ResultsByTemplate props={props} filter={company} googleAPI={props.googleAPI} transactionId={templateId} onRowSelect={handleOnRowSelectResults} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={3}>
 				<TransactionsAllByCompany props={props} filter={company} googleAPI={props.googleAPI} templateId={templateId} />
 			</CustomTabPanel>
 			<CustomTabPanel value={hValue} index={4}>
-				<ResultSummary props={props} filter={null} templateId={templateId} />
+				<ResultSummary props={props} filter={company} templateId={templateId} />
 			</CustomTabPanel>
 		</TabPanel>
 		<TabPanel value={value} index={4}>
