@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { generateClient } from 'aws-amplify/data';
 import DisplayUser from '../src/DisplayUser';
 import PopupTemplate from "../src/PopupTemplate";
+import InstallMobileIcon from '@mui/icons-material/InstallMobile';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import LogoutIcon from '@mui/icons-material/Logout';
 import IconButton from '@mui/material/IconButton';
@@ -12,6 +13,7 @@ import LogoDevIcon from '@mui/icons-material/LogoDev';
 import Tooltip from '@mui/material/Tooltip';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import usePagination from "@mui/material/usePagination/usePagination";
+import { AddToHomeScreen } from 'react-pwa-add-to-homescreen';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function UserMode(props) {
@@ -43,6 +45,7 @@ export default function UserMode(props) {
 	const [isMulti, setIsMulti] = useState(false);
 	const [isDefaultPage2, setIsDefaultPage2] = useState(true);
 	const [foundTemplate, setFoundTemplate] = useState(false);
+	const [install, setInstall] = useState(false);
 	
 	const handleVerifiedDate = async(id) => {
 		const now = new Date();
@@ -55,6 +58,10 @@ export default function UserMode(props) {
 		  alert(errors[0].message);
 		}
 	  }
+
+	const handleInstall = () => {
+		setInstall(true);
+	}
 
 	function translateUserTemplate (item) {
 		const data = [{id: item.id, 
@@ -224,6 +231,7 @@ export default function UserMode(props) {
 		<div className="topnav">
   	  		<a href="#home" className="active">
 				<IconButton aria-label="home" onClick={handleReload}><LogoDevIcon /></IconButton>
+				<IconButton aria-label="install" onClick={handleInstall}><InstallMobileIcon /></IconButton>
 				{isMulti &&
 				<Tooltip title="Pop up program selection dialog to change view." placement="bottom">
 					<IconButton aria-label="programs" onClick={handleSwitchProgram}><ListAltIcon /></IconButton>
@@ -234,6 +242,7 @@ export default function UserMode(props) {
 	   			</div>
 	  		</a>
 		</div>
+		{install && <AddToHomeScreen skipFirstVisit={false} /> }
 		{isMultiTemplates && <PopupTemplate theTemplates={templates} onSelectTemplate={handleOnTemplate}/> }
 	  {	foundTemplate && !isDefaultPage && templateQuestion && templateQuestion.length > 0 && <DisplayUser 
 	  		userId={props.userId} 
