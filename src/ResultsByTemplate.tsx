@@ -240,8 +240,26 @@ export default function ResultsByTemplate(props) {
 			value;
 		};
 
+	function reduceArray (arr) {
+		var newArr = [];
+		for (var indx = 0; indx < arr.length; indx++) {
+			newArr.push({company: arr[indx].company,
+				division: arr[indx].division,
+				template: arr[indx].template,
+				question: arr[indx].question,
+				questionType: arr[indx].questionType,
+				result: arr[indx].result,
+				postDate: arr[indx].created,
+				latitude: arr[indx].lattitude,
+				longitude: arr[indx].longitude,
+				creator: arr[indx].createdBy
+			});
+		}
+		return newArr;
+	}
+
 	const exportToExcel = () => {
-		const worksheet = XLSX.utils.json_to_sheet(userData);
+		const worksheet = XLSX.utils.json_to_sheet(reduceArray(userData));
 		const workbook = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 	

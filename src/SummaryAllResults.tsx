@@ -154,9 +154,21 @@ export default function SummaryAllResults(props) {
 	function handleRowClick (params, event, details) {
 	}
 
+	function reduceArray (arr) {
+		var newArr = [];
+		for (var indx = 0; indx < arr.length; indx++) {
+			newArr.push({company: arr[indx].company,
+				title: arr[indx].title,
+				numTransactions: arr[indx].numTransactions,
+				latestPosting: arr[indx].latestPosting,
+				earliestPosting: arr[indx].earliestPosting
+			});
+		}
+		return newArr;
+	}
 
 	const exportToExcel = () => {
-		const worksheet = XLSX.utils.json_to_sheet(userData);
+		const worksheet = XLSX.utils.json_to_sheet(reduceArray(userData));
 		const workbook = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 	

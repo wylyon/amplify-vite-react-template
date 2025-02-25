@@ -94,6 +94,7 @@ export default function AdminMain(props) {
 		  alert(errors[0].message);
 		  return;
 		}
+		setIsDivisions(item.enable_divisions == 1);
 		setCompany(item);
 	  };
 
@@ -102,8 +103,8 @@ export default function AdminMain(props) {
 	  setValue(newValue);
 	};
 
-	const handleTurnOnDivision = () => {
-		setIsDivisions(true);
+	const handleTurnOnDivision = (isDivision) => {
+		setIsDivisions(isDivision == 1);
 	}
 
 	const handleReportChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -160,7 +161,7 @@ export default function AdminMain(props) {
 		>
 			<Tab label="Templates" {...a11yProps(0)} />
 			<Tab label="Users" {...a11yProps(1)} />
-			<Tab label="Divisions" {...a11yProps(2)} />
+			{isDivisions && <Tab label="Divisions" {...a11yProps(2)} /> }
 			<Tab label="Reports" {...a11yProps(3)} />
 			<Tab label="Profile" {...a11yProps(4)} />
 		</Tabs>
@@ -170,10 +171,10 @@ export default function AdminMain(props) {
 		<TabPanel value={value} index={1}>
 			<UserGrid props={props} userId={props.userId} filter={company}/>
 		</TabPanel>
-		<TabPanel value={value} index={2}>
+		<TabPanel value={value} index={isDivisions ? 2 : 4}>
 			<DivisionGrid props={props} userId={props.userId} filter={company} id={id} onRowSelect={handleOnRowSelectDivision}/>
 		</TabPanel>
-		<TabPanel value={value} index={3}>
+		<TabPanel value={value} index={isDivisions ? 3 : 2}>
 			<Tabs
 				orientation="horizontal"
 				variant="scrollable"
@@ -202,9 +203,9 @@ export default function AdminMain(props) {
 				<ResultSummary props={props} filter={company} templateId={templateId} />
 			</CustomTabPanel>
 		</TabPanel>
-		<TabPanel value={value} index={4}>
+		<TabPanel value={value} index={isDivisions ? 4 : 3}>
 			<InputCustCompany props={props} 
-				company={company} isAddMode = {false} onSubmitChange={handleOnSignOut} onTurnOnDivision={handleTurnOnDivision}/>
+				company={company} isAddMode = {false} onSubmitChange={handleOnSignOut} onTurnOnDivision={handleTurnOnDivision} isDivision={isDivisions} />
 		</TabPanel>
 	</Box>
 	</Stack>

@@ -19,6 +19,7 @@ export default function InputCustCompany(props) {
     zipcode: props.company.zipcode,
     ref_department: props.company.ref_department,
     notes: props.company.notes,
+    isDivision: props.company.enable_divisions
   });
 
   const client = generateClient<Schema>();
@@ -35,6 +36,7 @@ export default function InputCustCompany(props) {
 	const [ourWord, setOurWord] = useState('');
 	const [userPoolId, setUserPoolId] = useState('');
 	const [isBackups, setIsBackups] = useState(true);
+  const [isDivision, setIsDivision] = useState(props.isDivision);
 
   const getAppSettings = async() => {
 		const { data: items, errors } = await client.models.app_settings.list();
@@ -118,8 +120,27 @@ export default function InputCustCompany(props) {
     props.onSubmitChange(false);
   }
 
+  const updateCompanyEnableDivisions = async(newIsDivision) => {
+    const { data: updateData, errors } = await client.models.company.update ({
+      id: props.company.id,
+      enable_divisions: newIsDivision
+    });
+    if (errors) {
+      setAlertMessage(errors[0].message);
+      setIsAlertError(true);
+      setIsAlert(true);
+      return;
+    }
+    setAlertMessage("Company record enable_division updated!");
+    setIsAlertError(false);
+    setIsAlert(true);
+  }
+
   const handleDivisionTurnOn = () => {
-    props.onTurnOnDivision(false);
+    const newIsDivision = isDivision == 0 ? 1 : 0;
+    updateCompanyEnableDivisions(newIsDivision);
+    setIsDivision(newIsDivision);
+    props.onTurnOnDivision(newIsDivision);
   }
 
   const verifyCompany = async() => {
@@ -285,7 +306,7 @@ export default function InputCustCompany(props) {
     <Button color="primary" type="submit" onClick={handleUpdate}>Update</Button>
     <Button color="error" onClick={handleOnCancel}>Cancel</Button>
     <Button color="warning" onClick={verifyCompany}>Delete</Button>
-    <Button color="info" onClick={handleDivisionTurnOn}>Enable Divisions</Button>
+    <Button color="info" onClick={handleDivisionTurnOn}>{isDivision == 0 ? "Enable Divisions" : "Disable Divisions"}</Button>
   </ButtonGroup>
       </form>
       {isAlert && <Alert severity={isAlertError ? "error" : "success"} onClose={() => {setIsAlert(false)}} >{alertMessage}</Alert>}

@@ -216,8 +216,22 @@ export default function TransactionsAllByCompany(props) {
 		setOpenMap(false);
 	}
 
+	function reduceArray (arr) {
+		var newArr = [];
+		for (var indx = 0; indx < arr.length; indx++) {
+			newArr.push({company: arr[indx].company,
+				title: arr[indx].title, 
+				gpsLat: arr[indx].gpsLat,
+				gpsLong: arr[indx].gpsLong,
+				created: arr[indx].created,
+				createdBy: arr[indx].createdBy,
+			});
+		}
+		return newArr;
+	}
+
 	const exportToExcel = () => {
-		const worksheet = XLSX.utils.json_to_sheet(filterData);
+		const worksheet = XLSX.utils.json_to_sheet(reduceArray(filterData));
 		const workbook = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 	
