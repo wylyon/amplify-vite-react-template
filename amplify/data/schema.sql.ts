@@ -82,7 +82,8 @@ export const schema = configure({
         notes: a.string(),
         deactive_date: a.datetime(),
         created: a.datetime().required(),
-        created_by: a.string()
+        created_by: a.string(),
+        enable_divisions: a.integer()
     }).identifier([
         "id"
     ]),

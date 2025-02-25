@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
 
 export default function InputCustCompany(props) {
   const [formData, setFormData] = useState({
@@ -114,6 +116,10 @@ export default function InputCustCompany(props) {
       id: props.company.id
     });
     props.onSubmitChange(false);
+  }
+
+  const handleDivisionTurnOn = () => {
+    props.onTurnOnDivision(false);
   }
 
   const verifyCompany = async() => {
@@ -274,11 +280,13 @@ export default function InputCustCompany(props) {
     value={formData.notes} 
     onChange={handleChange} 
 	/>
-	<div className="button-container">
-  	<button type="submit" style={{ margin: '8px 0', padding: '5px' }} onClick={handleUpdate}>Update</button>
-	  <button className="cancelButton" onClick={handleOnCancel}>Cancel</button>
-    <button className="cancelButton" onClick={verifyCompany}>Delete</button>
-	</div>
+  <br/><br/>
+  <ButtonGroup variant="contained" aria-label="Basic button group">
+    <Button color="primary" type="submit" onClick={handleUpdate}>Update</Button>
+    <Button color="error" onClick={handleOnCancel}>Cancel</Button>
+    <Button color="warning" onClick={verifyCompany}>Delete</Button>
+    <Button color="info" onClick={handleDivisionTurnOn}>Enable Divisions</Button>
+  </ButtonGroup>
       </form>
       {isAlert && <Alert severity={isAlertError ? "error" : "success"} onClose={() => {setIsAlert(false)}} >{alertMessage}</Alert>}
      </div>

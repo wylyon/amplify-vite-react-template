@@ -82,6 +82,7 @@ export default function AdminMain(props) {
 	const [company, setCompany] = useState<Schema["company"]["type"][]>([]);
 	const [templateId, setTemplateId] = React.useState(null);
 	const [id, setId] = React.useState(null);
+	const [isDivisions, setIsDivisions] = useState(false);
 
 	const client = generateClient<Schema>();
 
@@ -100,6 +101,10 @@ export default function AdminMain(props) {
 	  setId(null);
 	  setValue(newValue);
 	};
+
+	const handleTurnOnDivision = () => {
+		setIsDivisions(true);
+	}
 
 	const handleReportChange = (event: React.SyntheticEvent, newValue: number) => {
 		setTemplateId(null);
@@ -199,7 +204,7 @@ export default function AdminMain(props) {
 		</TabPanel>
 		<TabPanel value={value} index={4}>
 			<InputCustCompany props={props} 
-				company={company} isAddMode = {false} onSubmitChange={handleOnSignOut}/>
+				company={company} isAddMode = {false} onSubmitChange={handleOnSignOut} onTurnOnDivision={handleTurnOnDivision}/>
 		</TabPanel>
 	</Box>
 	</Stack>
