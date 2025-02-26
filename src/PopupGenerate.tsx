@@ -41,12 +41,11 @@ function LinearProgressWithLabel(props: LinearProgressProps & { value: number })
 }
 
 export default function PopupGenerate(props) {
-  const [progress, setProgress] = React.useState(10);
+  const [progress, setProgress] = React.useState(0);
   const [open, setOpen] = useState(true);
   const [isAlert, setIsAlert] = useState(false);
   const [theSeverity, setTheSeverity] = useState('error');
   const [alertMessage, setAlertMessage] = useState('');
-  const [divisionId, setDivisionId] = useState('');
   const client = generateClient<Schema>();
   const [addedUsers, setAddedUsers] = useState([]);
   const [access, setAccess] = useState('');
@@ -106,15 +105,22 @@ export default function PopupGenerate(props) {
     }
   }
 
-  const createTemplate = async(timer) => {
+  const handleCloseValues = () => {
+    setOpen(false);
+    props.onClose(false);
+  }
+
+  const createTemplate = async(divisionId) => {
     if (isTemplate) {
       return;
     }
     isTemplate = true;
     if (!props.hasTemplate) {
+      setProgress(80);
       setAlertMessage('Bypassing Template(Logging App) Creation.');
       setTheSeverity('success');
       setIsAlert(true);
+      createNewLogins();
       return;
     }
 		const now = new Date();
@@ -137,8 +143,9 @@ export default function PopupGenerate(props) {
       console.log("template.create." + errors[0].message);
       setTheSeverity('error');
 			setIsAlert(true);
-      clearInterval(timer);
+      setProgress(100);
 		} else {
+      setProgress(40);
       setAlertMessage('Setup Template(Logging App) Record.');
       setTheSeverity('success');
       setIsAlert(true);
@@ -166,12 +173,13 @@ export default function PopupGenerate(props) {
           console.log("template_question.create." + errors[0].message);
           setTheSeverity('error');
           setIsAlert(true);
-          clearInterval(timer);
+          setProgress(100);
         } else {
           numAdded++;
         }
       }
       if (numAdded > 0) {
+        setProgress(50);
         setAlertMessage('Setup ' + numAdded + ' Questions for Logging App.');
         setTheSeverity('success');
         setIsAlert(true);
@@ -194,8 +202,9 @@ export default function PopupGenerate(props) {
           console.log("user.create." + errors[0].message);
           setTheSeverity('error');
           setIsAlert(true);
-          clearInterval(timer);
+          setProgress(100);
         } else {
+          setProgress(60);
           setAlertMessage('Setup User Record for Admin.');
           setTheSeverity('success');
           setIsAlert(true);
@@ -213,8 +222,9 @@ export default function PopupGenerate(props) {
             console.log("template_permission.create." + errors[0].message);
             setTheSeverity('error');
             setIsAlert(true);
-            clearInterval(timer);
+            setProgress(100);
           } else {
+            setProgress(70);
             if (props.addedUsers && props.addedUsers.length > 0) {
               // need to add additional users and link up their template(s)
               for (var i = 0; i < props.addedUsers.length; i++) {
@@ -235,7 +245,7 @@ export default function PopupGenerate(props) {
                   console.log("user.create." + errors[0].message);
                   setTheSeverity('error');
                   setIsAlert(true);
-                  clearInterval(timer);
+                  setProgress(100);
                   i = props.addedUsers.length;
                 } else {
                   const { errors, data: newTemplatePermission } = await client.models.template_permissions.create({ 
@@ -251,37 +261,43 @@ export default function PopupGenerate(props) {
                     console.log("template_permissions.create." + errors[0].message);
                     setTheSeverity('error');
                     setIsAlert(true);
-                    clearInterval(timer);
+                    setProgress(100);
                     i = props.addedUsers.length;
                   }
                 }
               }
             }
+            setProgress(80);
             setAlertMessage('Setup Admin/User Permission for Logging App.');
             setTheSeverity('success');
             setIsAlert(true);
+            createNewLogins();
           }
         }
       }
     }
   }
 
-  const createNewLogins = async(timer) => {
+  const createNewLogins = async() => {
     // this will create the new login's IF there was at least one template...otherwise adding them makes no sense.
     if (isLogins) {
       return;
     }
     isLogins = true;
     if (!props.addedUsers || props.addedUsers.length < 1) {
+      setProgress(100);
       setAlertMessage('Bypassing User(Logging App) Creation.');
       setTheSeverity('success');
       setIsAlert(true);
+      handleCloseValues();
       return;
     }
     if (!props.hasTemplate) {
+      setProgress(100);
       setAlertMessage('Bypassing User(Logging App) Creation, since no templates');
       setTheSeverity('success');
       setIsAlert(true);
+      handleCloseValues();
       return;
     }
     const cognito = new CognitoIdentityProvider({
@@ -309,13 +325,15 @@ export default function PopupGenerate(props) {
       }
     }
     if (!anyErrors) {
+      setProgress(100);
       setAlertMessage('Setup Admin/User Permission for Logging App.');
       setTheSeverity('success');
       setIsAlert(true);
+      handleCloseValues();
     }
   }
 
-  const createCompanyDivisionAdminRow = async(timer) => {
+  const createCompanyDivisionAdminRow = async() => {
     if (isProfile) {
       return;
     }
@@ -340,8 +358,9 @@ export default function PopupGenerate(props) {
       console.log("company.create." + errors[0].message);
       setTheSeverity('error');
 			setIsAlert(true);
-      clearInterval(timer);
+      setProgress(100);
 		} else {
+      setProgress(10);
       setAlertMessage('Setup Company Record.');
       setTheSeverity('success');
       setIsAlert(true);
@@ -366,12 +385,12 @@ export default function PopupGenerate(props) {
         console.log("division.create." + errors[0].message);
         setTheSeverity('error');
         setIsAlert(true);
-        clearInterval(timer);
+        setProgress(100);
       } else {
+        setProgress(20);
         setAlertMessage('Setup Division Record.');
         setTheSeverity('success');
         setIsAlert(true);
-        setDivisionId(division.id);
         const firstLastName = props.contact.split(' ');
         const { errors, data: admin } = await client.models.admin.create({
           id: uuidv4(),
@@ -389,42 +408,23 @@ export default function PopupGenerate(props) {
           console.log("admin.create." + errors[0].message);
           setTheSeverity('error');
           setIsAlert(true);
-          clearInterval(timer);
+          setProgress(100);
         } else {
+          setProgress(30);
           setAlertMessage('Setup Admin Record.');
           setTheSeverity('success');
           setIsAlert(true);
+          createTemplate(division.id);
         }
       }    
     }
 	}
 
   useEffect(() => {
-    var divId = null;
     setAddedUsers(props.addedUsers);
     getAppSettings();
-    const timer = setInterval(() => {
-      setProgress((prevProgress) => (prevProgress + 10));
-    }, 800);
-    if (progress == 10) {
-      createCompanyDivisionAdminRow(timer);
-    } else if (divisionId != '' && progress == 30) {
-      createTemplate(timer);
-    } else if (divisionId != '' && userPoolId != '' && progress == 60) {
-      createNewLogins(timer);
-    } else if (divisionId != '' && userPoolId != '' && progress >= 100) {
-      clearInterval(timer);
-      handleCloseValues();
-    }
-    return () => {
-      clearInterval(timer);
-    };
-  }, [progress]);
-
-  const handleCloseValues = () => {
-    setOpen(false);
-    props.onClose(false);
-  }
+    createCompanyDivisionAdminRow();
+  }, []);
 
   const handleOnAlert = (e) => {
     setIsAlert(false);
@@ -448,9 +448,9 @@ export default function PopupGenerate(props) {
         <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">{alertMessage}</Alert> }
       {isAlert && theSeverity == 'error' && 
         <Alert severity="error" onClose={handleOnAlert}>{alertMessage}</Alert>}
-      <Box sx={{ width: '100%' }}>
+      {progress < 100 && <Box sx={{ width: '100%' }}>
         <LinearProgressWithLabel value={progress} />
-      </Box>
+      </Box> }
     </DialogContent>
     <DialogActions>
       <Button disabled={progress < 100} onClick={handleCloseValues}>Close</Button>
