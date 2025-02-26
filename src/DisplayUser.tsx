@@ -318,7 +318,7 @@ export default function DisplayUser(props) {
     if (file != null) {
       try {
         uploadData({
-          path: `picture-submissions/${file.name}`,
+          path: `picture-submissions/${props.userId}/${file.name}`,
           data: file,
         });
       } catch (exception) {

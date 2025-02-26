@@ -234,12 +234,6 @@ export default function ResultsByTemplate(props) {
 		allResults(id);
 	}
 
-	const renderPhotoCell: GridColDef['renderCell'] = (params) => {
-		const value = params.value.toString().replaceAll("|", " and ");
-		return params.row.questionType == 'photo' ? <StorageImage alt={params.value} path={"picture-submissions/" + params.value}/> : 
-			value;
-		};
-
 	function reduceArray (arr) {
 		var newArr = [];
 		for (var indx = 0; indx < arr.length; indx++) {
@@ -282,7 +276,7 @@ export default function ResultsByTemplate(props) {
 
 	const handlePhoto = (id: GridRowId) => () => {
 		const row = userData.filter((row) => row.id == id);
-		setPhoto(row[0].questionType == 'photo' ? row[0].result : '');
+		setPhoto(row[0].questionType == 'photo' ? row[0].createdBy + "/" + row[0].result : '');
 		setError(row[0].question);
 		setOpenPhoto(true);
 	}

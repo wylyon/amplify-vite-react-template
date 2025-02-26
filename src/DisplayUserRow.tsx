@@ -117,6 +117,7 @@ export default function DisplayUserRow(props) {
       typeof value === 'string' ? value.split(',') : value,
     );
   //      checkGPS(false);
+  setIsWaiting(true);
   var coordinates = {lat: 0, long: 0};
   try {
     const position = await new Promise((resolve, reject) => {
@@ -143,6 +144,7 @@ export default function DisplayUserRow(props) {
     }
 
     props.onNextPage(true);
+    setIsWaiting(false);
   };
 
   const handleDropDown = async(event: SelectChangeEvent) => {
@@ -150,6 +152,7 @@ export default function DisplayUserRow(props) {
     setDropDownValue(ddValue);
   //      checkGPS(false);
   var coordinates = {lat: 0, long: 0};
+  setIsWaiting(true);
   try {
     const position = await new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -174,6 +177,7 @@ export default function DisplayUserRow(props) {
     }
 
     props.onNextPage(true);
+    setIsWaiting(false);
   }
 
   const handleCloseMultiple = (event) => {
@@ -344,6 +348,7 @@ export default function DisplayUserRow(props) {
   const handleRadioGroup = async(event: React.ChangeEvent<HTMLInputElement>) => {
     const rValue = (event.target as HTMLInputElement).value;
     setRadioValue(rValue);
+    setIsWaiting(true);
   //      checkGPS(false);
   var coordinates = {lat: 0, long: 0};
   try {
@@ -371,6 +376,7 @@ export default function DisplayUserRow(props) {
 
     trigger_check(rValue, props.question.id);
     props.onNextPage(true);
+    setIsWaiting(false);
   };
 
   const handleText = async(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -591,6 +597,10 @@ export default function DisplayUserRow(props) {
       </div>
     : props.questionType == 'photo' ?
       <div>
+        {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
+            {alertMessage}
+          </Alert>}
+        {isWaiting && <CircularProgress />}
         <DisplayAttributes props={props} onParsing={handleAttribute} />
         <Box component="section" sx={
           props.useBoxControls==1 || props.useAutoSpacing==1 ?
@@ -614,6 +624,10 @@ export default function DisplayUserRow(props) {
       </div>
     : props.questionType == 'multiple_dropdown' ?
       <div>
+        {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
+            {alertMessage}
+          </Alert>}
+        {isWaiting && <CircularProgress />}
         <DisplayAttributes props={props} onParsing={handleAttribute} />
         <FormControl sx={{ m: 1, width: 200 }}>
           <InputLabel id={"multiple-checkbox-label"+props.question.question_order}>{value}</InputLabel>
@@ -640,6 +654,10 @@ export default function DisplayUserRow(props) {
       </div>
     : props.questionType == 'dropdown' ?
       <div>
+        {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
+            {alertMessage}
+          </Alert>}
+        {isWaiting && <CircularProgress />}
         <DisplayAttributes props={props} onParsing={handleAttribute} />
         <FormControl sx={{ m: 1, width: 300 }}>
           <InputLabel id={"simple-select-label"+props.question.question_order}>{value}</InputLabel>
@@ -658,6 +676,10 @@ export default function DisplayUserRow(props) {
       </div>
     : props.questionType == 'radiobox' ?
       <div>
+        {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
+            {alertMessage}
+          </Alert>}
+        {isWaiting && <CircularProgress />}
         <DisplayAttributes props={props} onParsing={handleAttribute} />
         <FormControl sx={{ m: 1, width: 300 }}>
           <FormLabel id={"radio-buttons-group-label"+props.question.question_order}>{value}</FormLabel>
