@@ -360,7 +360,8 @@ export default function SummaryByTemplate(props) {
         </DialogActions>
       </Dialog>
 	<Stack>
-		{props.templateId == null && needTemplate && allTemplates.length > 0 && <SelectTemplate props={props} templateName={userData.length > 0 ? userData[0].title : null} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} /> }
+		{props.templateId == null && needTemplate && allTemplates.length > 0 && 
+			<SelectTemplate props={props} templateName={userData.length > 0 ? userData[0].title : null} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} setAll={false} /> }
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
 				rows={userData}

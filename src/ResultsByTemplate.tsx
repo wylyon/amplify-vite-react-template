@@ -444,7 +444,8 @@ function CustomToolbar() {
       </Dialog>
 	<Stack>
 		<Stack direction="row" spacing={2} >
-			{props.transactionId == null && needTemplate && allTemplates.length > 0 && <SelectTemplate props={props} templateName={userData.length > 0 ? userData[0].template : null} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} /> }
+			{props.transactionId == null && needTemplate && allTemplates.length > 0 && 
+				<SelectTemplate props={props} templateName={userData.length > 0 ? userData[0].template : null} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} setAll={false}/> }
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid

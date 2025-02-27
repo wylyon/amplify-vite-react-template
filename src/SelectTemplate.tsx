@@ -22,14 +22,19 @@ export default function SelectTemplate(props) {
 
   const handleSelectChange = (e) => {
     setSelectTemplate(e.target.value);
-    props.onSelectTemplate(arrayTemplates[e.target.value].split("!")[0]);
+    if (props.setAll && e.target.value == 0) {
+      props.onSelectTemplate('All');
+    } else {
+      const index = props.setAll ? e.target.value - 1 : e.target.value;
+      props.onSelectTemplate(arrayTemplates[index].split("!")[0]);
+    }
   };
 
   useEffect(() => {
 	  const arrTemplates = props.theTemplates.split("|");
     setArrayTemplates(arrTemplates);
-    setSelectTemplate(props.templateName == null ? 0 : arrTemplates.length > 0 ? findIndexOfTemplate(arrTemplates, props.templateName) : 0);
-	});
+    setSelectTemplate(props.setAll ? 0 : props.templateName == null || props.templateName == '' ? 0 : arrTemplates.length > 0 ? findIndexOfTemplate(arrTemplates, props.templateName) : 0);
+	}, []);
 
   return (
     <Box sx={{ minWidth: 120 }}>
@@ -42,8 +47,9 @@ export default function SelectTemplate(props) {
           label="Templates"
           onChange={handleSelectChange}
         >
+          {props.setAll ? <MenuItem key={0} value={0}>All</MenuItem> : null}
           { arrayTemplates.map((comp, index) => 
-            <MenuItem key={index} value={index}>{comp.split("!")[1]}</MenuItem>
+            <MenuItem key={props.setAll ? index+1: index} value={props.setAll ? index+1: index}>{comp.split("!")[1]}</MenuItem>
           )}
         </Select>
       </FormControl>

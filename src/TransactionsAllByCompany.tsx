@@ -49,6 +49,7 @@ import SelectCustomer from '../src/SelectCustomer';
 import Divider from '@mui/material/Divider';
 import MapMultipleWithGoogle from '../src/MapMultipleWithGoogle';
 import MapIcon from '@mui/icons-material/Map';
+import SelectTemplate from '../src/SelectTemplate';
 import { Row } from 'aws-cdk-lib/aws-cloudwatch';
 
 export default function TransactionsAllByCompany(props) {
@@ -61,6 +62,9 @@ export default function TransactionsAllByCompany(props) {
 	const [endDate, setEndDate] = useState(null);
 	const [mapKeyId, setMapKeyId] = useState('');
 	const [openMap, setOpenMap] = useState(false);
+	const [allTemplates, setAllTemplates] = useState('');
+	const [needTemplate, setNeedTemplate] = useState(false);
+	const [templateId, setTemplateId] = useState(null);
 
 	const client = generateClient<Schema>();
 	const [userData, setUserData] = useState([{
@@ -132,9 +136,30 @@ export default function TransactionsAllByCompany(props) {
 				const db = JSON.stringify(items);
 				const userItems = JSON.parse(db);
 				const data = translateUserTemplates(userItems);
+				var templateData = '';
+				var templates = [];
+				for (var i=0; i < data.length; i++) {
+					var foundIt = true;
+					if (templates.length < 0) {
+						templates.push(data[i].templateId);
+					} else {
+						const fil = templates.filter((map) => map == data[i].templateId);
+						if (fil.length == 0) {
+							templates.push(data[i].templateId);
+						} else {
+							foundIt = false;
+						}
+					}
+					if (foundIt) {
+						templateData = templateData + (i == 0 ? data[i].templateId + "!" + data[i].title : "|" + data[i].templateId + "!" + data[i].title);
+					}
+				}
+				setAllTemplates(templateData);
+				setNeedTemplate(true);
 				setUserData(data);
 				setFilterData(data);
 			  } else {
+				setNeedTemplate(false);
 				setUserData([]);
 				setFilterData([]);
 			  }
@@ -168,29 +193,31 @@ export default function TransactionsAllByCompany(props) {
 	  }
 	}
 
-	function calcDateFilters (start, end) {
-		if (start == null && end == null) {
+	function calcDateFilters (start, end, templateId) {
+		if (start == null && end == null && templateId == null) {
 			setFilterData(userData);
+		} else if (start == null && end == null) {
+			setFilterData(userData.filter((row) => row.templateId == templateId));
 		} else if (start != null && end == null) {
-			setFilterData(userData.filter((row) => row.created >= start));
+			setFilterData(userData.filter((row) => row.created >= start && ((templateId != null && row.templateId == templateId) || templateId == null)));
 		} else if (start == null && end != null) {
-			setFilterData(userData.filter((row) => row.created <= start));
+			setFilterData(userData.filter((row) => row.created <= start && ((templateId != null && row.templateId == templateId) || templateId == null)));
 		} else {
-			setFilterData(userData.filter((row) => row.created >= start && row.created <= end));
+			setFilterData(userData.filter((row) => row.created >= start && row.created <= end && ((templateId != null && row.templateId == templateId) || templateId == null)));
 		}
 	}
 
 	const handleStartDate = (e) => {
 		if (!isNaN(Date.parse(e.target.value))) {
 			setStartDate(getDate(e.target.value));
-			calcDateFilters(getDate(e.target.value), endDate);
+			calcDateFilters(getDate(e.target.value), endDate, templateId);
 		}
 	}
 
 	const handleEndDate = (e) => {
 		if (!isNaN(Date.parse(e.target.value))) {
 			setEndDate(getDate(e.target.value));
-			calcDateFilters(startDate, getDate(e.target.value));
+			calcDateFilters(startDate, getDate(e.target.value), templateId);
 		}
 	}
 
@@ -287,6 +314,11 @@ export default function TransactionsAllByCompany(props) {
 		}
 	}
 
+	function onSelectedTemplate (id) {
+		setTemplateId(id == 'All' ? null : id);
+		calcDateFilters(startDate, endDate, id == 'All' ? null : id);
+	}
+
 	function CustomToolbar() {
 		return (
 			<GridToolbarContainer>
@@ -367,6 +399,9 @@ export default function TransactionsAllByCompany(props) {
 						size="20"
 						onChange={handleEndDate}
 					/>
+					{props.templateId == null && needTemplate && allTemplates.length > 0 && 
+						<SelectTemplate props={props} templateName={null} theTemplates={allTemplates} setAll={true}
+						onSelectTemplate={onSelectedTemplate} /> }
 					<Typography variant='body1'>Heat Map:</Typography>
 					<Tooltip title="Press to see heat map of each transaction" placement="top">
 						<IconButton aria-label="map" color="primary" size="large" onClick={handleMapIt()}><MapIcon /></IconButton>
