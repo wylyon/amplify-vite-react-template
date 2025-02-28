@@ -21,8 +21,6 @@ function App() {
   const [settings, setSettings] = useState<Schema["Settings"]["type"][]>([]);
   const [isAccessDisabled, setIsAccessDisabled] = useState(false);
   const [disableMsg, setDisableMsg] = useState('');
-  const [loginId, setLoginId] = useState('');
-  const [companyName, setCompanyName] = useState('');
 
   const fetchSettings = async () => {
     const { data: items, errors } = await client.models.Settings.list();
@@ -39,19 +37,7 @@ function App() {
     }
   };
 
-  const fetchLogin = async () => {
-    try {
-      const { email } = await fetchUserAttributes();
-      setLoginId(email);
-      return email;
-    } catch (error) {
-      setLoginId('');
-      await signOut();
-    }
-  }
-
   const logOut = async() => {
-    setLoginId('');
     await signOut();
   }
 
@@ -62,16 +48,12 @@ function App() {
   function nothingToDo() {
   }
 
-  const handleCompanyName = (e) => {
-    setCompanyName(e.target.value);
-  }
-
   return (
     <>
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
     {!isAccessDisabled && <Authenticator>
       {({ signOut, user }) => (
-        fetchLogin() && loginId != '' && <DetermineMode userId={loginId} onSubmitChange={logOut} companyName={companyName} />
+        <DetermineMode userId={user.signInDetails.loginId} onSubmitChange={logOut} companyName={''} />
       )}
     </Authenticator> }
     </>
