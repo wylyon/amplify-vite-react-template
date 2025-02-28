@@ -25,6 +25,7 @@ import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import { blue } from '@mui/material/colors';
 import PopupWelcome from '../src/PopupWelcome';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const client = generateClient<Schema>();
 
@@ -39,6 +40,7 @@ export default function DetermineMode(props) {
   const [disableMsg, setDisableMsg] = useState('');
   const [googleAPIKey, setGoogleAPIKey] = useState('');
   const [what3WordsAPIKey, setWhat3WordsAPIKey] = useState('');
+  const [isWaiting, setIsWaiting] = useState(false);
 
   function isMobile () {
     return (window.navigator.userAgent.match(/iPhone/i) || 
@@ -97,29 +99,35 @@ export default function DetermineMode(props) {
     const { data: items, errors } = await client.models.admin.list();
     if (errors) {
       alert(errors[0].message);
+      setIsWaiting(false);
       setDisableMsg("Cannot access Admins.");
       setIsDisabledUser(true);
     } else {
       setFiltered(items.filter(comp => comp.email_address.includes(props.userId)));
       fetchAdmins (userId, items, isValid, false);
+      setIsWaiting(false);
     }
   }
 
   const allAdminsAfterWelcome = async (isValid, userId) => {
+    setIsWaiting(true);
     const { data: items, errors } = await client.models.admin.list();
     if (errors) {
       alert(errors[0].message);
+      setIsWaiting(false);
       setDisableMsg("Cannot access Admins.");
       setIsDisabledUser(true);
     } else {
       setFiltered(items.filter(comp => comp.email_address.includes(props.userId)));
       fetchAdmins (userId, items, isValid, true);
+      setIsWaiting(false);
     }
   }
 
   useEffect(() => {
 
     async function getUser(userId) {
+      setIsWaiting(true);
       const { data: items, errors } = await client.queries.listUserByEmail ({
         email: userId
       })
@@ -160,7 +168,8 @@ export default function DetermineMode(props) {
     {!isDisabledUser && mode == 2 && <PopupWelcome userId={props.userId} companyName={props.companyName} onClose={handleWelcomeClose} onDone={handleOnDone} />}
     {!isDisabledUser && mode == 0 && <AdminMode userId={props.userId} googleAPI={googleAPIKey} onSubmitChange={handleOnCancel} 
 	          companyId={filtered.length> 0 ? filtered[0].company_id : null} isSuperAdmin={isSuperAdmin} />}
-    {!isDisabledUser && mode == 1 && <UserMode userId={props.userId} what3words={what3WordsAPIKey} onSubmitChange={handleOnCancel} />}        
+    {!isDisabledUser && mode == 1 && <UserMode userId={props.userId} what3words={what3WordsAPIKey} onSubmitChange={handleOnCancel} />}      
+    {isWaiting && <CircularProgress />}  
     </>
   );
 }

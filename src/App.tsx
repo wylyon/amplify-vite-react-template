@@ -12,24 +12,28 @@ import DisableMode from '../src/DisableMode';
 import DetermineMode from '../src/DetermineMode';
 import { signOut } from 'aws-amplify/auth';
 import { fetchUserAttributes } from 'aws-amplify/auth';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const client = generateClient<Schema>();
 
 function App() {
 
   var companyId = '';
-  const [settings, setSettings] = useState<Schema["Settings"]["type"][]>([]);
   const [isAccessDisabled, setIsAccessDisabled] = useState(false);
   const [disableMsg, setDisableMsg] = useState('');
+  const [isWaiting, setIsWaiting] = useState(false);
 
   const fetchSettings = async () => {
+    setIsWaiting(true);
     const { data: items, errors } = await client.models.Settings.list();
     if (errors) {
       alert(errors[0].message);
+      setIsWaiting(false);
       setDisableMsg("Access is currently disabled.");
       setIsDisabledUser(true);
       setIsAccessDisabled(true);
     } else {
+      setIsWaiting(false);
       if (items.length > 0) {
         setDisableMsg(items[0].content);
         setIsAccessDisabled (items[0].isDisabled);
@@ -53,9 +57,10 @@ function App() {
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
     {!isAccessDisabled && <Authenticator>
       {({ signOut, user }) => (
-        <DetermineMode userId={user.signInDetails.loginId} onSubmitChange={logOut} companyName={''} />
+        !isWaiting && <DetermineMode userId={user.signInDetails.loginId} onSubmitChange={logOut} companyName={''} />
       )}
     </Authenticator> }
+    {isWaiting && <CircularProgress />}
     </>
   );
 }
