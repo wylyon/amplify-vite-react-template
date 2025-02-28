@@ -81,32 +81,14 @@ export default function DisplayUserRow(props) {
   },
   };
 
+  const options = {
+    enableHighAccuracy: false, 
+    maximumAge: 15000, 
+    timeout: 30000
+  }
+
   const API_KEY = props.what3wordsAPI;
   const client: ConvertTo3waClient =API_KEY == null ? null : ConvertTo3waClient.init(API_KEY);
-
-  const checkGPS = (showMessage) => {
-    getPosition();
-    if (!isGeolocationAvailable) {
-      setAlertMessage('Your browser does not support Geolocation');
-      setTheSeverity("warning");
-      setIsAlert(true);
-      return false;
-    } else {
-      if (!isGeolocationEnabled) {
-        if (showMessage) {
-          setAlertMessage('Geolocation is not enabled.');
-          setTheSeverity("warning");
-          setIsAlert(true);  
-        }      
-        return false;
-      } else {
-        if (coords) {
-          return true;
-        }
-        return false;
-      }
-    }
-  }
 
   const handleChangeMultiple = async(event: SelectChangeEvent<typeof comboName>) => {
     const {
@@ -121,7 +103,7 @@ export default function DisplayUserRow(props) {
   var coordinates = {lat: 0, long: 0};
   try {
     const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
     });
     coordinates.lat = position.coords.latitude;
     coordinates.long = position.coords.longitude;
@@ -155,7 +137,7 @@ export default function DisplayUserRow(props) {
   setIsWaiting(true);
   try {
     const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
     });
     coordinates.lat = position.coords.latitude;
     coordinates.long = position.coords.longitude;
@@ -199,7 +181,7 @@ export default function DisplayUserRow(props) {
   var coordinates = {lat: 0, long: 0};
   try {
     const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
     });
     coordinates.lat = position.coords.latitude;
     coordinates.long = position.coords.longitude;
@@ -234,7 +216,7 @@ export default function DisplayUserRow(props) {
         var coordinates = {lat: 0, long: 0};
         try {
           const position = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject);
+            navigator.geolocation.getCurrentPosition(resolve, reject, options);
           });
           coordinates.lat = position.coords.latitude;
           coordinates.long = position.coords.longitude;
@@ -287,7 +269,7 @@ export default function DisplayUserRow(props) {
    var coordinates = {lat: 0, long: 0};
    try {
      const position = await new Promise((resolve, reject) => {
-       navigator.geolocation.getCurrentPosition(resolve, reject);
+       navigator.geolocation.getCurrentPosition(resolve, reject, options);
      });
      coordinates.lat = position.coords.latitude;
      coordinates.long = position.coords.longitude;
@@ -319,7 +301,7 @@ export default function DisplayUserRow(props) {
    var coordinates = {lat: 0, long: 0};
    try {
      const position = await new Promise((resolve, reject) => {
-       navigator.geolocation.getCurrentPosition(resolve, reject);
+       navigator.geolocation.getCurrentPosition(resolve, reject, options);
      });
      coordinates.lat = position.coords.latitude;
      coordinates.long = position.coords.longitude;
@@ -353,7 +335,7 @@ export default function DisplayUserRow(props) {
   var coordinates = {lat: 0, long: 0};
   try {
     const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
     });
     coordinates.lat = position.coords.latitude;
     coordinates.long = position.coords.longitude;
@@ -386,7 +368,7 @@ export default function DisplayUserRow(props) {
   var coordinates = {lat: 0, long: 0};
   try {
     const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
     });
     coordinates.lat = position.coords.latitude;
     coordinates.long = position.coords.longitude;
@@ -412,7 +394,7 @@ export default function DisplayUserRow(props) {
   var coordinates = {lat: 0, long: 0};
   try {
     const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
     });
     coordinates.lat = position.coords.latitude;
     coordinates.long = position.coords.longitude;
@@ -442,7 +424,7 @@ export default function DisplayUserRow(props) {
   var coordinates = {lat: 0, long: 0};
   try {
     const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
     });
     coordinates.lat = position.coords.latitude;
     coordinates.long = position.coords.longitude;
@@ -471,7 +453,7 @@ export default function DisplayUserRow(props) {
   var coordinates = {lat: 0, long: 0};
   try {
     const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
     });
     coordinates.lat = position.coords.latitude;
     coordinates.long = position.coords.longitude;
