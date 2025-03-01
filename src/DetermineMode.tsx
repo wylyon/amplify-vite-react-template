@@ -31,16 +31,13 @@ const client = generateClient<Schema>();
 
 export default function DetermineMode(props) {
 
-  var companyId = '';
   const [filtered, setFiltered] = useState<Schema["admin"]["type"][]>([])
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isDisabledUser, setIsDisabledUser] = useState(false);
-  const [mode, setMode] = useState(9);
   const [isAccessDisabled, setIsAccessDisabled] = useState(false);
   const [disableMsg, setDisableMsg] = useState('');
-  const [googleAPIKey, setGoogleAPIKey] = useState('');
-  const [what3WordsAPIKey, setWhat3WordsAPIKey] = useState('');
-  const [isWaiting, setIsWaiting] = useState(false);
+  const [isWaiting, setIsWaiting] = useState(true);
+  const [mode, setMode] = useState(9);
 
   function isMobile () {
     return (window.navigator.userAgent.match(/iPhone/i) || 
@@ -48,17 +45,6 @@ export default function DetermineMode(props) {
       window.navigator.userAgent.match(/Android/i)) ? true : false;
   }
 
-  const getAppSettings = async() => {
-    const { data: items, errors } = await client.models.app_settings.list();
-    if (errors) {
-      alert(errors[0].message);
-    } else {
-      const googleAPI = items.filter(map => map.code.includes('GOOGLE_MAP_API_KEY'));
-      setGoogleAPIKey(googleAPI[0].value);
-      const what3wordsAPI = items.filter(map => map.code == 'WHAT3WORDS_API_KEY');
-      setWhat3WordsAPIKey(what3wordsAPI == null || what3wordsAPI.length < 1 ? null : what3wordsAPI[0].value);
-    }
-  }
   const fetchAdmins = (emailId, items, isValid, isRecycle) => {
     if (!isRecycle) {
       if (items.length < 1 || isSuperAdmin || mode != 9) {
@@ -71,7 +57,7 @@ export default function DetermineMode(props) {
 	// check if user is valid for input
 	      if (isValid) {
 	        setMode(1);
-	        setIsSuperAdmin(false);
+//	        setIsSuperAdmin(false);
 	        return false;
 	      }
       }
@@ -87,7 +73,7 @@ export default function DetermineMode(props) {
       // check screen size...if mobile then default to company user vs admin.
       if (isMobile()) {
         setMode(1);
-        setIsSuperAdmin(false);
+ //       setIsSuperAdmin(false);
         return false;
       }
     }
@@ -127,7 +113,6 @@ export default function DetermineMode(props) {
   useEffect(() => {
 
     async function getUser(userId) {
-      setIsWaiting(true);
       const { data: items, errors } = await client.queries.listUserByEmail ({
         email: userId
       })
@@ -145,7 +130,6 @@ export default function DetermineMode(props) {
       }
     }
 
-    getAppSettings();
     getUser(props.userId);
   }, []);
 
@@ -166,9 +150,9 @@ export default function DetermineMode(props) {
     <>
     {isDisabledUser && <DisableMode userId={props.userId} onSubmitChange={handleOnCancel} message={disableMsg} /> }
     {!isDisabledUser && mode == 2 && <PopupWelcome userId={props.userId} companyName={props.companyName} onClose={handleWelcomeClose} onDone={handleOnDone} />}
-    {!isDisabledUser && mode == 0 && <AdminMode userId={props.userId} googleAPI={googleAPIKey} onSubmitChange={handleOnCancel} 
+    {!isDisabledUser && mode == 0 && <AdminMode userId={props.userId} googleAPI={props.googleAPI} onSubmitChange={handleOnCancel} 
 	          companyId={filtered.length> 0 ? filtered[0].company_id : null} isSuperAdmin={isSuperAdmin} />}
-    {!isDisabledUser && mode == 1 && <UserMode userId={props.userId} what3words={what3WordsAPIKey} onSubmitChange={handleOnCancel} />}      
+    {!isDisabledUser && mode == 1 && <UserMode userId={props.userId} what3words={props.what3words} onSubmitChange={handleOnCancel} />}      
     {isWaiting && <CircularProgress />}  
     </>
   );

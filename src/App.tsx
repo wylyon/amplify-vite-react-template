@@ -16,27 +16,61 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 const client = generateClient<Schema>();
 
+var googleAPIKeyValue;
+var what3wordAPIValue;
+
+const fetchSettings = async () => {
+  const { data: items, errors } = await client.models.Settings.list();
+  if (errors) {
+    return {
+      data: null,
+      googleAPIKey: null,
+      what3wordAPI: null,
+      errors
+    };
+  }
+  const { data: appSettings, errors: appErrors } = await client.models.app_settings.list();
+  if (appErrors) {
+    return {
+      data: null,
+      googleAPIKey: null,
+      what3wordAPI: null,
+      errors: appErrors
+    };
+  }
+  // plumb in our responses
+  const googleAPI = appSettings.filter(map => map.code.includes('GOOGLE_MAP_API_KEY'));
+  const what3wordsAPI = appSettings.filter(map => map.code == 'WHAT3WORDS_API_KEY');
+  return {
+    data: items,
+    googleAPIKey: googleAPI[0].value,
+    what3wordAPI: what3wordsAPI == null || what3wordsAPI.length < 1 ? null : what3wordsAPI[0].value,
+    errors
+  }
+}
+
 function App() {
 
-  var companyId = '';
   const [isAccessDisabled, setIsAccessDisabled] = useState(false);
   const [disableMsg, setDisableMsg] = useState('');
-  const [isWaiting, setIsWaiting] = useState(false);
+  const [isWaiting, setIsWaiting] = useState(true);
 
-  const fetchSettings = async () => {
-    setIsWaiting(true);
-    const { data: items, errors } = await client.models.Settings.list();
+  const checkSettings = async (items, errors, googleAPIKey, what3wordAPI) => {
     if (errors) {
       alert(errors[0].message);
-      setIsWaiting(false);
       setDisableMsg("Access is currently disabled.");
       setIsDisabledUser(true);
       setIsAccessDisabled(true);
-    } else {
       setIsWaiting(false);
+    } else {
       if (items.length > 0) {
         setDisableMsg(items[0].content);
         setIsAccessDisabled (items[0].isDisabled);
+        setIsWaiting(false);
+      } else {
+        googleAPIKeyValue = googleAPIKey;
+        what3wordAPIValue = what3wordAPI;
+        setIsWaiting(false);
       }
     }
   };
@@ -46,7 +80,12 @@ function App() {
   }
 
   useEffect(() => {
-    fetchSettings();
+    const fetchTheSettings = async () => {
+      const {data: items, googleAPIKey, what3wordAPI, errors} = await fetchSettings();
+      checkSettings(items, errors, googleAPIKey, what3wordAPI);
+    }
+//    setIsWaiting(true);
+    fetchTheSettings();
   }, []);
 
   function nothingToDo() {
@@ -57,7 +96,7 @@ function App() {
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
     {!isAccessDisabled && <Authenticator>
       {({ signOut, user }) => (
-        !isWaiting && <DetermineMode userId={user.signInDetails.loginId} onSubmitChange={logOut} companyName={''} />
+        !isWaiting && <DetermineMode userId={user.signInDetails.loginId} googleAPI={googleAPIKeyValue} what3words={what3wordAPIValue} onSubmitChange={logOut} companyName={''} />
       )}
     </Authenticator> }
     {isWaiting && <CircularProgress />}

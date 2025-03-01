@@ -213,11 +213,6 @@ export default function TemplateGrid(props) {
 	  const [rows, setRows] = useState<GridRowsProp>([]);
 	  const [filter, setFilter] = useState(props.filter);
 	  const [filtered, setFiltered] = useState<Schema["template_question"]["type"][]>([]);
-	  const [access, setAccess] = useState('');
-	  const [secret, setSecret] = useState('');
-	  const [region, setRegion] = useState(null);
-	  const [ourWord, setOurWord] = useState('');
-	  const [userPoolId, setUserPoolId] = useState('');
 	  const [isBackups, setIsBackups] = useState(true);
 
 	  const getAppSettings = async() => {
@@ -233,45 +228,6 @@ export default function TemplateGrid(props) {
 					setIsBackups(false);
 				}
 			}
-		  const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY0'));
-		  if (what3words.length < 1) {
-			setError("Cant get credentials for Admin.");
-			setOpenError(true);    
-			return;   
-		  }
-		  setOurWord(what3words[0].value + what3words[0].value);
-		  const domain = window.location.hostname;
-		  const userPool = domain.includes('localhost') ? items.filter(map => map.code.includes('USERPOOLID-DEV')) : items.filter(map => map.code.includes('USERPOOLID-PRD'));
-		  if (userPool.length < 1) {
-			setError("Cant get userPool for Admin.");
-			setOpenError(true);    
-			return;   
-		  }
-		  setUserPoolId(userPool[0].value);
-		  const creds = items.filter(map => map.code.includes('ACCESS'));
-		  if (creds.length < 1) {
-			setError("Cant get access credentials for Admin.");
-			setOpenError(true);
-		  } else {
-			const accessId = creds[0].value;
-			const secret = items.filter(map => map.code.includes('SECRET'));
-			if (secret.length < 1) {
-			  setError("Cant get secret credentials for Admin.");
-			  setOpenError(true);
-			} else {
-			  const secretId = secret[0].value;
-			  const region = items.filter(map => map.code.includes('REGION'));
-			  if (region.length < 1) {
-				setError("Cant get region credentials for Admin.");
-				setOpenError(true);
-			  } else {
-				const regionId = region[0].value;
-				setAccess(accessId);
-				setSecret(secretId);
-				setRegion(regionId);
-			  }
-			}
-		  }
 		}
 	  }
 
