@@ -218,7 +218,8 @@ export default function TemplateGrid(props) {
 	  const getAppSettings = async() => {
 		const { data: items, errors } = await client.models.app_settings.list();
 		if (errors) {
-		  alert(errors[0].message);
+			setError(errors[0].message);
+			setOpen(true);
 		} else {
 			const backupDeletes = items.filter(map => map.code == 'BACKUP');
 			if (backupDeletes.length < 1) {

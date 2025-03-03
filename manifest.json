@@ -1,0 +1,32 @@
+{
+  "short_name": "Logit Pro",
+  "name": "Logit like a pro!",
+  "icons": [
+    {
+      "src": "/images/Logit-Pro-Checkmark.png",
+      "type": "image/png",
+      "sizes": "108x108"
+    },
+    {
+      "src": "/images/Logit-Pro-Checkmark-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/images/Logit-Pro-Checkmark-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ], 
+  "start_url": "https://main.dhhrhy5rbhj7h.amplifyapp.com/",
+  "shortcuts": [
+    {
+      "name": "Logit like a pro!",
+      "short_name": "Logit Pro",
+      "description": "Logit empowers you to build custom data capture apps tailored to your specific needs.",
+      "url": "https://main.dhhrhy5rbhj7h.amplifyapp.com/",
+      "icons": [{ "src": "/images/Logit-Pro-Checkmark-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "description": "Logit empowers you to build custom data capture apps tailored to your specific needs."
+}
