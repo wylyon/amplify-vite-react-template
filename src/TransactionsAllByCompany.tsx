@@ -51,6 +51,7 @@ import MapMultipleWithGoogle from '../src/MapMultipleWithGoogle';
 import MapIcon from '@mui/icons-material/Map';
 import SelectTemplate from '../src/SelectTemplate';
 import { Row } from 'aws-cdk-lib/aws-cloudwatch';
+import what3words from '@what3words/api';
 
 export default function TransactionsAllByCompany(props) {
 	const [loading, setLoading] = useState(true);
@@ -75,6 +76,7 @@ export default function TransactionsAllByCompany(props) {
 		templateId: '',
 		gpsLat: 0,
 		gpsLong: 0,
+		what3words: null,
 		created: null, 
 		createdBy: null,
 		locationId: 0
@@ -87,6 +89,7 @@ export default function TransactionsAllByCompany(props) {
 		templateId: '',
 		gpsLat: 0,
 		gpsLong: 0,
+		what3words: null,
 		created: null, 
 		createdBy: null,
 		locationId: 0
@@ -114,6 +117,7 @@ export default function TransactionsAllByCompany(props) {
 				templateId: item.template_id,
 				gpsLat: item.gps_lat,
 				gpsLong: item.gps_long,
+				what3words: item.what3words,
 				created: getDate(item.created),
 				createdBy: item.created_by,
 				locationId: i+1}
@@ -250,6 +254,7 @@ export default function TransactionsAllByCompany(props) {
 				title: arr[indx].title, 
 				gpsLat: arr[indx].gpsLat,
 				gpsLong: arr[indx].gpsLong,
+				what3words: arr[indx].what3words,
 				created: arr[indx].created,
 				createdBy: arr[indx].createdBy,
 			});
@@ -292,6 +297,10 @@ export default function TransactionsAllByCompany(props) {
 		  	headerClassName: 'grid-headers' },
 		{ field: 'gpsLong',
 			headerName: 'gps longitude',
+			width: 200, 
+			headerClassName: 'grid-headers' },
+		{ field: 'what3words',
+			headerName: 'what3words',
 			width: 200, 
 			headerClassName: 'grid-headers' },
 		{ field: 'created', type: 'date', headerName: 'Posted', width: 100, headerClassName: 'grid-headers' },
