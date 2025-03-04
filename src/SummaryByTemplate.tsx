@@ -201,7 +201,6 @@ export default function SummaryByTemplate(props) {
       companyId: false,
 	  templateId: false,
 	  transactionId: false,
-	  what3words: false,
     });
 
 	function handleRowClick (params, event, details) {

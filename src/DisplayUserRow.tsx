@@ -115,7 +115,7 @@ export default function DisplayUserRow(props) {
   if (API_KEY != null) {
 
       const options: ConvertTo3waOptions = {
-        coordinates: { lat: coords.latitude, lng: coords.longitude },
+        coordinates: { lat: coordinates.lat, lng: coordinates.long },
       };
 
       client
@@ -148,7 +148,7 @@ export default function DisplayUserRow(props) {
   }
   if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
-        coordinates: { lat: coords.latitude, lng: coords.longitude },
+        coordinates: { lat: coordinates.lat, lng: coordinates.long },
       };
       
       client
@@ -192,7 +192,7 @@ export default function DisplayUserRow(props) {
   }
   if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
-        coordinates: { lat: coords.latitude, lng: coords.longitude },
+        coordinates: { lat: coordinates.lat, lng: coordinates.long },
       };
       
       client
@@ -227,7 +227,7 @@ export default function DisplayUserRow(props) {
         }
         if (API_KEY != null) {
           const options: ConvertTo3waOptions = {
-            coordinates: { lat: coords.latitude, lng: coords.longitude },
+            coordinates: { lat: coordinates.lat, lng: coordinates.long },
           };
 
           client
@@ -280,7 +280,7 @@ export default function DisplayUserRow(props) {
    }
    if (API_KEY != null) {
      const options: ConvertTo3waOptions = {
-        coordinates: { lat: coords.latitude, lng: coords.longitude },
+        coordinates: { lat: coordinates.lat, lng: coordinates.long },
       };
       
       client
@@ -312,7 +312,7 @@ export default function DisplayUserRow(props) {
    }
    if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
-        coordinates: { lat: coords.latitude, lng: coords.longitude },
+        coordinates: { lat: coordinates.lat, lng: coordinates.long },
       };
       
       client
@@ -346,7 +346,7 @@ export default function DisplayUserRow(props) {
   }
   if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
-        coordinates: { lat: coords.latitude, lng: coords.longitude },
+        coordinates: { lat: coordinates.lat, lng: coordinates.long },
       };
       
       client
@@ -380,10 +380,15 @@ export default function DisplayUserRow(props) {
   if (API_KEY != null) {
 
       const options: ConvertTo3waOptions = {
-        coordinates: { lat: coords.latitude, lng: coords.longitude },
+        coordinates: { lat: coordinates.lat, lng: coordinates.long },
       };
-    } 
-    props.onText (tValue, props.question.id, coordinates, '', props.question.question_type, props.whatPage);
+
+      client
+      .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
+      .then((res: LocationJsonResponse) => props.onText (tValue, props.question.id, coordinates, res.words, props.question.question_type, props.whatPage));
+    } else {
+      props.onText (tValue, props.question.id, coordinates, '', props.question.question_type, props.whatPage);
+    }
     props.onNextPage(true);
   }
 
@@ -405,7 +410,7 @@ export default function DisplayUserRow(props) {
   }
   if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
-        coordinates: { lat: coords.latitude, lng: coords.longitude },
+        coordinates: { lat: coordinates.lat, lng: coordinates.long },
       };
       
       client
@@ -435,7 +440,7 @@ export default function DisplayUserRow(props) {
   }
   if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
-        coordinates: { lat: coords.latitude, lng: coords.longitude },
+        coordinates: { lat: coordinates.lat, lng: coordinates.long },
       };
       client
       .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
@@ -464,7 +469,7 @@ export default function DisplayUserRow(props) {
   }
   if (API_KEY != null) {
       const options: ConvertTo3waOptions = {
-        coordinates: { lat: coords.latitude, lng: coords.longitude },
+        coordinates: { lat: coordinates.lat, lng: coordinates.long },
       };
       
       client
