@@ -9,16 +9,16 @@ const containerStyle = {
 
 export default function MapMultipleWithGoogle(props) {
   const [selectedCenter, setSelectedCenter] = useState(null);
+  const [zoom, setZoom] = useState(4);
+  const [center, setCenter] = useState({
+    lat: props.markers[0].gpsLat,
+    lng: props.markers[0].gpsLong,
+  });
   
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: props.googleAPI,
   })
-
-  const center = {
-    lat: props.markers[0].gpsLat,
-    lng: props.markers[0].gpsLong,
-  }
 
   const [map, setMap] = React.useState(null)
 
@@ -38,7 +38,7 @@ export default function MapMultipleWithGoogle(props) {
     <GoogleMap
       mapContainerStyle={containerStyle}
       center={center}
-      zoom={4}
+      zoom={zoom}
       onLoad={onLoad}
       onUnmount={onUnmount}
     >
@@ -47,9 +47,16 @@ export default function MapMultipleWithGoogle(props) {
           position={{ lat: marker.gpsLat, lng: marker.gpsLong }}
           key={marker.id}
       //    label={"(" + marker.locationId + ")"}
-          onClick={(m) => {
-            setSelectedCenter(marker);
+          onMouseOver={(m) => {
+              setSelectedCenter(marker);
+              setCenter( { lat: marker.gpsLat, lng: marker.gpsLong});
          }}
+          onRightClick={(m) => {
+            setZoom(4);
+          }}
+          onClick={(m) => {
+            setZoom(15);
+          }}
         />
       ))}
       {selectedCenter && (
@@ -61,6 +68,7 @@ export default function MapMultipleWithGoogle(props) {
         lat: selectedCenter.gpsLat,
         lng: selectedCenter.gpsLong
       }}
+      options={{ pixelOffset: new window.google.maps.Size(0, -40)}}
    ><div><p><b>{selectedCenter.title}</b></p><p>{'Created ' + selectedCenter.created}</p><p>{'by ' + selectedCenter.createdBy}</p></div></InfoWindow> )}
       <></>
     </GoogleMap>
