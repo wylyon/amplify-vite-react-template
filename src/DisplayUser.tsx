@@ -82,7 +82,7 @@ export default function DisplayUser(props) {
           positionOptions: {
               enableHighAccuracy: false,
           },
-          userDecisionTimeout: 5000,
+          userDecisionTimeout: 1000,
           watchLocationPermissionChange: true,
       });
 
