@@ -490,7 +490,7 @@ export default function PopupWelcome(props) {
                       },
                     }}
                     fullWidth
-                    variant="standard"
+                    variant="outlined"
                     onChange={handleNameChange}
                   />
                   <TextField
@@ -508,7 +508,7 @@ export default function PopupWelcome(props) {
                       value={formData.name}
                       onChange={handleFormChange}
                       fullWidth
-                      variant="standard"
+                      variant="outlined"
                     />
                 </Box> : activeStep == 1 ? 
                 <Box>
@@ -528,7 +528,7 @@ export default function PopupWelcome(props) {
                       value={formData.templateName}
                       onChange={handleFormChange}
                       fullWidth
-                      variant="standard"
+                      variant="outlined"
                     />
                 </Box>
                 : activeStep == 2 ?

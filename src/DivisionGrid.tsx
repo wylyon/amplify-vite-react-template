@@ -186,7 +186,7 @@ export default function DivisionGrid(props) {
 					setIsBackups(false);
 				}
 			}
-		  const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY0'));
+		  const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY'));
 		  if (what3words.length < 1) {
 			setError("Cant get credentials for Admin.");
 			setOpenError(true);    

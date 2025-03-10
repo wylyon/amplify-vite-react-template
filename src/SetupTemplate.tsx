@@ -64,6 +64,7 @@ export default function SetupTemplate(props) {
   const [alertMessage, setAlertMessage] = useState('');
   const [isUpdate, setIsUpdate] = useState(false);
   const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
   const [page, setPage] = useState(1);
   const [openPreAttributes, setOpenPreAttributes] = useState(false);
   const [whichControl, setWhichControl] = useState('');
@@ -98,9 +99,16 @@ export default function SetupTemplate(props) {
   };
 
 
-  const handleClose = () => {
+  const handleClose = (event: object, reason: string) => {
+    if (reason == "escapeKeyDown" || reason == "backdropClick") {
+      return;
+    }
     setOpen(false);
   };
+
+  const handleCloseNow = () => {
+    setOpen(false);
+  }
 
   const handlePreClose = () => {
     setOpenPreAttributes(false);
@@ -374,6 +382,7 @@ export default function SetupTemplate(props) {
       });
     }
     setTemplateQuestion(newTemplateQuestion);
+    setPage(newTemplateQuestion.length);
     setFiltered(newTemplateQuestion.filter(comp => !comp.question_type.includes('dialog_input')));
   }
 
@@ -557,6 +566,7 @@ export default function SetupTemplate(props) {
   }
 
   function handleDelete () {
+    setOpenDelete(false);
     for (var i = 0; i < selectedRows.length; i++) {
       deleteQuestions(selectedRows[i]);
     }
@@ -696,6 +706,17 @@ export default function SetupTemplate(props) {
     return { __html: dirty };
   }
 
+  const handleCloseDelete = (event: object, reason: string) => {
+    if (reason == "escapeKeyDown" || reason == "backdropClick") {
+      return;
+    }
+		setOpenDelete(false);
+	};
+
+  const confirmDelete = () => {
+    setOpenDelete(true);
+  }
+
   return (
     <React.Fragment>
       <CssBaseline />
@@ -703,6 +724,27 @@ export default function SetupTemplate(props) {
         onSubmitChange={newQuestionSubmit} 
         nextOrder={templateQuestion ? templateQuestion.length+1 : 1}
       />}
+      <Dialog
+        open={openDelete}
+        onClose={handleCloseDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Are You Sure?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete this question?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+			    <Button variant='contained' color='success' onClick={handleDelete}>Delete</Button>
+          <Button variant='contained' color='error' onClick={handleCloseDelete} autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog
         open={openPreAttributes}
         onClose={handlePreClose}
@@ -1067,6 +1109,8 @@ export default function SetupTemplate(props) {
                         <Button variant="contained" disabled={isValuesDisabled} color="primary" onClick={handleClickOpen}>Set Values</Button>
                       </Tooltip>  }
                       {formData.questionValues == '' ? null :
+                      <Stack direction="column" spacing={0}>
+                        <br />
                         <TextField id="question_values" name="questionValues" value={formData.questionValues.split("|")} 
                           label="dropdown/button list values" 
                           slotProps={{
@@ -1076,6 +1120,7 @@ export default function SetupTemplate(props) {
                           }}
                           disabled={isValuesDisabled} variant="filled" size="small" multiline
                           maxRows={4} />
+                      </Stack>
                       }  
                   </Box>
                   :
@@ -1113,7 +1158,7 @@ export default function SetupTemplate(props) {
               borderStyle: 'solid', borderWidth: '2px'}} >
             <h3>{(props.name.length > 18) ? props.name.substring(0, 18) + "... Questions" : props.name + " Questions"}
               <ButtonGroup variant="contained" aria-label="Question View group"  sx={{ float: 'right'}}>
-                <Button variant="contained" disabled={!isDeleteActive} color="error" onClick={handleDelete}>Delete</Button>
+                <Button variant="contained" disabled={!isDeleteActive} color="error" onClick={confirmDelete}>Delete</Button>
               </ButtonGroup>
             </h3>
              <Paper sx={{ height: 400, width: '100%' }}>

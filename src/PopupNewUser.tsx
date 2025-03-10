@@ -65,7 +65,7 @@ export default function PopupNewUser(props) {
     if (errors) {
       alert(errors[0].message);
     } else {
-      const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY0'));
+      const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY'));
       if (what3words.length < 1) {
         setError("Cant get credentials for Admin.");
         setOpenError(true);    

@@ -51,6 +51,7 @@ export default function PopupAddUsers(props) {
   const [open, setOpen] = useState(true);
   const [email, setEmail] = useState('');
   const [openError, setOpenError] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
   const [error, setError] = useState('');
   const [checked, setChecked] = useState(true);
   const [isAdd, setIsAdd] = useState(false);
@@ -265,6 +266,7 @@ export default function PopupAddUsers(props) {
   }
 
   function handleDelete () { 
+    setOpenDelete(false);
     for (var i = 0; i < selectedRows.length; i++) {
       deleteUsers(selectedRows[i]);
     }
@@ -293,6 +295,17 @@ export default function PopupAddUsers(props) {
     }
   }
 
+  const handleCloseDelete = (event: object, reason: string) => {
+    if (reason == "escapeKeyDown" || reason == "backdropClick") {
+      return;
+    }
+		setOpenDelete(false);
+	};
+
+  const confirmDelete = () => {
+    setOpenDelete(true);
+  }
+
   const handleCheckedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
   };
@@ -313,6 +326,27 @@ export default function PopupAddUsers(props) {
   return (
     <React.Fragment>
     <CssBaseline />
+    <Dialog
+        open={openDelete}
+        onClose={handleCloseDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Are You Sure?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete this user?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+			    <Button variant='contained' color='success' onClick={handleDelete}>Delete</Button>
+          <Button variant='contained' color='error' onClick={handleCloseDelete} autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     <Dialog
       open={open}
       maxWidth="sm"
@@ -361,7 +395,7 @@ export default function PopupAddUsers(props) {
           <Box sx={{ bgcolor: '#52B2BF', width: '300px', height: '430px', 
               borderStyle: 'solid', borderWidth: '2px'}} >
             <h3>{"Added Users"}
-              <Button variant="contained" color="error" disabled={!isDeleteActive} onClick={handleDelete}>Delete</Button>
+              <Button variant="contained" color="error" disabled={!isDeleteActive} onClick={confirmDelete}>Delete</Button>
             </h3>
              <Paper sx={{ height: 350, width: '100%' }}>
               <DataGrid
