@@ -245,6 +245,7 @@ export default function DisplayUserRow(props) {
       }
     }
     setIsWaiting(false);
+    setDisabled(true);
   }
   
   function trigger_check (value, id) {
@@ -293,6 +294,7 @@ export default function DisplayUserRow(props) {
     trigger_check(nextView, event.target.ariaPlaceholder);
     props.onNextPage(true);
     setIsWaiting(false);
+    setDisabled(true);
   };
 
   const handleMultipleToggleChange = async(event: React.MouseEvent<HTMLElement>, newChanges: string[]) => {
@@ -326,6 +328,7 @@ export default function DisplayUserRow(props) {
     trigger_check(newChanges[newChanges.length-1], event.target.ariaPlaceholder);
     props.onNextPage(true);
     setIsWaiting(false);
+    setDisabled(true);
   };
 
   const handleRadioGroup = async(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -502,9 +505,13 @@ export default function DisplayUserRow(props) {
     setTheSeverity("error");
   }
 
+  const handleButtonRender = () => {
+    setDisabled(false);
+  }
+  
   useEffect(() => {
     setDisabled(false);
-	}, []);
+	}, [disabled]);
 
   function createMarkup(dirty) {
 	return { __html: dirty };
@@ -562,6 +569,7 @@ export default function DisplayUserRow(props) {
             aria-label={props.questionType + props.question.question_order}
             key={'tbg_' + props.question.question_order}
             aria-placeholder={'tbg_' + props.question.question_order}
+            onFocus={handleButtonRender}
             color="primary"
             value={props.questionType == 'toggle_button' ? view : mView}
             size="small"
