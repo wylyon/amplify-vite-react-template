@@ -11,6 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import { Box } from "@mui/material";
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import { Check, CheckBox, Label } from "@mui/icons-material";
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
@@ -69,7 +70,6 @@ export default function DisplayUserRow(props) {
   const [theSeverity, setTheSeverity] = useState('error');
   const [nextCall, setNextCall] = useState({});
   const [id, setId] = useState(0);
-  const [disabled, setDisabled] = useState(true);
 
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
@@ -245,7 +245,6 @@ export default function DisplayUserRow(props) {
       }
     }
     setIsWaiting(false);
-    setDisabled(true);
   }
   
   function trigger_check (value, id) {
@@ -294,7 +293,6 @@ export default function DisplayUserRow(props) {
     trigger_check(nextView, event.target.ariaPlaceholder);
     props.onNextPage(true);
     setIsWaiting(false);
-    setDisabled(true);
   };
 
   const handleMultipleToggleChange = async(event: React.MouseEvent<HTMLElement>, newChanges: string[]) => {
@@ -328,7 +326,6 @@ export default function DisplayUserRow(props) {
     trigger_check(newChanges[newChanges.length-1], event.target.ariaPlaceholder);
     props.onNextPage(true);
     setIsWaiting(false);
-    setDisabled(true);
   };
 
   const handleRadioGroup = async(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -504,18 +501,19 @@ export default function DisplayUserRow(props) {
     setAlertMessage('');
     setTheSeverity("error");
   }
-
-  const handleButtonRender = () => {
-    setDisabled(false);
-  }
   
   useEffect(() => {
-    setDisabled(false);
-	}, [disabled]);
+	}, []);
 
   function createMarkup(dirty) {
 	return { __html: dirty };
   }
+
+  const theme = createTheme({
+    components: {
+      MuiButton: { root: { transition: 'color .01s', '&.Mui-disabled span': { transition: '.01s', }, }, }
+    },
+  });
 
   return (
     <React.Fragment>
@@ -569,7 +567,6 @@ export default function DisplayUserRow(props) {
             aria-label={props.questionType + props.question.question_order}
             key={'tbg_' + props.question.question_order}
             aria-placeholder={'tbg_' + props.question.question_order}
-            onFocus={handleButtonRender}
             color="primary"
             value={props.questionType == 'toggle_button' ? view : mView}
             size="small"
@@ -579,15 +576,16 @@ export default function DisplayUserRow(props) {
           >
             <Stack direction="column" spacing={ props.questionType == 'checkbox_button' ? 2 : 1 }>
               {props.question.question_values.split("|").map((comp, index) => 
+              <ThemeProvider theme={theme}>
               <ToggleButton 
                 key={'tb_'+props.question.question_order+'_'+index} 
                 value={comp} 
                 size="small"
-                disabled={disabled}
                 aria-label={comp} 
                 aria-placeholder={props.question.id}
                 sx={{bgcolor: "info.main", color: 'info.contrastText'}}>{comp}
-              </ToggleButton> )}
+              </ToggleButton>
+              </ThemeProvider> )}
             </Stack>
           </ToggleButtonGroup>
         </Box>
