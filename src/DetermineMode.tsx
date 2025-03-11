@@ -26,6 +26,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { blue } from '@mui/material/colors';
 import PopupWelcome from '../src/PopupWelcome';
 import CircularProgress from '@mui/material/CircularProgress';
+import { clearState } from '../src/utils.js';
 
 const client = generateClient<Schema>();
 
@@ -61,6 +62,7 @@ export default function DetermineMode(props) {
 	        return false;
 	      }
       }
+      clearState();
       setMode(2);
     //  setWelcome(true);
       return true

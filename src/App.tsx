@@ -13,6 +13,7 @@ import DetermineMode from '../src/DetermineMode';
 import { signOut } from 'aws-amplify/auth';
 import { fetchUserAttributes } from 'aws-amplify/auth';
 import CircularProgress from '@mui/material/CircularProgress';
+import { clearState } from '../src/utils.js';
 
 const client = generateClient<Schema>();
 
@@ -76,6 +77,7 @@ function App() {
   };
 
   const logOut = async() => {
+    clearState();
     await signOut();
   }
 

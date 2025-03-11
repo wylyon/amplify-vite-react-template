@@ -568,7 +568,7 @@ export default function DisplayUserRow(props) {
             key={'tbg_' + props.question.question_order}
             aria-placeholder={'tbg_' + props.question.question_order}
             color="primary"
-            value={props.questionType == 'toggle_button' ? view : mView}
+            value={props.questionType == 'toggle_button' ? (props.resultValue ? props.resultValue.value : view) : mView}
             size="small"
             exclusive={props.questionType == 'toggle_button'}
             onChange={props.questionType == 'toggle_button' ? handleToggleChange : handleMultipleToggleChange}

@@ -487,6 +487,7 @@ export default function DisplayUser(props) {
                   useBoxControls={props.userData[0].useBoxControls}
                   useAutoSpacing={props.userData[0].useAutoSpacing}
                   what3wordsAPI={props.what3wordsAPI}
+                  resultValue={results.find(res => res.page == page)}
                   whatPage={page}
                   question={getNonDialogQuestion(page - 1)}
                   onOtherChange={handleOnSubmitOther}
