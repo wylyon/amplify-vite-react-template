@@ -576,15 +576,14 @@ export default function DisplayUserRow(props) {
           >
             <Stack direction="column" spacing={ props.questionType == 'checkbox_button' ? 2 : 1 }>
               {props.question.question_values.split("|").map((comp, index) => 
-              <ThemeProvider theme={theme}>
-              <ToggleButton 
-                key={'tb_'+props.question.question_order+'_'+index} 
-                value={comp} 
-                size="small"
-                aria-label={comp} 
-                aria-placeholder={props.question.id}
-                sx={{bgcolor: "info.main", color: 'info.contrastText'}}>{comp}
-              </ToggleButton>
+              <ThemeProvider key={'the_'+props.question.question_order+'_'+index} theme={theme}>
+                <ToggleButton 
+                  key={'tb_'+props.question.question_order+'_'+index} 
+                  value={comp} 
+                  size="small"
+                  aria-label={comp} 
+                  aria-placeholder={props.question.id}>{comp}
+                </ToggleButton>
               </ThemeProvider> )}
             </Stack>
           </ToggleButtonGroup>
