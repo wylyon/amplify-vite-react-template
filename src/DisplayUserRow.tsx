@@ -69,6 +69,7 @@ export default function DisplayUserRow(props) {
   const [theSeverity, setTheSeverity] = useState('error');
   const [nextCall, setNextCall] = useState({});
   const [id, setId] = useState(0);
+  const [disabled, setDisabled] = useState(true);
 
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
@@ -82,7 +83,7 @@ export default function DisplayUserRow(props) {
   };
 
   const options = {
-    enableHighAccuracy: false, 
+    enableHighAccuracy: true, 
     maximumAge: 15000, 
     timeout: 30000
   }
@@ -502,7 +503,7 @@ export default function DisplayUserRow(props) {
   }
 
   useEffect(() => {
- //   checkGPS(true);
+    setDisabled(false);
 	}, []);
 
   function createMarkup(dirty) {
@@ -574,6 +575,7 @@ export default function DisplayUserRow(props) {
                 key={'tb_'+props.question.question_order+'_'+index} 
                 value={comp} 
                 size="small"
+                disabled={disabled}
                 aria-label={comp} 
                 aria-placeholder={props.question.id}
                 sx={{bgcolor: "info.main", color: 'info.contrastText'}}>{comp}
