@@ -129,7 +129,7 @@ export default function AdminSuper(props) {
 		>
 			<Tab label="Companies" {...a11yProps(0)} />
 			<Tab label="Divisions" {...a11yProps(1)} />
-			<Tab label="Templates" {...a11yProps(2)} />
+			<Tab label="Log Apps" {...a11yProps(2)} />
 			<Tab label="Users" {...a11yProps(3)} />
 			<Tab label="Reports" {...a11yProps(4)} />
 		</Tabs>

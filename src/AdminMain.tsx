@@ -159,7 +159,7 @@ export default function AdminMain(props) {
 			aria-label="Vertical tabs example"
 			sx={{ borderRight: 1, borderColor: 'divider' }}
 		>
-			<Tab label="Templates" {...a11yProps(0)} />
+			<Tab label="Log Apps" {...a11yProps(0)} />
 			<Tab label="Users" {...a11yProps(1)} />
 			{isDivisions && <Tab label="Divisions" {...a11yProps(2)} /> }
 			<Tab label="Reports" {...a11yProps(3)} />

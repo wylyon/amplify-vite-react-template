@@ -154,9 +154,9 @@ function EditToolbar(props: EditToolbarProps) {
 				postLoadAttributes={''}
 				usePages={item.use_pagination == 1} />}
 	  <GridToolbarContainer>
-		<Tooltip title="Add a new Template">
+		<Tooltip title="Add a new Logging App">
 			<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-		  	Add a Template
+		  	Add a Logging App
 			</Button>
 		</Tooltip>
 		<GridToolbar />
@@ -746,7 +746,7 @@ export default function TemplateGrid(props) {
 				<GridActionsCellItem icon={<EditIcon />} label="Edit" color='primary' onClick={handleEditClick(id)} />,
 				<GridActionsCellItem icon={<HtmlIcon />} label="html" color='success' onClick={handlePrePostHtmlAttributes(id)} showInMenu/>,
 				<GridActionsCellItem icon={<PersonAddAltIcon />} label='Associate Users' onClick={handleAssociations(id)} showInMenu/>,
-				<GridActionsCellItem icon={<BuildIcon />} label='Build Template' onClick={handleBuild(id)} showInMenu/>,
+				<GridActionsCellItem icon={<BuildIcon />} label='Build Log App' onClick={handleBuild(id)} showInMenu/>,
 				<GridActionsCellItem icon={<DeleteOutlineIcon />} label="Deactivate" onClick={handleDeactivate(id)} showInMenu/>,
 				<GridActionsCellItem icon={<AddCircleOutlineIcon />} label="Activate" onClick={handleActivate(id)} showInMenu/>,
 				<GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={handleDelete(id)} showInMenu />,

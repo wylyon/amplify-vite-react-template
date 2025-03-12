@@ -72,6 +72,7 @@ export default function SetupTemplate(props) {
   const [dialogPrompt, setDialogPrompt] = useState('');
   const [isDeleteActive, setIsDeleteActive] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [selected, setSelected] = useState([]);
   const [dialogControls, setDialogControls] = useState({});
   const [isWizard, setIsWizard] = useState(false);
   const [openSetup, setOpenSetup] = useState(true);
@@ -291,6 +292,9 @@ export default function SetupTemplate(props) {
     setTemplateQuestion(items);
     setFiltered(items.filter(comp => !comp.question_type.includes('dialog_input')));
     resetQuestions(nextOrder);
+    if (isAdd) {
+      setPage(items.length);
+    }
   };
 
   const handleChange = (e) => {
@@ -397,6 +401,7 @@ export default function SetupTemplate(props) {
       const { errors, data } = await client.mutations.deleteQuestionById({
         questionId: qId
       });
+      getQuestionsByTemplate(props.templateId, true);
     }
   }
 
@@ -422,6 +427,8 @@ export default function SetupTemplate(props) {
         return;
       }
       getQuestionsByTemplate(props.templateId, false);
+      setSelected([]);
+      setPage(templateQuestion.length);
   }
     setAlertMessage("Question " + formData.title + " Updated");
     setTheSeverity("success");
@@ -580,6 +587,7 @@ export default function SetupTemplate(props) {
 
   function handleRowSelection (rowSelectionModel, details) {
     // called on checkbox for row.         
+    setSelected(rowSelectionModel);
     if (rowSelectionModel.length == 0) {
       setIsUpdate(false);
       resetQuestions(templateQuestion.length + 1);
@@ -589,8 +597,16 @@ export default function SetupTemplate(props) {
       if (rowSelectionModel.length == 1) {
         setIsDeleteActive(true);
         setSelectedRows([ { id: rowSelectionModel[0]}]);
-        const filteredId = templateQuestion.filter(comp => comp.id.includes(rowSelectionModel[0]));
+        var whichIndex = 0;
+        const filteredId = templateQuestion.filter((comp, index) => {
+          if (comp.id.includes(rowSelectionModel[0])) {
+            whichIndex = index;
+            return true;
+          }
+          return false;
+        });
         if (filteredId.length == 1 ) {
+          setPage(whichIndex+1);
           setFormData({
             id: filteredId[0].id,
             templateId: props.template_id,
@@ -1172,6 +1188,7 @@ export default function SetupTemplate(props) {
                 }
                 pageSizeOptions={[5, 10]}
                 checkboxSelection
+                rowSelectionModel={selected}
                 onRowClick={handleRowClick}
                 onRowSelectionModelChange={handleRowSelection}
                 sx={{ border: 0 }}

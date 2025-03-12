@@ -580,6 +580,7 @@ export default function DisplayUserRow(props) {
                 <ToggleButton 
                   key={'tb_'+props.question.question_order+'_'+index} 
                   value={comp} 
+                  sx={{fontWeight: 'bold'}}
                   size="small"
                   aria-label={comp} 
                   aria-placeholder={props.question.id}>{comp}

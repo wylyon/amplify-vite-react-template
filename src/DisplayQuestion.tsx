@@ -50,7 +50,7 @@ export default function DisplayQuestion(props) {
   function returnToggleButton(questionValueArr, questionSeq) {
     var htmlSelect = '';
     for (var i = 0; i < questionValueArr.length; i++) {
-      htmlSelect = htmlSelect + "<br /><input type=\"button\" style=\"width: 150px; height: 30px;\" id=\"btn" + 
+      htmlSelect = htmlSelect + "<br /><input type=\"button\" style=\"height: 30px;\" id=\"btn" + 
         i + questionSeq + "\" name=\"btn" + i + questionSeq + "\" value=\"" + questionValueArr[i] + "\">";
     }
     return htmlSelect;
