@@ -63,7 +63,7 @@ interface EditToolbarProps {
   }
 
 function EditToolbar(props: EditToolbarProps) {
-	const { filter, arrayDivisions, rows, userId, setRows, setRowModesModel } = props;
+	const { filter, arrayDivisions, rows, userId, isDivision, setRows, setRowModesModel } = props;
 	const [openNew, setOpenNew] = useState(false);
 	const [openBuild, setOpenBuild] = useState(false);
 	const [item, setItem] = useState({});
@@ -143,7 +143,7 @@ function EditToolbar(props: EditToolbarProps) {
   
 	return (
 		<React.Fragment>
-			{openNew && <PopupNewTemplate props={props} userId={userId} arrayDivisions={arrayDivisions} rows={rows} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
+			{openNew && <PopupNewTemplate props={props} userId={userId} arrayDivisions={arrayDivisions} rows={rows} onClose={handleOnClose} onSubmit={handleOnSubmit} isDivision={isDivision} />}
 			{openBuild && <SetupTemplate onSubmitAdd={handleUpdateOnCancel} 
 				onSubmitChange={handleUpdateOnCancel} 
 				name={item.title} 
@@ -182,6 +182,7 @@ export default function TemplateGrid(props) {
 	const [isSetupTemplate, setIsSetupTemplate] = useState(false);
 	const [isEmpty, setIsEmpty] = useState(false);
 	const [userId, setUserId] = useState(props.userId);
+	const [isDivision, setIsDivision] = useState(props.isDivision);
 
 	const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
 	  if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -881,7 +882,7 @@ export default function TemplateGrid(props) {
 				toolbar: EditToolbar as GridSlots['toolbar'],
 			  }}
 			slotProps={{
-				toolbar: { filter, arrayDivisions, rows, userId, setRows, setRowModesModel },
+				toolbar: { filter, arrayDivisions, rows, userId, isDivision, setRows, setRowModesModel },
 			}}
 			/>
 		</Paper>

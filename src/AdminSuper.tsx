@@ -140,7 +140,7 @@ export default function AdminSuper(props) {
 			<DivisionGrid props={props} userId={props.userId} filter={null} id={id} onRowSelect={handleOnRowSelectDivision}/>
 		</TabPanel>
 		<TabPanel value={value} index={2}>
-			<TemplateGrid props={props} userId={props.userId} filter={null} id={id}/>
+			<TemplateGrid props={props} userId={props.userId} filter={null} id={id} isDivision={true}/>
 		</TabPanel>
 		<TabPanel value={value} index={3}>
 			<UserGrid props={props} userId={props.userId} filter={null}/>

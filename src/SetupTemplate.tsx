@@ -944,7 +944,7 @@ export default function SetupTemplate(props) {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {props.name} Template Questions
+          {props.name} Logging App Questions
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">

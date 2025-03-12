@@ -132,7 +132,7 @@ export default function PopupNewTemplate(props) {
         },
       }}
     >
-    <DialogTitle>Create New Template</DialogTitle>
+    <DialogTitle>Create New Logging App</DialogTitle>
     <DialogContent>
       <DialogContentText>
         Enter Following Fields:
@@ -143,13 +143,13 @@ export default function PopupNewTemplate(props) {
             {error}
           </Alert>}
         <FormControl fullWidth>
-          <Typography variant="caption">Division: </Typography>
+          {props.isDivision ? <Typography variant="caption">Division: </Typography> : <br /> }
           <Select fullWidth
             required
             labelId="select-division-name"
             id="demo-simple-select"
             defaultValue={props.arrayDivisions == null || props.arrayDivisions.length < 1 ? "need division" : props.arrayDivisions[0].id}
-            label="Division"
+            label={props.isDivision ? "Division" : ""}
             onChange={handleChange}
           >
           {arrayDivisions.map(comp => 
@@ -163,7 +163,7 @@ export default function PopupNewTemplate(props) {
             margin="dense"
             id="title"
             name="title"
-            label="Template Title"
+            label="App Title"
             type="text"
             fullWidth
             variant="standard"

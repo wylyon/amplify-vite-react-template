@@ -166,7 +166,7 @@ export default function AdminMain(props) {
 			<Tab label="Profile" {...a11yProps(4)} />
 		</Tabs>
 		<TabPanel value={value} index={0}>
-			{ company && company.id != null && <TemplateGrid props={props} userId={props.userId} filter={company} id={id}/> }
+			{ company && company.id != null && <TemplateGrid props={props} userId={props.userId} filter={company} id={id} isDivision={isDivisions} /> }
 		</TabPanel>
 		<TabPanel value={value} index={1}>
 			<UserGrid props={props} userId={props.userId} filter={company}/>
