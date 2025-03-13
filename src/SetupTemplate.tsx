@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import React from "react";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
@@ -20,6 +20,14 @@ import Container from '@mui/material/Container';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+  type MRT_ColumnDef,
+  type MRT_Row,
+  MRT_TableContainer,
+  MRT_RowSelectionState
+} from 'material-react-table';
 import Paper from '@mui/material/Paper';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -35,6 +43,7 @@ import DisplayQuestion from "../src/DisplayQuestion";
 import Pagination from '@mui/material/Pagination';
 import PopupReview from "../src/PopupPreview";
 import { min } from "moment";
+
 
 export default function SetupTemplate(props) {
   const [formData, setFormData] = useState({
@@ -63,6 +72,7 @@ export default function SetupTemplate(props) {
   const [isAlert, setIsAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [isUpdate, setIsUpdate] = useState(false);
+  const [isFirst, setIsFirst] = useState(true);
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [page, setPage] = useState(1);
@@ -71,14 +81,14 @@ export default function SetupTemplate(props) {
   const [dialogResult, setDialogResult] = useState('');
   const [dialogPrompt, setDialogPrompt] = useState('');
   const [isDeleteActive, setIsDeleteActive] = useState(false);
-  const [selectedRows, setSelectedRows] = useState([]);
-  const [selected, setSelected] = useState([]);
   const [dialogControls, setDialogControls] = useState({});
   const [isWizard, setIsWizard] = useState(false);
   const [openSetup, setOpenSetup] = useState(true);
   const [isAdvanced, setIsAdvanced] = useState(false);
   const [isValueFocus, setIsValueFocus] = useState(false);
   const [sortDirection, setSortDirection] = useState('none');
+  const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
+  const [isReshuffle, setIsReshuffle] = useState(false);
 
   const handleClickOpen = () => {
     if (formData.questionValues == '') {
@@ -388,6 +398,9 @@ export default function SetupTemplate(props) {
     setTemplateQuestion(newTemplateQuestion);
     setPage(newTemplateQuestion.length);
     setFiltered(newTemplateQuestion.filter(comp => !comp.question_type.includes('dialog_input')));
+    if (deleteId != null) {
+      resetQuestions(newTemplateQuestion.length);
+    }
   }
 
 
@@ -402,6 +415,21 @@ export default function SetupTemplate(props) {
         questionId: qId
       });
       getQuestionsByTemplate(props.templateId, true);
+    }
+  }
+
+  const updateQuestionSequence = async(id, seq) => {
+    if (props.isWizard) {
+      return;
+    }
+    const { errors, data: updateQuestions } = await client.models.template_question.update({
+      id: id,
+      question_order: seq
+    });
+    if (errors) {
+      setAlertMessage(errors[0].message);
+      setIsAlert(true);
+      return;
     }
   }
 
@@ -427,7 +455,7 @@ export default function SetupTemplate(props) {
         return;
       }
       getQuestionsByTemplate(props.templateId, false);
-      setSelected([]);
+      setRowSelection({});
       setPage(templateQuestion.length);
   }
     setAlertMessage("Question " + formData.title + " Updated");
@@ -469,6 +497,9 @@ export default function SetupTemplate(props) {
     setTheSeverity("success");
     setIsAlert(true);
     resetQuestions(props.isWizard ? nextOrder : null);
+    if (props.isWizard) {
+      setRowSelection({});
+    }
   }
 
 
@@ -574,79 +605,76 @@ export default function SetupTemplate(props) {
 
   function handleDelete () {
     setOpenDelete(false);
-    for (var i = 0; i < selectedRows.length; i++) {
-      deleteQuestions(selectedRows[i]);
+    const theRows = table.getSelectedRowModel().rows;
+    for (var i = 0; i < theRows.length; i++) {
+      deleteQuestions(theRows[i].original);
     }
-    if (!props.isWizard) {
-      getQuestionsByTemplate(props.templateId, false); 
+    if (props.isWizard) {
+      setIsUpdate(false);
     }
   }
 
   function handleRowClick (params, event, details) {
   }
 
-  function handleRowSelection (rowSelectionModel, details) {
-    // called on checkbox for row.         
-    setSelected(rowSelectionModel);
-    if (rowSelectionModel.length == 0) {
+  function handleRowSelection (newSelectedRows) {
+    setRowSelection(newSelectedRows);
+  }
+
+  function checkRowSelections (theSelectedRows) {
+    if (theSelectedRows.length == 0) {
       setIsUpdate(false);
       resetQuestions(templateQuestion.length + 1);
-      setIsDeleteActive(false);
-      setSelectedRows([]);
-    } else {
-      if (rowSelectionModel.length == 1) {
-        setIsDeleteActive(true);
-        setSelectedRows([ { id: rowSelectionModel[0]}]);
-        var whichIndex = 0;
-        const filteredId = templateQuestion.filter((comp, index) => {
-          if (comp.id.includes(rowSelectionModel[0])) {
-            whichIndex = index;
-            return true;
-          }
-          return false;
+      setPage(1);
+    } else if (theSelectedRows.length < 2) {
+      // update mode.
+      var whichIndex = 0;
+      const filteredId = templateQuestion.filter((comp, index) => {
+        if (comp.id.includes(theSelectedRows[0].original.id)) {
+          whichIndex = index;
+          return true;
+        }
+        return false;
+      });
+      if (filteredId.length == 1 ) {
+        setPage(whichIndex+1);
+        setFormData({
+          id: filteredId[0].id,
+          templateId: props.template_id,
+          questionOrder: filteredId[0].question_order,
+          preLoadAttributes: filteredId[0].pre_load_attributes,
+          title: filteredId[0].title,
+          description: filteredId[0].description,
+          questionType: filteredId[0].question_type,
+          questionValues: filteredId[0].question_values,
+          postLoadAttributes: filteredId[0].post_load_attributes,
+          optionalFlag: filteredId[0].optional_flag,
+          actionsFlag: false,
+          notes: '',
+          triggerValue: filteredId[0].trigger_value
         });
-        if (filteredId.length == 1 ) {
-          setPage(whichIndex+1);
-          setFormData({
-            id: filteredId[0].id,
-            templateId: props.template_id,
-            questionOrder: filteredId[0].question_order,
-            preLoadAttributes: filteredId[0].pre_load_attributes,
-            title: filteredId[0].title,
-            description: filteredId[0].description,
-            questionType: filteredId[0].question_type,
-            questionValues: filteredId[0].question_values,
-            postLoadAttributes: filteredId[0].post_load_attributes,
-            optionalFlag: filteredId[0].optional_flag,
-            actionsFlag: false,
-            notes: '',
-            triggerValue: filteredId[0].trigger_value
-          });
-          if (filteredId[0].question_type == 'photo' || filteredId[0].question_type == 'datepicker' || filteredId[0].question_type == 'switch') {
-            setWhichControl('');
-            setDialogResult('');
-            setIsValuesDisabled(true);
-            setIsUpdate(true);
-            return;
-          } else {
-            if (filteredId[0].question_type == 'button' || filteredId[0].question_type == 'contained_button_color') {
-              setWhichControl(filteredId[0].question_type == 'button' ? 'Button label' : 'Color Button label');
-              setDialogResult(filteredId[0].question_values);              
-            } else {
-              setWhichControl(filteredId[0].question_type);
-              setDialogResult(filteredId[0].question_values);
-            }
-          }
+        if (filteredId[0].question_type == 'photo' || filteredId[0].question_type == 'datepicker' || filteredId[0].question_type == 'switch') {
+          setWhichControl('');
+          setDialogResult('');
+          setIsValuesDisabled(true);
           setIsUpdate(true);
-          setIsValuesDisabled(false);
+          return;
+        } else {
+          if (filteredId[0].question_type == 'button' || filteredId[0].question_type == 'contained_button_color') {
+            setWhichControl(filteredId[0].question_type == 'button' ? 'Button label' : 'Color Button label');
+            setDialogResult(filteredId[0].question_values);              
+          } else {
+            setWhichControl(filteredId[0].question_type);
+            setDialogResult(filteredId[0].question_values);
+          }
         }
-      } else {
-        setIsDeleteActive(true);
-        var rowIds = [];
-        for (var i = 0; i < rowSelectionModel.length; i++) {
-          rowIds.push({ id: rowSelectionModel[i]});
-        }
-        setSelectedRows(rowIds);
+        setIsUpdate(true);
+        setIsValuesDisabled(false);
+      }
+    } else {
+      var rowIds = [];
+      for (var i = 0; i < theSelectedRows.length; i++) {
+        rowIds.push({ id: theSelectedRows[i].original.id});
       }
     }
   }
@@ -656,24 +684,101 @@ export default function SetupTemplate(props) {
   }
 
   useEffect(() => {
-    getQuestionsByTemplate(props.templateId, false);
-  }, []);
+    if (isFirst) {
+      getQuestionsByTemplate(props.templateId, false);
+      setIsFirst(false);
+    } else {
+      const stuff = table.getState().rowSelection;
+      const selectedRows = table.getSelectedRowModel().rows;
+      if (Object.keys(stuff).length === 0) {
+        setIsDeleteActive(false)
+      } else {
+        setIsDeleteActive(true);
+      }
+      checkRowSelections(table.getSelectedRowModel().rows);
+    }
+  }, [rowSelection]);
 
-  const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
-    id: false
+  const columns = useMemo<MRT_ColumnDef<Schema["template_question"]["type"][]>>(
+    () => [
+      {
+        accessorKey: 'title',
+        header: 'Question',
+        size: 130,
+      },
+      {
+        accessorKey: 'question_type',
+        header: 'Type',
+        size: 130,
+      }
+    ],
+    [],
+  );
+
+  const handleReshuffle = () => {
+    // need to re-order
+    var updatedTemplateQuestions = [];
+    for (var indx = 0; indx < templateQuestion.length; indx++) {
+      updatedTemplateQuestions.push({
+        id: templateQuestion[indx].id,
+        template_id: templateQuestion[indx].template_id,
+        question_order: indx+1,
+        pre_load_attributes: templateQuestion[indx].pre_load_attributes,
+        title: templateQuestion[indx].title,
+        description: templateQuestion[indx].description,
+        question_type: templateQuestion[indx].question_type,
+        question_values: templateQuestion[indx].question_values,
+        post_load_attributes: templateQuestion[indx].post_load_attributes,
+        optional_flag: templateQuestion[indx].optional_flag,
+        actions_flag: false,
+        notes: '',
+        trigger_value: templateQuestion[indx].trigger_value
+      });
+      updateQuestionSequence(templateQuestion[indx].id, indx+1);
+    }
+    setTemplateQuestion(updatedTemplateQuestions);
+  };
+
+  const table = useMaterialReactTable({
+    columns,
+    data: templateQuestion,
+    enableFullScreenToggle: false,
+    autoResetPageIndex: false,
+    enableRowOrdering: true,
+    enableRowNumbers: true,
+    rowNumberDisplayMode: 'static',
+    enableSorting: false,
+    enableSelectAll: false,
+    enableRowSelection: true,
+    enableBatchRowSelection: true,
+    muiSelectCheckboxProps: { color: 'secondary'},
+    positionToolbarAlertBanner: 'head-overlay',
+    onRowSelectionChange: handleRowSelection,
+    state: { rowSelection },
+    renderTopToolbarCustomActions: ({ table }) => (
+      <ButtonGroup variant="contained" aria-label="Action button group">
+        <Button disabled={!isDeleteActive} color="error"
+          onClick={() => {
+            setOpenDelete(true);
+          }}
+        >
+          Delete
+        </Button>
+        <Button disabled={!isReshuffle} color="primary" onClick={handleReshuffle}>Save Reorder</Button>
+      </ButtonGroup>
+    ),
+    muiRowDragHandleProps: ({ table }) => ({
+      onDragEnd: () => {
+        const { draggingRow, hoveredRow } = table.getState();
+        if (hoveredRow && draggingRow) {
+          templateQuestion.splice(
+            (hoveredRow as MRT_Row<["template_question"]["type"][]>).index, 0, templateQuestion.splice(draggingRow.index, 1)[0],);
+          setIsReshuffle(true);
+          setTemplateQuestion([...templateQuestion]);
+        }
+        }
+    }),
   });
-
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'title', headerName: 'Question', width: 130 },
-    { field: 'question_type', headerName: 'Type', width: 130 },
-    {
-      field: 'question_order',
-      headerName: 'Order',
-      type: 'number',
-      width: 90,
-    },
-  ];
 
   function newQuestionSubmit (e) {
     setIsWizard(false);
@@ -1170,29 +1275,11 @@ export default function SetupTemplate(props) {
               </Stack>
             </FormControl>
           </Box>
-          <Box sx={{ bgcolor: '#52B2BF', width: '400px', height: '500px', 
+          <Box sx={{ bgcolor: '#52B2BF', width: '450px', height: '500px', 
               borderStyle: 'solid', borderWidth: '2px'}} >
-            <h3>{(props.name.length > 18) ? props.name.substring(0, 18) + "... Questions" : props.name + " Questions"}
-              <ButtonGroup variant="contained" aria-label="Question View group"  sx={{ float: 'right'}}>
-                <Button variant="contained" disabled={!isDeleteActive} color="error" onClick={confirmDelete}>Delete</Button>
-              </ButtonGroup>
-            </h3>
+            <h3>{(props.name.length > 18) ? props.name.substring(0, 18) + "... Questions" : props.name + " Questions"}</h3>
              <Paper sx={{ height: 400, width: '100%' }}>
-              <DataGrid
-                rows={templateQuestion}
-                columns={columns}
-                initialState={{ pagination: { paginationModel } }}
-                columnVisibilityModel={columnVisibilityModel}
-                onColumnVisibilityModelChange={(newRow) =>
-                  setColumnVisibilityModel(newRow)
-                }
-                pageSizeOptions={[5, 10]}
-                checkboxSelection
-                rowSelectionModel={selected}
-                onRowClick={handleRowClick}
-                onRowSelectionModelChange={handleRowSelection}
-                sx={{ border: 0 }}
-              />
+              <MaterialReactTable table={table} />
             </Paper>
           </Box>
           <Box sx={{  width: '400px' }}>

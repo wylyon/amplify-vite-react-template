@@ -83,7 +83,7 @@ export default function PopupNewTemplate(props) {
     const id = uuidv4();
 		const { errors, data: item } = await client.models.template.create({
 			id: id,
-			division_id: selectDivision,
+			division_id: props.isDivision ? selectDivision : props.arrayDivisions[0].id,
 			title: title, 
 			description: description,
 			live_date: now.toISOString().slice(0, 10),
@@ -142,8 +142,9 @@ export default function PopupNewTemplate(props) {
       {openError &&  <Alert severity="error" onClose={handleCloseError}>
             {error}
           </Alert>}
+        {props.isDivision ?
         <FormControl fullWidth>
-          {props.isDivision ? <Typography variant="caption">Division: </Typography> : <br /> }
+          <Typography variant="caption">Division: </Typography>
           <Select fullWidth
             required
             labelId="select-division-name"
@@ -156,7 +157,7 @@ export default function PopupNewTemplate(props) {
             <MenuItem key={comp.id} value={comp.id}>{comp.name}</MenuItem>
           )}
           </Select>
-        </FormControl>
+        </FormControl> : null }
         <TextField
             autoFocus
             required
