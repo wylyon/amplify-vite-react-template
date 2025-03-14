@@ -40,6 +40,7 @@ import Typography from "@mui/material/Typography";
 import Slider from "@mui/material/Slider";
 import Stack from '@mui/material/Stack';
 import DisplayQuestion from "../src/DisplayQuestion";
+import CircularProgress from '@mui/material/CircularProgress';
 import Pagination from '@mui/material/Pagination';
 import PopupReview from "../src/PopupPreview";
 import { min } from "moment";
@@ -77,6 +78,7 @@ export default function SetupTemplate(props) {
   const [openDelete, setOpenDelete] = useState(false);
   const [page, setPage] = useState(1);
   const [openPreAttributes, setOpenPreAttributes] = useState(false);
+  const [isWaiting, setIsWaiting] = useState(false);
   const [whichControl, setWhichControl] = useState('');
   const [dialogResult, setDialogResult] = useState('');
   const [dialogPrompt, setDialogPrompt] = useState('');
@@ -282,6 +284,7 @@ export default function SetupTemplate(props) {
       setFiltered(props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')));
       return;
     }
+    setIsWaiting(true);
     var nextOrder;
     const { data: items, errors } = await client.queries.listQuestionsByTemplateId({
       templateId: tempId
@@ -289,6 +292,7 @@ export default function SetupTemplate(props) {
     if (errors) {
       setAlertMessage(errors[0].message);
       setIsAlert(true);
+      setIsWaiting(false);
       return;
     }
     if (items.length < 1) {
@@ -305,6 +309,7 @@ export default function SetupTemplate(props) {
     if (isAdd) {
       setPage(items.length);
     }
+    setIsWaiting(false);
   };
 
   const handleChange = (e) => {
@@ -409,6 +414,7 @@ export default function SetupTemplate(props) {
     if (props.isWizard) {
       mapTemplateQuestions(false, questionId.id);
     } else {
+      setIsWaiting(true);
       const now = new Date();
       const qId = questionId.id;
       const { errors, data } = await client.mutations.deleteQuestionById({
@@ -422,6 +428,7 @@ export default function SetupTemplate(props) {
     if (props.isWizard) {
       return;
     }
+    setIsWaiting(true);
     const { errors, data: updateQuestions } = await client.models.template_question.update({
       id: id,
       question_order: seq
@@ -429,14 +436,19 @@ export default function SetupTemplate(props) {
     if (errors) {
       setAlertMessage(errors[0].message);
       setIsAlert(true);
+      setIsWaiting(false);
       return;
     }
+    setIsWaiting(false);
   }
 
   const updateQuestions = async() => {
     if (props.isWizard) {
       mapTemplateQuestions(true, null);
+      setIsUpdate(false);
+      setRowSelection({});
     } else {
+      setIsWaiting(true);
       const { errors, data: updateQuestions } = await client.models.template_question.update({
         id: formData.id,
         question_order: formData.questionOrder,
@@ -452,6 +464,7 @@ export default function SetupTemplate(props) {
       if (errors) {
         setAlertMessage(errors[0].message);
         setIsAlert(true);
+        setIsWaiting(false);
         return;
       }
       getQuestionsByTemplate(props.templateId, false);
@@ -470,6 +483,7 @@ export default function SetupTemplate(props) {
     if (props.isWizard) {
       mapTemplateQuestions(false, null);
     } else {
+      setIsWaiting(true);
       const { errors, data: newQuestions } = await client.models.template_question.create({
         id: uuidv4(),
         template_id: props.templateId,
@@ -489,6 +503,7 @@ export default function SetupTemplate(props) {
       if (errors) {
         setAlertMessage(errors[0].message);
         setIsAlert(true);
+        setIsWaiting(false);
         return;
       }
       getQuestionsByTemplate(props.templateId, true);
@@ -672,6 +687,9 @@ export default function SetupTemplate(props) {
         setIsValuesDisabled(false);
       }
     } else {
+      setIsUpdate(false);
+      resetQuestions(templateQuestion.length + 1);
+      setPage(1);
       var rowIds = [];
       for (var i = 0; i < theSelectedRows.length; i++) {
         rowIds.push({ id: theSelectedRows[i].original.id});
@@ -748,11 +766,21 @@ export default function SetupTemplate(props) {
     enableRowNumbers: true,
     rowNumberDisplayMode: 'static',
     enableSorting: false,
+    enableDensityToggle: false,
+    density: 'compact',
+    muiPaginationProps: {
+      color: 'primary',
+      shape: 'rounded',
+      showRowsPerPage: false,
+      variant: 'outlined',
+    },
+    paginationDisplayMode: 'pages',
     enableSelectAll: false,
     enableRowSelection: true,
     enableBatchRowSelection: true,
     muiSelectCheckboxProps: { color: 'secondary'},
     positionToolbarAlertBanner: 'head-overlay',
+    initialState: { pagination: { pageSize: 6, pageIndex: 0,}, density: 'compact'},
     onRowSelectionChange: handleRowSelection,
     state: { rowSelection },
     renderTopToolbarCustomActions: ({ table }) => (
@@ -825,6 +853,25 @@ export default function SetupTemplate(props) {
 
   function createMarkup(dirty) {
     return { __html: dirty };
+  }
+
+  function trimLeadingSpacesInArray(arr) {
+    return arr.map(str => {
+      if (typeof str === 'string') {
+        return str.trimStart();
+      }
+    })
+  }
+
+  function cleanUpTextArray(arr) {
+    // filter out leading spaces and empty rows
+    var newArr = [];
+    for (var indx = 0; indx < arr.length; indx++) {
+      if (arr[indx] != "") {
+        newArr.push(arr[indx]);
+      }
+    }
+    return trimLeadingSpacesInArray(newArr);
   }
 
   const handleCloseDelete = (event: object, reason: string) => {
@@ -977,7 +1024,8 @@ export default function SetupTemplate(props) {
                   setDialogResult(textArr[0]);
                   setFormDataFields(textArr[0], 'values');
                 } else {
-                  const textArray = (sortDirection == 'none') ? textArr : textArr.sort();
+                  const cleanedTextArr = cleanUpTextArray(textArr);
+                  const textArray = (sortDirection == 'none') ? cleanedTextArr : cleanedTextArr.sort();
                   var newText = textArray[0];
                   for (var i = 1; i < textArray.length; i++) {
                     newText = newText + "|" + textArray[i];
@@ -1054,6 +1102,7 @@ export default function SetupTemplate(props) {
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
           {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>{alertMessage}</Alert>}  
+          {isWaiting && <CircularProgress />}
             {props.isWizard ?
             <Typography variant="body1">NOTE:  In this step you will be adding the questions that your end user will complete for you.</Typography> : null }
             <Stack direction="row" spacing={3}>      
@@ -1202,12 +1251,6 @@ export default function SetupTemplate(props) {
                       onClick={handleOnSave}>{isUpdate ? 'Update' : 'Add'}</Button>
                   </Stack>
                   <FormLabel id="filler1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FormLabel>
-                  {(props.isWizard || !isAdvanced) && formData.questionOrder > 0 && !isUpdate ? null
-                   :
-                  <Tooltip title="Enter here the order of this question relative to others." placement="right">
-                  <TextField id="question_order" name="questionOrder" value={formData.questionOrder} 
-                    label="Order" variant="outlined" size="small" 
-                    sx={{ width: '80px' }} required="true" onChange={handleChange}/></Tooltip> }
                   <br />
                   {(props.isWizard || !isAdvanced) ? null :
                   <Tooltip title="Enter here a fuller description of what this question is for and about." placement="right">
@@ -1275,7 +1318,7 @@ export default function SetupTemplate(props) {
               </Stack>
             </FormControl>
           </Box>
-          <Box sx={{ bgcolor: '#52B2BF', width: '450px', height: '500px', 
+          <Box sx={{ bgcolor: '#52B2BF', width: '450px', height: '545px', 
               borderStyle: 'solid', borderWidth: '2px'}} >
             <h3>{(props.name.length > 18) ? props.name.substring(0, 18) + "... Questions" : props.name + " Questions"}</h3>
              <Paper sx={{ height: 400, width: '100%' }}>
