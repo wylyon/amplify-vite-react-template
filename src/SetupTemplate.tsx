@@ -43,7 +43,9 @@ import DisplayQuestion from "../src/DisplayQuestion";
 import CircularProgress from '@mui/material/CircularProgress';
 import Pagination from '@mui/material/Pagination';
 import PopupReview from "../src/PopupPreview";
+import MoveUpIcon from '@mui/icons-material/MoveUp';
 import { min } from "moment";
+import { IconButton } from "@mui/material";
 
 
 export default function SetupTemplate(props) {
@@ -280,7 +282,7 @@ export default function SetupTemplate(props) {
   const getQuestionsByTemplate = async (tempId, isAdd) => {
     if (props.isWizard) {
       setTemplateQuestion(props.templateQuestions);
-      setFormDataFields(props.templateQuestions == [] ? 1 : props.templateQuestions.length + 1, 'order');
+      resetQuestionsRefresh(props.templateQuestions == [] ? 1 : props.templateQuestions.length + 1, props.templateQuestions);
       setFiltered(props.templateQuestions.filter(comp => !comp.question_type.includes('dialog_input')));
       return;
     }
@@ -296,18 +298,17 @@ export default function SetupTemplate(props) {
       return;
     }
     if (items.length < 1) {
-      setFormDataFields(1, 'order');
       nextOrder = 1;
     } else {
       // get next order#
       nextOrder = items[items.length-1].question_order + 1;
-      setFormDataFields(nextOrder, 'order');
     }
     setTemplateQuestion(items);
     setFiltered(items.filter(comp => !comp.question_type.includes('dialog_input')));
-    resetQuestions(nextOrder);
+    resetQuestionsRefresh(nextOrder, items);
     if (isAdd) {
       setPage(items.length);
+      setIsUpdate(false);
     }
     setIsWaiting(false);
   };
@@ -334,13 +335,44 @@ export default function SetupTemplate(props) {
     }));
   }
   
-  function resetQuestions (questionOrder) {
+  function setTitle (proposedTitle, arrayOfValues) {
+    var newTitle = proposedTitle;
+    var didSetTitle = false;
+    for (var indx = 0; indx < arrayOfValues.length; indx++) {
+      const searchTitle = (indx == 0 ? proposedTitle : (proposedTitle + "-" + indx));
+      const item = arrayOfValues.find(comp => comp.title == searchTitle);
+      if (!item) {
+        didSetTitle = true;
+        newTitle = searchTitle;
+        indx = arrayOfValues.length;
+      }
+    }
+    if (!didSetTitle && arrayOfValues.length > 0) {
+      newTitle = newTitle + "-" + arrayOfValues.length;
+    }
+    return newTitle;
+  }
+  
+  function setLabel (proposedLabel, arrayOfValues) {
+    var newLabel = proposedLabel;
+    for (var indx = 0; indx < arrayOfValues.length; indx++) {
+      const searchLabel = (indx == 0 ? proposedLabel : (proposedLabel + "-" + indx));
+      const item = arrayOfValues.find(comp => comp.title == searchLabel);
+      if (!item) {
+        newLabel = searchLabel;
+        indx = arrayOfValues.length;
+      }
+    }
+    return newLabel;
+  }
+
+  function resetQuestionsRefresh (questionOrder, items) {
     setFormData({
       id: '',
       templateId: props.template_id,
       questionOrder: questionOrder == null ? 0 : questionOrder,
-      preLoadAttributes: '',
-      title: '',
+      preLoadAttributes: setLabel("Please take a photo", items),
+      title: setTitle("Photo", items),
       description: '',
       questionType: 'photo',
       questionValues: '',
@@ -353,11 +385,51 @@ export default function SetupTemplate(props) {
     setWhichControl('');
   }
 
-  const mapTemplateQuestions = (isUpdate, deleteId) => {
+  function resetQuestions (questionOrder) {
+    setFormData({
+      id: '',
+      templateId: props.template_id,
+      questionOrder: questionOrder == null ? 0 : questionOrder,
+      preLoadAttributes: setLabel("Please take a photo", templateQuestion),
+      title: setTitle("Photo", templateQuestion),
+      description: '',
+      questionType: 'photo',
+      questionValues: '',
+      postLoadAttributes: '',
+      optionalFlag: false,
+      actionsFlag: false,
+      notes: '',
+      triggerValue: '',
+    });
+    setWhichControl('');
+  }
+
+  const mapTemplateQuestions = (isUpdate, listToDelete) => {
     var newTemplateQuestion = [];
     for (var indx = 0; indx < templateQuestion.length; indx++) {
-      if (deleteId != null && templateQuestion[indx].id == deleteId) {
-
+      if (listToDelete != null) {
+        var foundIt = false;
+        for (var i = 0; i < listToDelete.length; i++) {
+          if (templateQuestion[indx].id == listToDelete[i].original.id) {
+            // match
+            foundIt = true;
+            i = listToDelete.length;
+          }
+        }
+        if (!foundIt) {
+          newTemplateQuestion.push({
+            id: templateQuestion[indx].id,
+            question_order: templateQuestion[indx].question_order,
+            pre_load_attributes: templateQuestion[indx].pre_load_attributes,   
+            title: templateQuestion[indx].title,
+            description: templateQuestion[indx].description,
+            question_type: templateQuestion[indx].question_type,
+            question_values: templateQuestion[indx].question_values,
+            post_load_attributes: templateQuestion[indx].post_load_attributes,
+            optional_flag: templateQuestion[indx].optional_flag,
+            trigger_value: templateQuestion[indx].trigger_value   
+          });
+        }
       } else if (isUpdate && templateQuestion[indx].id == formData.id) {
         newTemplateQuestion.push({
           id: formData.id,
@@ -386,7 +458,7 @@ export default function SetupTemplate(props) {
           });
       }
     }
-    if (!isUpdate && deleteId == null) {
+    if (!isUpdate && listToDelete == null) {
       newTemplateQuestion.push({
         id: uuidv4(),
         question_order: formData.questionOrder,
@@ -403,25 +475,20 @@ export default function SetupTemplate(props) {
     setTemplateQuestion(newTemplateQuestion);
     setPage(newTemplateQuestion.length);
     setFiltered(newTemplateQuestion.filter(comp => !comp.question_type.includes('dialog_input')));
-    if (deleteId != null) {
+    if (listToDelete != null) {
       resetQuestions(newTemplateQuestion.length);
     }
   }
 
-
   // For now, lets "mark" as deleted until we can officially delete
   const deleteQuestions = async(questionId) => {
-    if (props.isWizard) {
-      mapTemplateQuestions(false, questionId.id);
-    } else {
-      setIsWaiting(true);
-      const now = new Date();
-      const qId = questionId.id;
-      const { errors, data } = await client.mutations.deleteQuestionById({
-        questionId: qId
-      });
-      getQuestionsByTemplate(props.templateId, true);
-    }
+    setIsWaiting(true);
+    const now = new Date();
+    const qId = questionId.id;
+    const { errors, data } = await client.mutations.deleteQuestionById({
+      questionId: qId
+    });
+    getQuestionsByTemplate(props.templateId, true);
   }
 
   const updateQuestionSequence = async(id, seq) => {
@@ -512,9 +579,7 @@ export default function SetupTemplate(props) {
     setTheSeverity("success");
     setIsAlert(true);
     resetQuestions(props.isWizard ? nextOrder : null);
-    if (props.isWizard) {
       setRowSelection({});
-    }
   }
 
 
@@ -543,7 +608,7 @@ export default function SetupTemplate(props) {
     if (isUpdate) {
       updateQuestions();
     } else {
-      const filterTitle = templateQuestion.filter(comp => comp.title.includes(formData.title));
+      const filterTitle = templateQuestion.filter(comp => comp.title == formData.title);
       if (filterTitle.length > 0) {
         setAlertMessage("Question title already used.");
         setIsAlert(true);
@@ -562,45 +627,83 @@ export default function SetupTemplate(props) {
   function handleOnNew() {
     setIsWizard(true);
   }
+  
+  function setDefaultText (proposedTitle, proposedLabel) {
+    setFormData({
+      id: formData.id,
+      templateId: formData.templateId,
+      questionOrder: formData.questionOrder,
+      preLoadAttributes: setLabel(proposedLabel, templateQuestion),
+      title: setTitle(proposedTitle, templateQuestion),
+      description: formData.description,
+      questionType: formData.questionType,
+      questionValues: formData.questionValues,
+      postLoadAttributes: formData.postLoadAttributes,
+      optionalFlag: formData.optionalFlag,
+      actionsFlag: formData.actionsFlag,
+      notes: '',
+      triggerValue: '',
+    });
+  }
 
   const handlePhotoClick = () => {
     setIsValuesDisabled(true);
     setWhichControl('');
+    setDefaultText("Photo", "Please take a photo");
   }
 
   const handleDropDownClick = () => {
     setIsValuesDisabled(false);
     setWhichControl('Dropdown');
+    setDefaultText("Dropdown", "Please select from one of options below");
+  }
+
+  const handleMultipleDropDownClick = () => {
+    setIsValuesDisabled(false);
+    setWhichControl('Dropdown');
+    setDefaultText("Dropdown Multiple", "Please select one or more options below");
   }
 
   const handleRadioClick = () => {
     setIsValuesDisabled(false);
     setWhichControl('RadioGroup');
+    setDefaultText("Radio", "Please select from one of options below");
   }
 
   const handleInputClick = () => {
     setIsValuesDisabled(false);
     setWhichControl('Default Input Value');
+    setDefaultText("Input", "Input");
   }
 
   const handleTextClick = () => {
     setIsValuesDisabled(false);
     setWhichControl('Text value');
+    setDefaultText("Text", "Text Value");
   }
 
   const handleDateClick = () => {
     setIsValuesDisabled(false);
     setWhichControl('');
+    setDefaultText("Date", "Please select date");
   }
 
   const handleButtonClick = () => {
     setIsValuesDisabled(false);
     setWhichControl('Button label');
+    setDefaultText("Button", "Select Option");
   }
 
   const handleToggleButtonClick = () => {
     setIsValuesDisabled(false);
     setWhichControl('Toggle Button labels');
+    setDefaultText("List", "Please select from one of options below");
+  }
+
+  const handleMultipleToggleButtonClick = () => {
+    setIsValuesDisabled(false);
+    setWhichControl('Toggle Button labels');
+    setDefaultText("List", "Please select one or more options below");
   }
 
   const handleDialogInputClick = () => {
@@ -611,22 +714,29 @@ export default function SetupTemplate(props) {
   const handleColorButtonClick = () => {
     setIsValuesDisabled(false);
     setWhichControl('Color Button label');
+    setDefaultText("Color-Button", "Select Option");
   }
 
   const handleSwitchClick = () => {
     setIsValuesDisabled(true);
     setWhichControl('Switch');
+    setDefaultText("Switch", "Select Option");
   }
 
   function handleDelete () {
     setOpenDelete(false);
     const theRows = table.getSelectedRowModel().rows;
-    for (var i = 0; i < theRows.length; i++) {
-      deleteQuestions(theRows[i].original);
+    if (props.isWizard) {
+      mapTemplateQuestions(false, theRows);
+    } else {
+      for (var i = 0; i < theRows.length; i++) {
+        deleteQuestions(theRows[i].original);
+      }
     }
     if (props.isWizard) {
       setIsUpdate(false);
     }
+    setRowSelection({});
   }
 
   function handleRowClick (params, event, details) {
@@ -735,6 +845,7 @@ export default function SetupTemplate(props) {
 
   const handleReshuffle = () => {
     // need to re-order
+    setIsReshuffle(false);
     var updatedTemplateQuestions = [];
     for (var indx = 0; indx < templateQuestion.length; indx++) {
       updatedTemplateQuestions.push({
@@ -757,6 +868,60 @@ export default function SetupTemplate(props) {
     setTemplateQuestion(updatedTemplateQuestions);
   };
 
+  const handleShuffleUp = (row: MRT_Row) => {
+    if (row.index == 0) {
+      return;
+    }
+    var newTemplateQuestion = [];
+    const swapFrom = row.index;
+    const swapTo = row.index - 1;
+    for (var indx = 0; indx < templateQuestion.length; indx++) {
+      if (indx == swapFrom || indx == swapTo) {
+        if (indx == swapTo) {
+          newTemplateQuestion.push({
+            id: templateQuestion[swapFrom].id,
+            question_order: templateQuestion[swapFrom].question_order,
+            pre_load_attributes: templateQuestion[swapFrom].pre_load_attributes,   
+            title: templateQuestion[swapFrom].title,
+            description: templateQuestion[swapFrom].description,
+            question_type: templateQuestion[swapFrom].question_type,
+            question_values: templateQuestion[swapFrom].question_values,
+            post_load_attributes: templateQuestion[swapFrom].post_load_attributes,
+            optional_flag: templateQuestion[swapFrom].optional_flag,
+            trigger_value: templateQuestion[swapFrom].trigger_value   
+          }); 
+          newTemplateQuestion.push({
+            id: templateQuestion[swapTo].id,
+            question_order: templateQuestion[swapTo].question_order,
+            pre_load_attributes: templateQuestion[swapTo].pre_load_attributes,   
+            title: templateQuestion[swapTo].title,
+            description: templateQuestion[swapTo].description,
+            question_type: templateQuestion[swapTo].question_type,
+            question_values: templateQuestion[swapTo].question_values,
+            post_load_attributes: templateQuestion[swapTo].post_load_attributes,
+            optional_flag: templateQuestion[swapTo].optional_flag,
+            trigger_value: templateQuestion[swapTo].trigger_value   
+          }); 
+        }
+      } else {
+        newTemplateQuestion.push({
+          id: templateQuestion[indx].id,
+          question_order: templateQuestion[indx].question_order,
+          pre_load_attributes: templateQuestion[indx].pre_load_attributes,   
+          title: templateQuestion[indx].title,
+          description: templateQuestion[indx].description,
+          question_type: templateQuestion[indx].question_type,
+          question_values: templateQuestion[indx].question_values,
+          post_load_attributes: templateQuestion[indx].post_load_attributes,
+          optional_flag: templateQuestion[indx].optional_flag,
+          trigger_value: templateQuestion[indx].trigger_value   
+        });
+      }
+    }
+    setIsReshuffle(true);
+    setTemplateQuestion(newTemplateQuestion);
+  }
+
   const table = useMaterialReactTable({
     columns,
     data: templateQuestion,
@@ -777,9 +942,31 @@ export default function SetupTemplate(props) {
     paginationDisplayMode: 'pages',
     enableSelectAll: false,
     enableRowSelection: true,
+    enableRowActions: true,
+    displayColumnDefOptions: {
+      'mrt-row-actions': {
+        header: '', //change header text
+        size: 50, //make actions column wider
+      },
+      'mrt-row-select' : {
+        header: '',
+        size: 30,
+      },
+      'mrt-row-drag' : {
+        header: '',
+        size: 30,
+      }
+    },
+    renderRowActions: ({ row }) => (
+      <Box>
+        <Tooltip title="Will move question up, swapping positions" placement="top">
+          <IconButton onClick={() => handleShuffleUp(row)}><MoveUpIcon /></IconButton>
+        </Tooltip>
+      </Box>
+    ),
+    positionActionsColumn: 'last',
     enableBatchRowSelection: true,
     muiSelectCheckboxProps: { color: 'secondary'},
-    positionToolbarAlertBanner: 'head-overlay',
     initialState: { pagination: { pageSize: 6, pageIndex: 0,}, density: 'compact'},
     onRowSelectionChange: handleRowSelection,
     state: { rowSelection },
@@ -792,7 +979,7 @@ export default function SetupTemplate(props) {
         >
           Delete
         </Button>
-        <Button disabled={!isReshuffle} color="primary" onClick={handleReshuffle}>Save Reorder</Button>
+      { props.isWizard ? null :  <Button disabled={!isReshuffle} color="primary" onClick={handleReshuffle}>Save Reorder</Button> }
       </ButtonGroup>
     ),
     muiRowDragHandleProps: ({ table }) => ({
@@ -1151,12 +1338,12 @@ export default function SetupTemplate(props) {
                             <Tooltip title="Select this to input a dropdown for multiple inputs" placement="right">
                             <FormControlLabel value="multiple_dropdown" 
                               control={formData.questionType=="multiple_dropdown" ? <Radio checked="true" size="small"/> : <Radio size="small" />} 
-                              label="Add a Dropdown for multiple selections" onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
+                              label="Add a Dropdown for multiple selections" onClick={handleMultipleDropDownClick} onChange={handleChange}/></Tooltip>
                             <Tooltip title="Select this for a multi-select toggle button" placement="right">
                             <FormControlLabel value="checkbox_button" 
                               control={formData.questionType=="checkbox_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                               label="Add a List of Buttons with multiple selections" 
-                              onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
+                              onClick={handleMultipleToggleButtonClick} onChange={handleChange}/></Tooltip>
                           </Paper>
                         </Stack>
                       </Paper>
@@ -1175,7 +1362,7 @@ export default function SetupTemplate(props) {
                         <Tooltip title="Select this to input a dropdown for multiple inputs" placement="right">
                         <FormControlLabel value="multiple_dropdown" 
                           control={formData.questionType=="multiple_dropdown" ? <Radio checked="true" size="small"/> : <Radio size="small" />} 
-                          label="Multiple Dropdown" onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
+                          label="Multiple Dropdown" onClick={handleMultipleDropDownClick} onChange={handleChange}/></Tooltip>
                         <Tooltip title="Select this to input radio boxes for different input" placement="right">
                         <FormControlLabel value="radiobox" 
                           control={formData.questionType=="radiobox" ? <Radio checked="true"  size="small"/> : <Radio  size="small"/>} 
@@ -1223,7 +1410,7 @@ export default function SetupTemplate(props) {
                           <FormControlLabel value="checkbox_button" 
                             control={formData.questionType=="checkbox_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                             label="Multi-Toggle Button" 
-                            onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
+                            onClick={handleMultipleToggleButtonClick} onChange={handleChange}/></Tooltip>
                           <Tooltip title="Select this for a dialog input (triggered by previous question)" placement="right">
                           <FormControlLabel value="dialog_input" 
                             control={formData.questionType=="dialog_input" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
@@ -1322,7 +1509,12 @@ export default function SetupTemplate(props) {
               borderStyle: 'solid', borderWidth: '2px'}} >
             <h3>{(props.name.length > 18) ? props.name.substring(0, 18) + "... Questions" : props.name + " Questions"}</h3>
              <Paper sx={{ height: 400, width: '100%' }}>
-              <MaterialReactTable table={table} />
+              <MaterialReactTable table={table} muiToolbarAlertBannerProps={{
+  color: 'info'
+}} positionToolbarAlertBanner="head-overlay" renderToolbarAlertBannerContent={({
+  selectedAlert,
+  table
+}) => <Typography variant="caption">{selectedAlert}</Typography>} />
             </Paper>
           </Box>
           <Box sx={{  width: '400px' }}>
