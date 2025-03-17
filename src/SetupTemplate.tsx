@@ -1507,14 +1507,14 @@ export default function SetupTemplate(props) {
           </Box>
           <Box sx={{ bgcolor: '#52B2BF', width: '450px', height: '545px', 
               borderStyle: 'solid', borderWidth: '2px'}} >
-            <h3>{(props.name.length > 18) ? props.name.substring(0, 18) + "... Questions" : props.name + " Questions"}</h3>
+            <h3>{(props.name.length > 18) ? props.name.substring(0, 30) + "... Questions" : props.name + " Questions"}</h3>
              <Paper sx={{ height: 400, width: '100%' }}>
               <MaterialReactTable table={table} muiToolbarAlertBannerProps={{
-  color: 'info'
-}} positionToolbarAlertBanner="head-overlay" renderToolbarAlertBannerContent={({
-  selectedAlert,
-  table
-}) => <Typography variant="caption">{selectedAlert}</Typography>} />
+                  color: 'info'
+                }} positionToolbarAlertBanner="head-overlay" renderToolbarAlertBannerContent={({
+                  selectedAlert,
+                  table
+                }) => <Typography variant="caption">{selectedAlert}</Typography>} />
             </Paper>
           </Box>
           <Box sx={{  width: '400px' }}>
