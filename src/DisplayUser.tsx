@@ -522,22 +522,6 @@ export default function DisplayUser(props) {
                 color="primary"
                 size="large"
               />
-              <Stack direction="row">
-                <Button variant="contained" color="success" disabled={page == 1} onClick={() => {
-                  event.preventDefault();
-                  setPage(page-1);
-                }}>Previous</Button>
-                <Button variant="contained" 
-                  color={page <= validPages.length ? "success" : "primary"} 
-                  type={page <= validPages.length ? "button" : "submit"}
-                  disabled={page == currentPage && page <= validPages.length} 
-                  onClick={page < validPages.length ? () => {
-                    event.preventDefault();
-                    setPage(page+1);
-                  } : handleSubmit}>{page < validPages.length ? "Next" : "Finished"}
-                </Button>
-                <Button variant="contained" color="error" onClick={handleCancel}>Cancel</Button>
-              </Stack>
             </Stack>
             <Stack direction="column">
               {source.length > 0 && 
@@ -566,6 +550,22 @@ export default function DisplayUser(props) {
                 : null)}
               </Stack>
             </Stack>
+          </Stack>
+          <Stack direction="row">
+            <Button variant="contained" color="success" disabled={page == 1} onClick={() => {
+              event.preventDefault();
+              setPage(page-1);
+            }}>Previous</Button>
+            <Button variant="contained" 
+              color={page <= validPages.length ? "success" : "primary"} 
+              type={page <= validPages.length ? "button" : "submit"}
+              disabled={page == currentPage && page <= validPages.length} 
+              onClick={page < validPages.length ? () => {
+                event.preventDefault();
+                setPage(page+1);
+              } : handleSubmit}>{page < validPages.length ? "Next" : "Finished"}
+            </Button>
+            <Button variant="contained" color="error" onClick={handleCancel}>Cancel</Button>
           </Stack>
         </Box>
         }
