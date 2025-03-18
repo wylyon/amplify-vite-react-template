@@ -37,7 +37,7 @@ import what3words, {
 } from '@what3words/api';
 
 export default function DisplayUser(props) {
-  const [source, setSource] = useState({});
+  const [source, setSource] = useState([]);
   const [isAlert, setIsAlert] = useState(false);
   const [wait, setWait] = useState(true);
   const [alertMessage, setAlertMessage] = useState('');
@@ -68,7 +68,7 @@ export default function DisplayUser(props) {
   }
 
   const resetState = () => {
-    setSource({});
+    setSource([]);
     setPage(1);
     setResults([]);
   }
@@ -232,7 +232,12 @@ export default function DisplayUser(props) {
 
   const handleOnPicture = (file, id, c, w, s, p) => {
     if (props.userData[0].usePagination==1) {
-      setSource({ source: s, page: p});
+      const newSource = [];
+      for (var indx = 0; indx < source.length; indx++) {
+        newSource.push ({ source: source[indx].source, page: source[indx].page });
+      }
+      newSource.push ({ source: s, page: p});
+      setSource(newSource);
     }
     handleGPSWordsandResults(id, file.name, 'photo', file, c, w, p);
   }
@@ -535,29 +540,31 @@ export default function DisplayUser(props) {
               </Stack>
             </Stack>
             <Stack direction="column">
-            {Object.keys(source).length > 0 && <Paper elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
-              <Box sx={{ width: 100, height: 100, borderRadius: 1}}>
-                <img src={source.source} alt={"snap"} style={{ height: "inherit", maxWidth: "inherit"}} 
-                  onClick={() => {
-                    event.preventDefault();
-                    setPage(source.page);
-                  }}></img>
-              </Box> 
-            </Paper> }
-            <Stack spacing={1}>
-              {results.map(comp => comp.type != 'dialog_input' && comp.type != 'photo' && comp.value != null ? 
-              <Breadcrumbs aria-label="breadcrumb" key={"b"+comp.id}>
-                <Link component="button" variant="caption" key={comp.id}
-                  onClick={() => {
-                    event.preventDefault();
-                    setPage(comp.page);
-                  }}
-                >
-                  {comp.value}
-                </Link>
-              </Breadcrumbs>
-              : null)}
-            </Stack>
+              {source.length > 0 && 
+                source.map(comp => 
+                <Paper key={'p' + comp.source} elevation={2} sx={{ width: 100, height: 100, borderRadius: 1}}>
+                  <Box key={'b' + comp.source} sx={{ width: 100, height: 100, borderRadius: 1}}>
+                    <img src={comp.source} alt={"snap" + comp.source} style={{ height: "inherit", maxWidth: "inherit"}} 
+                      onClick={() => {
+                        event.preventDefault();
+                        setPage(comp.page);
+                      }}></img>
+                  </Box> 
+                </Paper> )}
+              <Stack spacing={1}>
+                {results.map(comp => comp.type != 'dialog_input' && comp.type != 'photo' && comp.value != null ? 
+                <Breadcrumbs aria-label="breadcrumb" key={"b"+comp.id}>
+                  <Link component="button" variant="caption" key={comp.id}
+                    onClick={() => {
+                      event.preventDefault();
+                      setPage(comp.page);
+                    }}
+                  >
+                    {comp.value}
+                  </Link>
+                </Breadcrumbs>
+                : null)}
+              </Stack>
             </Stack>
           </Stack>
         </Box>

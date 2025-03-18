@@ -551,12 +551,12 @@ export default function DisplayUserRow(props) {
           <Button type="submit" color="success">Ok</Button>
         </DialogActions>
       </Dialog>
-    { props.questionType == 'toggle_button' || props.questionType == 'checkbox_button' ?
-      <div>
-        {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
+      {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
           </Alert>}
         {isWaiting && <CircularProgress />}
+    { props.questionType == 'toggle_button' || props.questionType == 'checkbox_button' ?
+      <div>
         <DisplayAttributes props={props} onParsing={handleAttribute}/>
         <Box component="section"  sx={
           props.useBoxControls==1 || props.useAutoSpacing==1 ?
@@ -592,10 +592,6 @@ export default function DisplayUserRow(props) {
       </div>
     : props.questionType == 'photo' ?
       <div>
-        {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
-            {alertMessage}
-          </Alert>}
-        {isWaiting && <CircularProgress />}
         <DisplayAttributes props={props} onParsing={handleAttribute} />
         <Box component="section" sx={
           props.useBoxControls==1 || props.useAutoSpacing==1 ?
@@ -619,10 +615,6 @@ export default function DisplayUserRow(props) {
       </div>
     : props.questionType == 'multiple_dropdown' ?
       <div>
-        {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
-            {alertMessage}
-          </Alert>}
-        {isWaiting && <CircularProgress />}
         <DisplayAttributes props={props} onParsing={handleAttribute} />
         <FormControl sx={{ m: 1, width: 200 }}>
           <InputLabel id={"multiple-checkbox-label"+props.question.question_order}>{value}</InputLabel>
@@ -671,10 +663,6 @@ export default function DisplayUserRow(props) {
       </div>
     : props.questionType == 'radiobox' ?
       <div>
-        {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
-            {alertMessage}
-          </Alert>}
-        {isWaiting && <CircularProgress />}
         <DisplayAttributes props={props} onParsing={handleAttribute} />
         <FormControl sx={{ m: 1, width: 300 }}>
           <FormLabel id={"radio-buttons-group-label"+props.question.question_order}>{value}</FormLabel>
