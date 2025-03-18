@@ -21,6 +21,7 @@ var googleAPIKeyValue;
 var what3wordAPIValue;
 
 const fetchSettings = async () => {
+
   const { data: items, errors } = await client.models.Settings.list();
   if (errors) {
     return {
@@ -55,6 +56,7 @@ function App() {
   const [isAccessDisabled, setIsAccessDisabled] = useState(false);
   const [disableMsg, setDisableMsg] = useState('');
   const [isWaiting, setIsWaiting] = useState(true);
+  const [emailAddress, setEmailAddress] = useState(null);
 
   const checkSettings = async (items, errors, googleAPIKey, what3wordAPI) => {
     if (errors) {
@@ -86,8 +88,14 @@ function App() {
       const {data: items, googleAPIKey, what3wordAPI, errors} = await fetchSettings();
       checkSettings(items, errors, googleAPIKey, what3wordAPI);
     }
+
+    const fetchEmail = async () => {
+      const { email} = await fetchUserAttributes();
+      setEmailAddress(email);
+    }
 //    setIsWaiting(true);
     fetchTheSettings();
+    fetchEmail();
   }, []);
 
   function nothingToDo() {
@@ -98,7 +106,7 @@ function App() {
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
     {!isAccessDisabled && <Authenticator>
       {({ signOut, user }) => (
-        !isWaiting && <DetermineMode userId={user.signInDetails.loginId} googleAPI={googleAPIKeyValue} what3words={what3wordAPIValue} onSubmitChange={logOut} companyName={''} />
+        !isWaiting && emailAddress && <DetermineMode userId={emailAddress} googleAPI={googleAPIKeyValue} what3words={what3wordAPIValue} onSubmitChange={logOut} companyName={''} />
       )}
     </Authenticator> }
     {isWaiting && <CircularProgress />}
