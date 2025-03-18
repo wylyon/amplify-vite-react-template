@@ -23,14 +23,14 @@
       "sizes": "512x512"
     }
   ], 
-  "start_url": "https://main.dhhrhy5rbhj7h.amplifyapp.com/",
+  "start_url": "https://logit-app.pro/",
   "display": "standalone",
   "shortcuts": [
     {
       "name": "Logit like a pro!",
       "short_name": "Logit Pro",
       "description": "Logit empowers you to build custom data capture apps tailored to your specific needs.",
-      "url": "https://main.dhhrhy5rbhj7h.amplifyapp.com/",
+      "url": "https://logit-app.pro/",
       "icons": [{ "src": "Logit-Pro-Checkmark-192.png", "sizes": "192x192" }]
     }
   ],

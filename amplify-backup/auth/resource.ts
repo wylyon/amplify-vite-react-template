@@ -18,11 +18,13 @@ export const auth = defineAuth({
       },
       callbackUrls: [
         'http://localhost:5173',
-        'https://main.dhhrhy5rbhj7h.amplifyapp.com/'
+        'https://main.dhhrhy5rbhj7h.amplifyapp.com/',
+        'https://logit-app.pro/'
       ],
       logoutUrls: [
         'http://localhost:5173',
-        'https://main.dhhrhy5rbhj7h.amplifyapp.com/'
+        'https://main.dhhrhy5rbhj7h.amplifyapp.com/',
+        'https://logit-app.pro/'
       ]
     },
   },
