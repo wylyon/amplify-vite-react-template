@@ -941,7 +941,7 @@ export default function SetupTemplate(props) {
     setOpenSetup(false);
     props.onSubmitChange(
       props.isWizard ?
-        templateQuestion
+      props.templateQuestions
       : false
     );
 	};
