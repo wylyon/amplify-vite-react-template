@@ -90,8 +90,12 @@ function App() {
     }
 
     const fetchEmail = async () => {
-      const { email} = await fetchUserAttributes();
-      setEmailAddress(email);
+      try {
+        const { email} = await fetchUserAttributes();
+        setEmailAddress(email);
+      } catch (exception) {
+        alert("NotAuthorizedException:  Invalid Login: " + exception);
+      }
     }
 //    setIsWaiting(true);
     fetchTheSettings();

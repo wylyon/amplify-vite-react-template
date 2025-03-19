@@ -22,3 +22,97 @@ export function clearState() {
       }
   }
 }
+
+function trimLeadingSpacesInArray(arr) {
+  return arr.map(str => {
+    if (typeof str === 'string') {
+      return str.trimStart();
+    }
+  })
+}
+
+export function cleanUpTextArray(arr) {
+  // filter out leading spaces and empty rows
+  var newArr = [];
+  for (var indx = 0; indx < arr.length; indx++) {
+    if (arr[indx] != "") {
+      newArr.push(arr[indx]);
+    }
+  }
+  return trimLeadingSpacesInArray(newArr);
+}
+
+export function countNumOfTabs(text) {
+  if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
+    if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
+      if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
+        if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
+          if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
+            if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
+              if (text.indexOf("&emsp;&emsp;&emsp;&emsp;") < 0) {
+                if (text.indexOf("&emsp;&emsp;&emsp;") < 0) {
+                  if (text.indexOf("&emsp;&emsp;") < 0) {
+                    if (text.indexOf("&emsp;") < 0) {
+                      return 0;
+                    } else {
+                      return 1;
+                    }
+                  } else {
+                    return 2;
+                  }
+                } else {
+                  return 3;
+                }
+              } else {
+                return 4;
+              }
+            } else {
+              return 5;
+            }
+          } else {
+            return 6;
+          }
+        } else {
+          return 7;
+        }
+      } else {
+        return 8;
+      }
+    } else {
+      return 9;
+    }
+  } else {
+    return 10;
+  }
+}
+
+export function setTitle (proposedTitle, arrayOfValues) {
+  var newTitle = proposedTitle;
+  var didSetTitle = false;
+  for (var indx = 0; indx < arrayOfValues.length; indx++) {
+    const searchTitle = (indx == 0 ? proposedTitle : (proposedTitle + "-" + indx));
+    const item = arrayOfValues.find(comp => comp.title == searchTitle);
+    if (!item) {
+      didSetTitle = true;
+      newTitle = searchTitle;
+      indx = arrayOfValues.length;
+    }
+  }
+  if (!didSetTitle && arrayOfValues.length > 0) {
+    newTitle = newTitle + "-" + arrayOfValues.length;
+  }
+  return newTitle;
+}
+
+export function setLabel (proposedLabel, arrayOfValues) {
+  var newLabel = proposedLabel;
+  for (var indx = 0; indx < arrayOfValues.length; indx++) {
+    const searchLabel = (indx == 0 ? proposedLabel : (proposedLabel + "-" + indx));
+    const item = arrayOfValues.find(comp => comp.title == searchLabel);
+    if (!item) {
+      newLabel = searchLabel;
+      indx = arrayOfValues.length;
+    }
+  }
+  return newLabel;
+}

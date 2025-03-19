@@ -46,7 +46,7 @@ import PopupReview from "../src/PopupPreview";
 import MoveUpIcon from '@mui/icons-material/MoveUp';
 import { min } from "moment";
 import { IconButton } from "@mui/material";
-
+import { cleanUpTextArray, countNumOfTabs, setTitle, setLabel } from '../src/utils.js';
 
 export default function SetupTemplate(props) {
   const [formData, setFormData] = useState({
@@ -113,6 +113,10 @@ export default function SetupTemplate(props) {
     setOpen(true);
   };
 
+  const handleButtonAttributeClick = () => {
+    setDialogPrompt(formData.questionValues);
+    setOpen(true);
+  }
 
   const handleClose = (event: object, reason: string) => {
     if (reason == "escapeKeyDown" || reason == "backdropClick") {
@@ -128,50 +132,6 @@ export default function SetupTemplate(props) {
   const handlePreClose = () => {
     setOpenPreAttributes(false);
   };
-
-  function countNumOfTabs(text) {
-    if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
-      if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
-        if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
-          if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
-            if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
-              if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
-                if (text.indexOf("&emsp;&emsp;&emsp;&emsp;") < 0) {
-                  if (text.indexOf("&emsp;&emsp;&emsp;") < 0) {
-                    if (text.indexOf("&emsp;&emsp;") < 0) {
-                      if (text.indexOf("&emsp;") < 0) {
-                        return 0;
-                      } else {
-                        return 1;
-                      }
-                    } else {
-                      return 2;
-                    }
-                  } else {
-                    return 3;
-                  }
-                } else {
-                  return 4;
-                }
-              } else {
-                return 5;
-              }
-            } else {
-              return 6;
-            }
-          } else {
-            return 7;
-          }
-        } else {
-          return 8;
-        }
-      } else {
-        return 9;
-      }
-    } else {
-      return 10;
-    }
-  }
 
   const handleClickOpenPre = () => {
     if (formData.preLoadAttributes == '') {
@@ -333,37 +293,6 @@ export default function SetupTemplate(props) {
       ...prevState,
       [questionType]: value,
     }));
-  }
-  
-  function setTitle (proposedTitle, arrayOfValues) {
-    var newTitle = proposedTitle;
-    var didSetTitle = false;
-    for (var indx = 0; indx < arrayOfValues.length; indx++) {
-      const searchTitle = (indx == 0 ? proposedTitle : (proposedTitle + "-" + indx));
-      const item = arrayOfValues.find(comp => comp.title == searchTitle);
-      if (!item) {
-        didSetTitle = true;
-        newTitle = searchTitle;
-        indx = arrayOfValues.length;
-      }
-    }
-    if (!didSetTitle && arrayOfValues.length > 0) {
-      newTitle = newTitle + "-" + arrayOfValues.length;
-    }
-    return newTitle;
-  }
-  
-  function setLabel (proposedLabel, arrayOfValues) {
-    var newLabel = proposedLabel;
-    for (var indx = 0; indx < arrayOfValues.length; indx++) {
-      const searchLabel = (indx == 0 ? proposedLabel : (proposedLabel + "-" + indx));
-      const item = arrayOfValues.find(comp => comp.title == searchLabel);
-      if (!item) {
-        newLabel = searchLabel;
-        indx = arrayOfValues.length;
-      }
-    }
-    return newLabel;
   }
 
   function resetQuestionsRefresh (questionOrder, items) {
@@ -1042,25 +971,6 @@ export default function SetupTemplate(props) {
     return { __html: dirty };
   }
 
-  function trimLeadingSpacesInArray(arr) {
-    return arr.map(str => {
-      if (typeof str === 'string') {
-        return str.trimStart();
-      }
-    })
-  }
-
-  function cleanUpTextArray(arr) {
-    // filter out leading spaces and empty rows
-    var newArr = [];
-    for (var indx = 0; indx < arr.length; indx++) {
-      if (arr[indx] != "") {
-        newArr.push(arr[indx]);
-      }
-    }
-    return trimLeadingSpacesInArray(newArr);
-  }
-
   const handleCloseDelete = (event: object, reason: string) => {
     if (reason == "escapeKeyDown" || reason == "backdropClick") {
       return;
@@ -1439,12 +1349,6 @@ export default function SetupTemplate(props) {
                   </Stack>
                   <FormLabel id="filler1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FormLabel>
                   <br />
-                  {(props.isWizard || !isAdvanced) ? null :
-                  <Tooltip title="Enter here a fuller description of what this question is for and about." placement="right">
-                  <TextField id="question_desc" name="description" value={formData.description} 
-                    label="Description" variant="outlined" size="small" multiline
-                    maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip> }
-                  <br />
                   {props.isWizard || !isAdvanced ? 
                   <Box>
                     <Tooltip 
@@ -1476,30 +1380,45 @@ export default function SetupTemplate(props) {
                   </Box>
                   :
                   <Box>
-                    <Tooltip title="Enter here any special HTML formatting, or text you want processed BEFORE control is rendered." placement="right">
+                    <Tooltip title="Enter here any special HTML formatting, or text you want (i.e. label) BEFORE control is rendered." placement="right">
                     <TextField id="question_pre" name="preLoadAttributes" value={formData.preLoadAttributes} 
-                      label="control pre-attributes i.e. label" variant="outlined" size="small" multiline
+                      label="label" variant="outlined" size="small" multiline
                       maxRows={4} sx={{ width: "350px"}} 
                       onClick={handleClickOpenPre} onChange={handleChange}/></Tooltip>
-                    <br />  
-                    <Tooltip title="Enter here any special HTML formatting, or text you want processed AFTER control is rendered." placement="right">    
-                    <TextField id="question_post" name="postLoadAttributes" value={formData.postLoadAttributes} 
-                      label="control post attributes (optional)" variant="outlined" size="small" multiline
-                      maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip> 
-                    <br /><br />
+                    <br /> <br />  
+                    {(whichControl.startsWith("Button") || whichControl.startsWith("Color")) ?
+                      <Tooltip title="Click here to set button attribues, like color and button label." placement="right">
+                        <Button variant="contained" color="primary" onClick={handleButtonAttributeClick}>Set Button Values</Button>
+                      </Tooltip> 
+                    : whichControl == "Dropdown" || whichControl == "Multiple Dropdown" || whichControl == "RadioGroup" || whichControl.startsWith("Toggle") ?
+                      <Tooltip title="Click here to set values (ie. dropdown or radio values)." placement="right">
+                        <Button variant="contained" disabled={isValuesDisabled} color="primary" onClick={handleClickOpen}>Set Values</Button>
+                      </Tooltip>  
+                    : whichControl == "Default Input Value" || whichControl == "Text value" ?
+                      <Tooltip title="Click here to set any Input or Text value." placement="right">
+                        <Button variant="contained" disabled={isValuesDisabled} color="primary" onClick={handleClickOpen}>{"Set " + (whichControl == "Default Input Value" ? "Input" : "Text") + " Value"}</Button>
+                      </Tooltip>  
+                    : whichControl == ''  || whichControl == 'Switch' ? null : 
                     <Tooltip title="Enter here control values (ie. dropdown or radio values)." placement="right">
-                    <TextField id="question_values" name="questionValues" value={formData.questionValues} 
-                      label="dropdown/button list values" 
-                      disabled={isValuesDisabled} variant="outlined" size="small" multiline
-                      maxRows={4} sx={{ width: "350px"}} onClick={handleClickOpen} onChange={handleChange}/></Tooltip>   
-                    <br />
-                    <FormGroup>
-                    <Tooltip title="Check this if input for this control is optional." placement="right">
-                      <FormControlLabel value={formData.optionalFlag} name="optionalFlag" 
-                        control={formData.optionalFlag ? <Checkbox checked /> : <Checkbox />} 
-                        label="Optional control" 
-                        onChange={handleChange} /></Tooltip>
-                    </FormGroup>   
+                      <TextField id="question_values" name="questionValues" value={formData.questionValues} 
+                        label="dropdown/button list values" 
+                        disabled={isValuesDisabled} variant="outlined" size="small" multiline
+                        maxRows={4} sx={{ width: "350px"}} onClick={handleClickOpen} onChange={handleChange}/>
+                    </Tooltip>  } 
+                    {formData.questionValues == '' ? null :
+                      <Stack direction="column" spacing={0}>
+                        <br />
+                        <TextField id="question_values" name="questionValues" value={formData.questionValues.split("|")} 
+                          label="dropdown/button list values" 
+                          slotProps={{
+                            input: {
+                              readOnly: true,
+                            },
+                          }}
+                          disabled={isValuesDisabled} variant="filled" size="small" multiline
+                          maxRows={4} />
+                      </Stack>
+                      }  
                   </Box> }               
                 </Paper>
               </Stack>
