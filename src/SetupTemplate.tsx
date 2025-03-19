@@ -638,6 +638,7 @@ export default function SetupTemplate(props) {
   const handleDialogInputClick = () => {
     setIsValuesDisabled(false);
     setWhichControl('Dialog Input');
+    setDefaultText("Dialog", "Enter");
   }
 
   const handleColorButtonClick = () => {
@@ -1398,6 +1399,10 @@ export default function SetupTemplate(props) {
                       <Tooltip title="Click here to set any Input or Text value." placement="right">
                         <Button variant="contained" disabled={isValuesDisabled} color="primary" onClick={handleClickOpen}>{"Set " + (whichControl == "Default Input Value" ? "Input" : "Text") + " Value"}</Button>
                       </Tooltip>  
+                    : whichControl.startsWith("Dialog") ?
+                    <Tooltip title="Click here to enter trigger value for a Dialog box on prior control." placement="right">
+                      <Button variant="contained" disabled={isValuesDisabled} color="primary" onClick={handleClickOpen}>Set Trigger</Button>
+                    </Tooltip>  
                     : whichControl == ''  || whichControl == 'Switch' ? null : 
                     <Tooltip title="Enter here control values (ie. dropdown or radio values)." placement="right">
                       <TextField id="question_values" name="questionValues" value={formData.questionValues} 
