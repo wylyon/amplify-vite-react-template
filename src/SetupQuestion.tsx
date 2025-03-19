@@ -32,6 +32,7 @@ import AccordionActions from '@mui/material/AccordionActions';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { cleanUpTextArray, countNumOfTabs, setTitle, setLabel } from '../src/utils.js';
 
 export default function SetupQuestion(props) {
   const [formData, setFormData] = useState({
@@ -81,50 +82,6 @@ export default function SetupQuestion(props) {
   const handlePreClose = () => {
     setOpenPreAttributes(false);
   };
-
-  function countNumOfTabs(text) {
-    if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
-      if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
-        if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
-          if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
-            if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
-              if (text.indexOf("&emsp;&emsp;&emsp;&emsp;&emsp;") < 0) {
-                if (text.indexOf("&emsp;&emsp;&emsp;&emsp;") < 0) {
-                  if (text.indexOf("&emsp;&emsp;&emsp;") < 0) {
-                    if (text.indexOf("&emsp;&emsp;") < 0) {
-                      if (text.indexOf("&emsp;") < 0) {
-                        return 0;
-                      } else {
-                        return 1;
-                      }
-                    } else {
-                      return 2;
-                    }
-                  } else {
-                    return 3;
-                  }
-                } else {
-                  return 4;
-                }
-              } else {
-                return 5;
-              }
-            } else {
-              return 6;
-            }
-          } else {
-            return 7;
-          }
-        } else {
-          return 8;
-        }
-      } else {
-        return 9;
-      }
-    } else {
-      return 10;
-    }
-  }
 
   const handleClickOpenPre = () => {
     if (formData.preLoadAttributes == '') {
@@ -534,9 +491,7 @@ export default function SetupQuestion(props) {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="subtitle1" gutterBottom>
-                    Please enter a title for this question that will uniquely identify it, and a description 
-                    for more details.   Finally, also please assign the ordering of this question relative to
-                    any other question.
+                    Please enter a title for this question that will uniquely identify it.
                 </Typography>
                 <Typography variant="subtitle2" gutterBottom>
                 <br /> 
@@ -546,15 +501,7 @@ export default function SetupQuestion(props) {
                     label="Question Title" variant="outlined" required="true" size="small" 
                     sx={{ width: '250px'}} onChange={handleChange}/></Tooltip>
                   <FormLabel id="filler1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FormLabel>
-                  <Tooltip title="Enter here the order of this question relative to others." placement="right">
-                  <TextField id="question_order" name="questionOrder" value={formData.questionOrder} 
-                    label="Order" variant="outlined" size="small" 
-                    sx={{ width: '80px' }} required="true" onChange={handleChange}/></Tooltip>
                   <br />
-                  <Tooltip title="Enter here a fuller description of what this question is for and about." placement="right">
-                  <TextField id="question_desc" name="description" value={formData.description} 
-                    label="Description" variant="outlined" size="small" multiline
-                    maxRows={4} sx={{ width: "350px"}} onChange={handleChange}/></Tooltip>
               </AccordionDetails>
             </Accordion>
             <Accordion>
@@ -730,15 +677,6 @@ export default function SetupQuestion(props) {
                     <Button variant='contained' disabled={isValuesDisabled} onClick={handleClickOpen}>Set Values</Button>
                   </Tooltip>  
                 </Stack>
-                {!props.isWizard ? 
-                  <FormGroup>
-                  <br />
-                  <Tooltip title="Check this if input for this control is optional." placement="right">
-                    <FormControlLabel value={formData.optionalFlag} name="optionalFlag" 
-                      control={formData.optionalFlag ? <Checkbox checked /> : <Checkbox />} 
-                      label="Optional control" 
-                      onChange={handleChange} /></Tooltip>
-                  </FormGroup> : null}
               </AccordionDetails>
           </Accordion>
         </DialogContent>

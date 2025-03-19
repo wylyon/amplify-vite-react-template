@@ -79,8 +79,18 @@ function App() {
   };
 
   const logOut = async() => {
+    setEmailAddress(null);
     clearState();
     await signOut();
+  }
+
+  const fetchEmail = async () => {
+    try {
+      const { email} = await fetchUserAttributes();
+      setEmailAddress(email);
+    } catch (exception) {
+
+    }
   }
 
   useEffect(() => {
@@ -88,18 +98,8 @@ function App() {
       const {data: items, googleAPIKey, what3wordAPI, errors} = await fetchSettings();
       checkSettings(items, errors, googleAPIKey, what3wordAPI);
     }
-
-    const fetchEmail = async () => {
-      try {
-        const { email} = await fetchUserAttributes();
-        setEmailAddress(email);
-      } catch (exception) {
-        alert("NotAuthorizedException:  Invalid Login: " + exception);
-      }
-    }
 //    setIsWaiting(true);
     fetchTheSettings();
-    fetchEmail();
   }, []);
 
   function nothingToDo() {
@@ -108,10 +108,15 @@ function App() {
   return (
     <>
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
+    {!isWaiting && emailAddress && <DetermineMode userId={emailAddress} googleAPI={googleAPIKeyValue} what3words={what3wordAPIValue} onSubmitChange={logOut} companyName={''} />}
     {!isAccessDisabled && <Authenticator>
-      {({ signOut, user }) => (
-        !isWaiting && emailAddress && <DetermineMode userId={emailAddress} googleAPI={googleAPIKeyValue} what3words={what3wordAPIValue} onSubmitChange={logOut} companyName={''} />
-      )}
+      {({ signOut, user }) => {
+        if (user.signInDetails === undefined || user.signInDetails.loginId === undefined ) {
+          fetchEmail();
+        } else {
+          setEmailAddress(user.signInDetails.loginId);
+        }
+      }}
     </Authenticator> }
     {isWaiting && <CircularProgress />}
     </>

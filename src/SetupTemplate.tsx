@@ -92,7 +92,8 @@ export default function SetupTemplate(props) {
   const [isValueFocus, setIsValueFocus] = useState(false);
   const [sortDirection, setSortDirection] = useState('none');
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
-  const [isReshuffle, setIsReshuffle] = useState(false);
+  const [openCancel, setOpenCancel] = useState(false);
+  const [isAnyChanges, setIsAnyChanges] = useState(false);
 
   const handleClickOpen = () => {
     if (formData.questionValues == '') {
@@ -409,64 +410,12 @@ export default function SetupTemplate(props) {
     }
   }
 
-  // For now, lets "mark" as deleted until we can officially delete
-  const deleteQuestions = async(questionId) => {
-    setIsWaiting(true);
-    const now = new Date();
-    const qId = questionId.id;
-    const { errors, data } = await client.mutations.deleteQuestionById({
-      questionId: qId
-    });
-    getQuestionsByTemplate(props.templateId, true);
-  }
-
-  const updateQuestionSequence = async(id, seq) => {
-    if (props.isWizard) {
-      return;
-    }
-    setIsWaiting(true);
-    const { errors, data: updateQuestions } = await client.models.template_question.update({
-      id: id,
-      question_order: seq
-    });
-    if (errors) {
-      setAlertMessage(errors[0].message);
-      setIsAlert(true);
-      setIsWaiting(false);
-      return;
-    }
-    setIsWaiting(false);
-  }
-
   const updateQuestions = async() => {
-    if (props.isWizard) {
-      mapTemplateQuestions(true, null);
-      setIsUpdate(false);
-      setRowSelection({});
-    } else {
-      setIsWaiting(true);
-      const { errors, data: updateQuestions } = await client.models.template_question.update({
-        id: formData.id,
-        question_order: formData.questionOrder,
-        pre_load_attributes: formData.preLoadAttributes,
-        title: formData.title,
-        description: formData.description,
-        question_type: formData.questionType,
-        question_values: formData.questionValues,
-        post_load_attributes: formData.postLoadAttributes,
-        optional_flag: (!formData.optionalFlag ? 0 : 1),
-        trigger_value: formData.questionType == 'dialog_input' ? formData.questionValues : ''
-      });
-      if (errors) {
-        setAlertMessage(errors[0].message);
-        setIsAlert(true);
-        setIsWaiting(false);
-        return;
-      }
-      getQuestionsByTemplate(props.templateId, false);
-      setRowSelection({});
-      setPage(templateQuestion.length);
-  }
+    mapTemplateQuestions(true, null);
+    setIsUpdate(false);
+    setRowSelection({});
+    setIsAnyChanges(true);
+
     setAlertMessage("Question " + formData.title + " Updated");
     setTheSeverity("success");
     setIsAlert(true);
@@ -475,40 +424,13 @@ export default function SetupTemplate(props) {
   const createQuestions = async() => {
     const now = new Date();
     const nextOrder = formData.questionOrder + 1;
-    const currentDateTime = now.toLocaleString();
-    if (props.isWizard) {
-      mapTemplateQuestions(false, null);
-    } else {
-      setIsWaiting(true);
-      const { errors, data: newQuestions } = await client.models.template_question.create({
-        id: uuidv4(),
-        template_id: props.templateId,
-        question_order: formData.questionOrder,
-        pre_load_attributes: formData.preLoadAttributes,
-        title: formData.title,
-        description: formData.description,
-        question_type: formData.questionType,
-        question_values: formData.questionValues,
-        post_load_attributes: formData.postLoadAttributes,
-        optional_flag: (!formData.optionalFlag ? 0 : 1),
-        notes: '',
-        created: now,
-        created_by: props.userId,
-        trigger_value: formData.questionType == 'dialog_input' ? formData.questionValues : ''
-      });
-      if (errors) {
-        setAlertMessage(errors[0].message);
-        setIsAlert(true);
-        setIsWaiting(false);
-        return;
-      }
-      getQuestionsByTemplate(props.templateId, true);
-    }
+    mapTemplateQuestions(false, null);
     setAlertMessage("Question " + formData.title + " Added");
     setTheSeverity("success");
     setIsAlert(true);
-    resetQuestions(props.isWizard ? nextOrder : null);
-      setRowSelection({});
+    setIsAnyChanges(true);
+    resetQuestions(nextOrder);
+    setRowSelection({});
   }
 
 
@@ -526,6 +448,64 @@ export default function SetupTemplate(props) {
 
   const handleComplete = () => {
     alert("Form completed!");
+  }
+
+  const handleSaveAll = async() => {
+    if (props.isWizard || !isAnyChanges) {
+      setOpenSetup(false);
+      props.onSubmitChange(
+        props.isWizard ?
+          templateQuestion
+        : false
+      );
+      return;
+    }
+    setIsWaiting(true);
+    // first delete all existing questions...then add new ones
+    try {
+      await client.mutations.deleteQuestionByTemplateId({
+        templateId: props.templateId
+      });
+    } catch (errors) {
+      setAlertMessage("Cant delete App questions.  " + errors );
+      setIsAlert(true);
+      setIsWaiting(false);
+      return;
+    }
+
+    const now = new Date();
+    const currentDateTime = now.toLocaleString();
+    for (var indx = 0; indx < templateQuestion.length; indx++) {
+      const { errors: createErrors, data: newQuestions } = await client.models.template_question.create({
+        id: uuidv4(),
+        template_id: props.templateId,
+        question_order: indx,
+        pre_load_attributes: templateQuestion[indx].pre_load_attributes,
+        title: templateQuestion[indx].title,
+        description: templateQuestion[indx].description,
+        question_type: templateQuestion[indx].question_type,
+        question_values: templateQuestion[indx].question_values,
+        post_load_attributes: templateQuestion[indx].post_load_attributes,
+        optional_flag: (!templateQuestion[indx].optional_flag ? 0 : 1),
+        notes: '',
+        created: now,
+        created_by: props.userId,
+        trigger_value: templateQuestion[indx].question_type == 'dialog_input' ? templateQuestion[indx].question_values : ''
+      });
+      if (createErrors) {
+        setAlertMessage(createErrors[0].message);
+        setIsAlert(true);
+        setIsWaiting(false);
+        return;
+      }
+    }
+    setIsWaiting(false);
+    setOpenSetup(false);
+    props.onSubmitChange(
+      props.isWizard ?
+        templateQuestion
+      : false
+    );
   }
 
   const handleOnSave = () => {
@@ -655,17 +635,10 @@ export default function SetupTemplate(props) {
 
   function handleDelete () {
     setOpenDelete(false);
+    setIsAnyChanges(true);
     const theRows = table.getSelectedRowModel().rows;
-    if (props.isWizard) {
-      mapTemplateQuestions(false, theRows);
-    } else {
-      for (var i = 0; i < theRows.length; i++) {
-        deleteQuestions(theRows[i].original);
-      }
-    }
-    if (props.isWizard) {
-      setIsUpdate(false);
-    }
+    mapTemplateQuestions(false, theRows);
+    setIsUpdate(false);
     setRowSelection({});
   }
 
@@ -773,35 +746,11 @@ export default function SetupTemplate(props) {
     [],
   );
 
-  const handleReshuffle = () => {
-    // need to re-order
-    setIsReshuffle(false);
-    var updatedTemplateQuestions = [];
-    for (var indx = 0; indx < templateQuestion.length; indx++) {
-      updatedTemplateQuestions.push({
-        id: templateQuestion[indx].id,
-        template_id: templateQuestion[indx].template_id,
-        question_order: indx+1,
-        pre_load_attributes: templateQuestion[indx].pre_load_attributes,
-        title: templateQuestion[indx].title,
-        description: templateQuestion[indx].description,
-        question_type: templateQuestion[indx].question_type,
-        question_values: templateQuestion[indx].question_values,
-        post_load_attributes: templateQuestion[indx].post_load_attributes,
-        optional_flag: templateQuestion[indx].optional_flag,
-        actions_flag: false,
-        notes: '',
-        trigger_value: templateQuestion[indx].trigger_value
-      });
-      updateQuestionSequence(templateQuestion[indx].id, indx+1);
-    }
-    setTemplateQuestion(updatedTemplateQuestions);
-  };
-
   const handleShuffleUp = (row: MRT_Row) => {
     if (row.index == 0) {
       return;
     }
+    setIsAnyChanges(true);
     var newTemplateQuestion = [];
     const swapFrom = row.index;
     const swapTo = row.index - 1;
@@ -848,7 +797,6 @@ export default function SetupTemplate(props) {
         });
       }
     }
-    setIsReshuffle(true);
     setTemplateQuestion(newTemplateQuestion);
   }
 
@@ -909,7 +857,6 @@ export default function SetupTemplate(props) {
         >
           Delete
         </Button>
-      { props.isWizard ? null :  <Button disabled={!isReshuffle} color="primary" onClick={handleReshuffle}>Save Reorder</Button> }
       </ButtonGroup>
     ),
     muiRowDragHandleProps: ({ table }) => ({
@@ -918,7 +865,7 @@ export default function SetupTemplate(props) {
         if (hoveredRow && draggingRow) {
           templateQuestion.splice(
             (hoveredRow as MRT_Row<["template_question"]["type"][]>).index, 0, templateQuestion.splice(draggingRow.index, 1)[0],);
-          setIsReshuffle(true);
+          setIsAnyChanges(true);
           setTemplateQuestion([...templateQuestion]);
         }
         }
@@ -979,6 +926,26 @@ export default function SetupTemplate(props) {
 		setOpenDelete(false);
 	};
 
+  const handleCloseCancel = (event: object, reason: string) => {
+    if (reason == "escapeKeyDown" || reason == "backdropClick") {
+      return;
+    }
+		setOpenCancel(false);
+	};
+
+  const handleCloseThrow = (event: object, reason: string) => {
+    if (reason == "escapeKeyDown" || reason == "backdropClick") {
+      return;
+    }
+		setOpenCancel(false);
+    setOpenSetup(false);
+    props.onSubmitChange(
+      props.isWizard ?
+        templateQuestion
+      : false
+    );
+	};
+
   const confirmDelete = () => {
     setOpenDelete(true);
   }
@@ -1009,6 +976,25 @@ export default function SetupTemplate(props) {
           <Button variant='contained' color='error' onClick={handleCloseDelete} autoFocus>
             Cancel
           </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openCancel}
+        onClose={handleCloseCancel}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Are You Sure?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to cancel any changes you made?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+			    <Button variant='contained' color='success' onClick={handleCloseThrow}>Yes</Button>
+          <Button variant='contained' color='error' onClick={handleCloseCancel} autoFocus>Cancel</Button>
         </DialogActions>
       </Dialog>
       <Dialog
@@ -1474,9 +1460,8 @@ export default function SetupTemplate(props) {
       </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleOnCancel} autoFocus variant="contained" color="error">
-            Close
-          </Button>
+          <Button onClick={handleSaveAll} autoFocus variant="contained" color="primary">Save</Button>
+          <Button onClick={() => isAnyChanges ? setOpenCancel(true) : handleOnCancel()} autoFocus variant="contained" color="error">Close</Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
