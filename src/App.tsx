@@ -57,6 +57,7 @@ function App() {
   const [disableMsg, setDisableMsg] = useState('');
   const [isWaiting, setIsWaiting] = useState(true);
   const [emailAddress, setEmailAddress] = useState(null);
+  const [reload, setReload] = useState(false);
 
   const checkSettings = async (items, errors, googleAPIKey, what3wordAPI) => {
     if (errors) {
@@ -79,9 +80,9 @@ function App() {
   };
 
   const logOut = async() => {
-    setEmailAddress(null);
     clearState();
     await signOut();
+    setReload(true);
   }
 
   const fetchEmail = async () => {
@@ -94,13 +95,16 @@ function App() {
   }
 
   useEffect(() => {
+    if (reload) {
+      window.location.reload();
+      }
     const fetchTheSettings = async () => {
       const {data: items, googleAPIKey, what3wordAPI, errors} = await fetchSettings();
       checkSettings(items, errors, googleAPIKey, what3wordAPI);
     }
 //    setIsWaiting(true);
     fetchTheSettings();
-  }, []);
+  }, [reload]);
 
   function nothingToDo() {
   }
@@ -108,7 +112,7 @@ function App() {
   return (
     <>
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
-    {!isWaiting && emailAddress && <DetermineMode userId={emailAddress} googleAPI={googleAPIKeyValue} what3words={what3wordAPIValue} onSubmitChange={logOut} companyName={''} />}
+    {emailAddress && <DetermineMode userId={emailAddress} googleAPI={googleAPIKeyValue} what3words={what3wordAPIValue} onSubmitChange={logOut} companyName={''} />}
     {!isAccessDisabled && <Authenticator>
       {({ signOut, user }) => {
         if (user.signInDetails === undefined || user.signInDetails.loginId === undefined ) {
