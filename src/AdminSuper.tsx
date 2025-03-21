@@ -153,8 +153,8 @@ export default function AdminSuper(props) {
 				onChange={handleReportChange}
 				aria-label="Report tabs">
 				<Tab label="Summary All Results" {...a11yHProps(0)} />
-				<Tab label="Summary By Template" {...a11yHProps(1)} />
-				<Tab label="Detailed Report By Template" {...a11yHProps(2)} />
+				<Tab label="Summary By Logging App" {...a11yHProps(1)} />
+				<Tab label="Detailed Report By Logging App" {...a11yHProps(2)} />
 				<Tab label="Transaction Detail By Company" {...a11yHProps(3)} />
 				<Tab label="Other Analytics" {...a11yHProps(4)} />
 			</Tabs>

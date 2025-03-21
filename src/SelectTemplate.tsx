@@ -39,12 +39,12 @@ export default function SelectTemplate(props) {
   return (
     <Box sx={{ minWidth: 120 }}>
       <FormControl >
-        <InputLabel id="demo-simple-select-label">Templates</InputLabel>
+        <InputLabel id="demo-simple-select-label">Logging Apps</InputLabel>
         <Select
           labelId="demo-simple-select-label"
           id="demo-simple-select"
           value={selectTemplate}
-          label="Templates"
+          label="Logging Apps"
           onChange={handleSelectChange}
         >
           {props.setAll ? <MenuItem key={0} value={0}>All</MenuItem> : null}

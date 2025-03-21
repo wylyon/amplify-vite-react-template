@@ -390,7 +390,7 @@ export default function SetupTemplate(props) {
     }
     if (!isUpdate && listToDelete == null) {
       newTemplateQuestion.push({
-        id: uuidv4(),
+        id: props.isWizard ? uuidv4() : null,
         question_order: formData.questionOrder,
         pre_load_attributes: formData.preLoadAttributes,   
         title: formData.title,
@@ -477,7 +477,7 @@ export default function SetupTemplate(props) {
     const currentDateTime = now.toLocaleString();
     for (var indx = 0; indx < templateQuestion.length; indx++) {
       const { errors: createErrors, data: newQuestions } = await client.models.template_question.create({
-        id: uuidv4(),
+        id: templateQuestion[indx].id == null ? uuidv4() : templateQuestion[indx].id,
         template_id: props.templateId,
         question_order: indx,
         pre_load_attributes: templateQuestion[indx].pre_load_attributes,
@@ -838,7 +838,7 @@ export default function SetupTemplate(props) {
     renderRowActions: ({ row }) => (
       <Box>
         <Tooltip title="Will move question up, swapping positions" placement="top">
-          <IconButton onClick={() => handleShuffleUp(row)}><MoveUpIcon /></IconButton>
+          <IconButton disabled={row.index == 0} onClick={() => handleShuffleUp(row)}><MoveUpIcon /></IconButton>
         </Tooltip>
       </Box>
     ),

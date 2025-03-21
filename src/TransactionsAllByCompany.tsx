@@ -285,7 +285,7 @@ export default function TransactionsAllByCompany(props) {
 			headerName: 'Company Id', 
 			width: 70 },
 		{ field: 'title', 
-			headerName: 'Template', 
+			headerName: 'Logging App', 
 			width: 200, 
 			headerClassName: 'grid-headers' },
 		{ field: 'templateId',

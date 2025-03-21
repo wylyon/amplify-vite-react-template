@@ -186,8 +186,8 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .returns(a.json().array())
     .handler(a.handler.inlineSql(
       "SELECT c.name as company, c.id as company_id,  t.title, t.id as template_id, r.transaction_id, count(r.transaction_id) as num_questions, max(r.created) as created, max(what3words) as what3words, " +
-      "max(gps_lat) as lattitude, max(gps_long) as longitude, max(r.created_by) as created_by FROM logistics.question_result r join logistics.template_question q on q.id = r.template_question_id " +
-      "join logistics.template t on t.id = q.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id where template_id = :templateId " +
+      "max(gps_lat) as lattitude, max(gps_long) as longitude, max(r.created_by) as created_by FROM logistics.question_result r " +
+      "join logistics.transactions tt on tt.id = r.transaction_id join logistics.template t on t.id = tt.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id where template_id = :templateId " +
       "and q.question_type != 'dialog_input' group by c.name, c.id, t.title, t.id, r.transaction_id order by c.name, c.id, t.title, t.id, r.created;"
     )).authorization(allow => allow.publicApiKey()),
     resultsTotals: a.query()
@@ -196,7 +196,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .handler(a.handler.inlineSql(
       "SELECT company, company_id, title, template_id, count(transaction_id) as num_transactions, max(created) as latest_posting, min(created) as earliest_posting FROM " + 
       "(SELECT c.name as company, c.id as company_id, t.title, t.id as template_id, r.transaction_id, r.created FROM " +
-      "logistics.question_result r join logistics.template_question q on q.id = r.template_question_id join logistics.template t on t.id = q.template_id " +
+      "logistics.question_result r join logistics.transactions tt on tt.id = r.transaction_id join logistics.template t on t.id = tt.template_id " +
       "join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id group by c.name, t.title, r.transaction_id) a " +
       "group by company, company_id, title, template_id;"
     )).authorization(allow => allow.publicApiKey()),
@@ -208,7 +208,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .handler(a.handler.inlineSql(
       "SELECT company, company_id, title, template_id, count(transaction_id) as num_transactions, max(created) as latest_posting, min(created) as earliest_posting FROM " + 
       "(SELECT c.name as company, c.id as company_id, t.title, t.id as template_id, r.transaction_id, r.created FROM " +
-      "logistics.question_result r join logistics.template_question q on q.id = r.template_question_id join logistics.template t on t.id = q.template_id " +
+      "logistics.question_result r join join logistics.transactions tt on tt.id = r.transaction_id join logistics.template t on t.id = tt.template_id " +
       "join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id WHERE c.id = :companyId group by c.name, t.title, r.transaction_id) a " +
       "group by company, company_id, title, template_id;"
     )).authorization(allow => allow.publicApiKey()),

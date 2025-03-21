@@ -300,7 +300,7 @@ export default function ResultsByTemplate(props) {
 			headerName: 'Template Id', 
 			width: 70 },
 		{ field: 'template', 
-			headerName: 'Template', 
+			headerName: 'Logging App', 
 			width: 140, 
 			headerClassName: 'grid-headers' },
 		{ field: 'transactionId', 
