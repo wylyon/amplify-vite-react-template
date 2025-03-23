@@ -86,6 +86,9 @@ function App() {
   }
 
   const fetchEmail = async () => {
+    if (emailAddress) {
+      return;
+    }
     try {
       const { email} = await fetchUserAttributes();
       setEmailAddress(email);
