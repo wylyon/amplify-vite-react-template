@@ -68,6 +68,7 @@ export default function ResultsByTemplate(props) {
 	const [lng, setLng] = useState('');
 	const [mapKeyId, setMapKeyId] = useState('');
 	const [photo, setPhoto] = useState('');
+	const [columns, setColumns] = useState<GridColDef[]>([]);
 
 	const client = generateClient<Schema>();
 
@@ -196,6 +197,70 @@ export default function ResultsByTemplate(props) {
 	useEffect(() => {
 		props.transactionId == null ?
 		allResultTemplates() : allResults(props.transactionId)
+		setColumns([
+			{ field: 'id', headerName: 'Id'},
+			{ field: 'company', 
+				headerName: 'Company', 
+				headerClassName: 'grid-headers',
+				width: 150 },
+			{ field: 'division', 
+				headerName: 'Division', 
+				headerClassName: 'grid-headers',
+				width: 100 },
+			{ field: 'companyId', 
+				headerName: 'Company Id', 
+				width: 70 },
+			{ field: 'divisionId', 
+				headerName: 'Division Id', 
+				width: 70 },
+			{ field: 'templateId', 
+				headerName: 'Template Id', 
+				width: 70 },
+			{ field: 'template', 
+				headerName: 'Logging App', 
+				width: 140, 
+				headerClassName: 'grid-headers' },
+			{ field: 'transactionId', 
+				headerName: 'Transaction Id', 
+				valueGetter: (value) => {
+					return value.substring(1, 4) + "..."; },
+				width: 80, 
+				headerClassName: 'grid-headers' },
+			{ field: 'question',
+				headerName: 'Question',
+				width: 170, 
+				  headerClassName: 'grid-headers' },
+			{ field: 'result',
+				headerName: 'Result',
+				valueGetter: (value) => {
+					if (value == null) {
+						return null;
+					}
+					const valueParsed = value.toString().replaceAll("|", " and ");
+					return valueParsed },
+				width: 170, 
+				headerClassName: 'grid-headers' },
+			{ field: 'what3words', headerName: 'What3words', width: 150, headerClassName: 'grid-headers' },
+			{ field: 'lattitude', headerName: 'Latitude', width: 110, headerClassName: 'grid-headers' },
+			{ field: 'longitude', headerName: 'Longitude', width: 110, headerClassName: 'grid-headers' },
+			{ field: 'created', type: 'dateTime', headerName: 'Post Date', width: 100, headerClassName: 'grid-headers' },
+			{ field: 'createdBy', headerName: 'Creator', width: 150, headerClassName: 'grid-headers' },
+			{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
+				type: 'actions',
+				width: 80,
+				getActions: ({ id }) => {
+					const row = userData.filter((row) => row.id == id);
+					return [
+					<Tooltip title="View On Map">
+						<GridActionsCellItem icon={<MapIcon />} label="Map" color='success' onClick={handleMapIt(id)} />
+					</Tooltip>,
+					<Tooltip title="View Photo">
+						<GridActionsCellItem icon={<PhotoCameraIcon />} label="Photo" color='success' disabled={row[0].questionType=='photo' ? false : true} onClick={handlePhoto(id)} />
+					</Tooltip>,
+					]
+				}
+			}
+		  ]);
 	  }, []);
 
 	function handleRowClick (params, event, details) {
@@ -279,71 +344,6 @@ export default function ResultsByTemplate(props) {
 		setError(row[0].question);
 		setOpenPhoto(true);
 	}
-
-	const columns: GridColDef[] = [
-		{ field: 'id', headerName: 'Id'},
-		{ field: 'company', 
-			headerName: 'Company', 
-			headerClassName: 'grid-headers',
-			width: 150 },
-		{ field: 'division', 
-			headerName: 'Division', 
-			headerClassName: 'grid-headers',
-			width: 100 },
-		{ field: 'companyId', 
-			headerName: 'Company Id', 
-			width: 70 },
-		{ field: 'divisionId', 
-			headerName: 'Division Id', 
-			width: 70 },
-		{ field: 'templateId', 
-			headerName: 'Template Id', 
-			width: 70 },
-		{ field: 'template', 
-			headerName: 'Logging App', 
-			width: 140, 
-			headerClassName: 'grid-headers' },
-		{ field: 'transactionId', 
-			headerName: 'Transaction Id', 
-			valueGetter: (value) => {
-				return value.substring(1, 4) + "..."; },
-			width: 80, 
-			headerClassName: 'grid-headers' },
-		{ field: 'question',
-			headerName: 'Question',
-			width: 170, 
-		  	headerClassName: 'grid-headers' },
-		{ field: 'result',
-			headerName: 'Result',
-			valueGetter: (value) => {
-				if (value == null) {
-					return null;
-				}
-				const valueParsed = value.toString().replaceAll("|", " and ");
-				return valueParsed },
-			width: 170, 
-			headerClassName: 'grid-headers' },
-		{ field: 'what3words', headerName: 'What3words', width: 150, headerClassName: 'grid-headers' },
-		{ field: 'lattitude', headerName: 'Latitude', width: 110, headerClassName: 'grid-headers' },
-		{ field: 'longitude', headerName: 'Longitude', width: 110, headerClassName: 'grid-headers' },
-		{ field: 'created', type: 'dateTime', headerName: 'Post Date', width: 100, headerClassName: 'grid-headers' },
-		{ field: 'createdBy', headerName: 'Creator', width: 150, headerClassName: 'grid-headers' },
-		{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
-			type: 'actions',
-			width: 80,
-			getActions: ({ id }) => {
-				const row = userData.filter((row) => row.id == id);
-				return [
-				<Tooltip title="View On Map">
-					<GridActionsCellItem icon={<MapIcon />} label="Map" color='success' onClick={handleMapIt(id)} />
-				</Tooltip>,
-				<Tooltip title="View Photo">
-					<GridActionsCellItem icon={<PhotoCameraIcon />} label="Photo" color='success' disabled={row[0].questionType=='photo' ? false : true} onClick={handlePhoto(id)} />
-				</Tooltip>,
-				]
-			}
-		}
-	  ];
 
 	const handleClose = () => {
 		setOpen(false);

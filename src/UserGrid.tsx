@@ -332,7 +332,7 @@ export default function UserGrid(props) {
 				});
 				userStatus = response.UserStatus;
 			} catch (error) {
-				console.log(error);
+
 			}
 			dataStatus.push({
 				id: data[i].id,
@@ -445,6 +445,7 @@ export default function UserGrid(props) {
 	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
       id: false,
 	  companyId: false,
+	  company: false,
 	  divisionId: false,
     });
 
@@ -817,7 +818,7 @@ export default function UserGrid(props) {
 		 },
 		{ field: 'email', headerName: 'Email Address', width: 200, headerClassName: 'grid-headers', 
 			preProcessEditCellProps,
-			editable: true  },
+			editable: false  },
 		{ field: 'firstName', headerName: 'First Name', width: 150, headerClassName: 'grid-headers', editable: true },
 		{ field: 'lastName', headerName: 'Last Name', width: 150, headerClassName: 'grid-headers', editable: true  },
 		{ field: 'middleName', headerName: 'Middle', width: 80, headerClassName: 'grid-headers', editable: true  },
@@ -843,7 +844,7 @@ export default function UserGrid(props) {
 				return 'grid-alert';
 			},
 			editable: false  },
-		{ field: 'userStatus', type: 'string', headerName: 'User Status', width: 250, headerClassName: 'grid-headers', editable: false},
+		{ field: 'userStatus', type: 'string', headerName: 'User Status', width: 225, headerClassName: 'grid-headers', editable: false},
 		{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
 			type: 'actions',
 			width: 80,
