@@ -26,9 +26,10 @@ import { DataGrid,
 	GridRowId, 
 	GridToolbarFilterButton,
 	GridCsvExportMenuItem,
-	GridToolbarExportContainer} from '@mui/x-data-grid';
+	GridToolbarExportContainer,
+	useGridApiRef} from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
-import { useState, useEffect} from "react";
+import { useState, useEffect, useMemo} from "react";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import ButtonGroup from '@mui/material/ButtonGroup';
@@ -71,7 +72,6 @@ export default function ResultsByTemplate(props) {
 	const [columnsNew, setColumns] = useState<GridColDef[]>([]);
 
 	const client = generateClient<Schema>();
-
 	const [userData, setUserData] = useState([{
 		id: '',
 		company: '',
@@ -91,6 +91,8 @@ export default function ResultsByTemplate(props) {
 		createdBy: '',
 	  }]);
 
+	  var theGrid = [];
+	const apiRef = useGridApiRef();
 	function getDate(value) {
 		if (value == null) {
 			return null
@@ -99,25 +101,8 @@ export default function ResultsByTemplate(props) {
 	  }
 	
 	  function translateUserTemplates (items) {
-		const item = JSON.parse(items[0]);
-		var data = [{id: uuidv4(),
-			company: item.company, 
-			companyId: item.company_id, 
-			divisionId: item.division_id,
-			division: item.division,
-			template: item.template,
-			templateId: item.template_id,
-			transactionId: item.transaction_id,
-			question: item.question,
-			questionType: item.question_type,
-			result: item.result,
-			created: getDate(item.created),
-			what3words: item.what3words,
-			lattitude: item.lat,
-			longitude: item.lng,
-			createdBy: item.created_by,
-		  }];
-		for (var i=1; i < items.length; i++) {
+		var data = [];
+		for (var i=0; i < items.length; i++) {
 		  const item = JSON.parse(items[i]);
 		  data.push(
 			{id: uuidv4(),
@@ -141,6 +126,80 @@ export default function ResultsByTemplate(props) {
 		return data;
 	  }
 
+	  const mergeObjects = (pivotMetrics, pivotQuestion) => {
+		var pivot = {};
+		for (var i = 0; i < pivotQuestion.length; i++) {
+			Object.assign(pivot, pivotQuestion[i]);
+		}
+		const data = { ...pivotMetrics, ...pivot};
+		return data;
+	  }
+
+	  const buildOutPivot = (data) => {
+		if (data.length < 1) {
+			return data;
+		}
+		var pivotData = [];
+		var pivotQuestion = [];
+		var pivotMetrics = {};
+		var tranie = data[0].transactionId;
+		for (var indx = 0; indx < data.length; indx++) {
+			if (data[indx].transactionId != tranie) {
+				pivotData.push (mergeObjects(pivotMetrics, pivotQuestion));
+				tranie = data[indx].transactionId;
+				pivotQuestion = [];
+				pivotMetrics = {};
+			}
+			if (pivotMetrics == {} || data[indx].questionType == 'photo') {
+				pivotMetrics = {
+					id: data[indx].id,
+					company: data[indx].company,
+					companyId: data[indx].companyId,
+					divisionId: data[indx].divisionId,
+					division: data[indx].division,
+					template: data[indx].template,
+					templateId: data[indx].templateId,
+					transactionId: data[indx].transactionId,
+					created: data[indx].created,
+					what3words: data[indx].what3words,
+					lattitude: data[indx].lattitude,
+					longitude: data[indx].longitude,
+					createdBy: data[indx].createdBy,
+					questionType: data[indx].questionType,
+					photoAddress: data[indx].result
+				};
+			}
+			const myObject = {};
+			const newPropertyName = data[indx].question;
+			const newPropertyValue = data[indx].result;
+			myObject[newPropertyName] = newPropertyValue;
+			pivotQuestion.push(myObject);
+		}
+		pivotData.push (mergeObjects(pivotMetrics, pivotQuestion));
+		return pivotData;
+	  }
+
+	  const buildPivotColumns = (data) => {
+		if (data.length < 1) {
+			return ;
+		}
+		var colData = [];
+		for (var indx = 0; indx < data.length; indx++) {
+			const foundMatch = colData.filter(comp => comp == data[indx].question);
+			if (foundMatch.length == 0) {
+				colData.push(data[indx].question);
+			}
+		}
+		for (var i = 0; i < colData.length; i++) {
+			const columnData = { field: colData[i], 
+				headerName: colData[i], 
+				headerClassName: 'grid-headers',
+				width: 150 };
+			columns.push(columnData);
+		}
+		setColumns(columns);
+	  }
+
 	  const allResults = async (id) => {
 		const { data: items, errors } = 
 		props.transactionId == null ?
@@ -158,7 +217,10 @@ export default function ResultsByTemplate(props) {
 				const db = JSON.stringify(items);
 				const userItems = JSON.parse(db);
 				const data = translateUserTemplates(userItems);
-				setUserData(data);
+				buildPivotColumns(data);
+				const pivotData = buildOutPivot(data);
+				theGrid = pivotData;
+				setUserData(pivotData);
 			  }
 		}
 		if (props.transactionId != null) {
@@ -222,9 +284,14 @@ export default function ResultsByTemplate(props) {
 	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
 		id: false,
 		company: false,
-      companyId: false,
-	  templateId: false,
-	  divisionId: false,
+      	companyId: false,
+	  	templateId: false,
+	  	divisionId: false,
+	  	division: false,
+	  	template: false,
+	  	transactionId: false,
+	  	question: false,
+	  	result: false
     });
 
 	function handleRowClick (params, event, details) {
@@ -237,17 +304,15 @@ export default function ResultsByTemplate(props) {
 	function reduceArray (arr) {
 		var newArr = [];
 		for (var indx = 0; indx < arr.length; indx++) {
-			newArr.push({company: arr[indx].company,
-				division: arr[indx].division,
-				template: arr[indx].template,
-				question: arr[indx].question,
-				questionType: arr[indx].questionType,
-				result: arr[indx].result,
-				postDate: arr[indx].created,
-				latitude: arr[indx].lattitude,
-				longitude: arr[indx].longitude,
-				creator: arr[indx].createdBy
-			});
+			const myObj = arr[indx];
+			delete myObj.id;
+			delete myObj.companyId;
+			delete myObj.divisionId;
+			delete myObj.templateId;
+			delete myObj.transactionId;
+			delete myObj.questionType;
+			delete myObj.photoAddress;
+			newArr.push(myObj);
 		}
 		return newArr;
 	}
@@ -266,7 +331,11 @@ export default function ResultsByTemplate(props) {
 
 	const handleMapIt = (id: GridRowId) => () => {
 		setLoading(true);
-		const row = userData.filter((row) => row.id == id);
+		const row = theGrid.filter((row) => row.transactionId == id);
+		if (row.length == 0) {
+			setLoading (false);
+			return;
+		}
 		setMapKeyId(id);
 		setLat(row[0].lattitude);
 		setLng(row[0].longitude);
@@ -275,8 +344,11 @@ export default function ResultsByTemplate(props) {
 	}
 
 	const handlePhoto = (id: GridRowId) => () => {
-		const row = userData.filter((row) => row.id == id);
-		setPhoto(row[0].questionType == 'photo' ? row[0].createdBy + "/" + row[0].result : '');
+		const row = theGrid.filter((row) => row.transactionId == id);
+		if (row.length < 1) {
+			return;
+		}
+		setPhoto(row[0].questionType == 'photo' ? row[0].createdBy + "/" + row[0].photoAddress : '');
 		setError(row[0].question);
 		setOpenPhoto(true);
 	}
@@ -327,6 +399,8 @@ const columns: GridColDef[] = [
 			return value.substring(1, 4) + "..."; },
 		width: 80, 
 		headerClassName: 'grid-headers' },
+	{ field: 'created', type: 'dateTime', headerName: 'Post Date', width: 100, headerClassName: 'grid-headers' },
+	{ field: 'createdBy', headerName: 'Creator', width: 160, headerClassName: 'grid-headers' },
 	{ field: 'question',
 		headerName: 'Question',
 		width: 170, 
@@ -344,19 +418,17 @@ const columns: GridColDef[] = [
 	{ field: 'what3words', headerName: 'What3words', width: 150, headerClassName: 'grid-headers' },
 	{ field: 'lattitude', headerName: 'Latitude', width: 110, headerClassName: 'grid-headers' },
 	{ field: 'longitude', headerName: 'Longitude', width: 110, headerClassName: 'grid-headers' },
-	{ field: 'created', type: 'dateTime', headerName: 'Post Date', width: 100, headerClassName: 'grid-headers' },
-	{ field: 'createdBy', headerName: 'Creator', width: 150, headerClassName: 'grid-headers' },
 	{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
 		type: 'actions',
 		width: 80,
 		getActions: ({ id }) => {
-			const row = userData.filter((row) => row.id == id);
+			const row = theGrid.filter((row) => row.transactionId == id);
 			return [
 			<Tooltip title="View On Map">
 				<GridActionsCellItem icon={<MapIcon />} label="Map" color='success' onClick={handleMapIt(id)} />
 			</Tooltip>,
 			<Tooltip title="View Photo">
-				<GridActionsCellItem icon={<PhotoCameraIcon />} label="Photo" color='success' disabled={row[0].questionType=='photo' ? false : true} onClick={handlePhoto(id)} />
+				<GridActionsCellItem icon={<PhotoCameraIcon />} label="Photo" color='success' disabled={row.length > 0 && row[0].questionType=='photo' ? false : true} onClick={handlePhoto(id)} />
 			</Tooltip>,
 			]
 		}
@@ -447,12 +519,14 @@ function CustomToolbar() {
 				<SelectTemplate props={props} templateName={userData.length > 0 ? userData[0].template : null} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} setAll={false}/> }
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
+			{userData.length > 1 && userData[0].id != '' ?
 			<DataGrid
 				rows={userData}
 				slots={{ toolbar: CustomToolbar}}
 				loading={loading}
 				columns={columnsNew.length < 1 ? columns : columnsNew}
 				getRowHeight={() => 'auto'}
+				getRowId={(row) => row.transactionId}
 				columnVisibilityModel={columnVisibilityModel}
 				onColumnVisibilityModelChange={(newCompany) =>
 					setColumnVisibilityModel(newCompany)
@@ -463,7 +537,7 @@ function CustomToolbar() {
 				onRowCountChange={handleRowChangeEvent}
 				onRowSelectionModelChange={handleRowSelection}
 				sx={{ border: 0 }}
-			/>
+			/> : null }
   		</Paper>
 	</Stack>
 	</React.Fragment>
