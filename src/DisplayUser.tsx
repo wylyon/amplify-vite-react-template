@@ -323,17 +323,18 @@ export default function DisplayUser(props) {
 
   const saveResults = async(id, value, type, file, lat, long, what3words) => {
     var newFileName = value;
-    if (file != null) {
       try {
-        const fileName = file.name;
-        const fileArr = fileName.split(".");
-        if (fileArr.length == 2) {
-          newFileName = newFileName + "." + fileArr[1];
+        if (file != null) {
+          const fileName = file.name;
+          const fileArr = fileName.split(".");
+          if (fileArr.length == 2) {
+            newFileName = newFileName + "." + fileArr[1];
+          }
+          const result = await uploadData({
+            path: `picture-submissions/${props.userId}/${newFileName}`,
+            data: file,
+          }).result; 
         }
-        const result = await uploadData({
-          path: `picture-submissions/${props.userId}/${newFileName}`,
-          data: file,
-        }).result;
         const now = new Date();
         const { errors, data: items } = await client.models.question_result.create({
           id: uuidv4(),
@@ -366,7 +367,6 @@ export default function DisplayUser(props) {
         setTheSeverity("error");
         setIsAlert(true);
       }
-    }
   }
   
   const saveAllResults = async () => {
@@ -439,6 +439,21 @@ export default function DisplayUser(props) {
   return (
     <React.Fragment>
       <Dialog
+        open={isWaiting}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Saving Data...please wait
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+          {isWaiting && <CircularProgress />}
+            Saving your data.
+          </DialogContentText>
+        </DialogContent>
+      </Dialog>
+      <Dialog
         open={open}
         onClose={handleClose}
         aria-labelledby="alert-dialog-title"
@@ -464,7 +479,6 @@ export default function DisplayUser(props) {
       {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
           </Alert>}
-          {isWaiting && <CircularProgress />}
       <Paper sx={{marginLeft: '5px'}}>
       {!wait && <form onSubmit={handleSubmit} >
         <Stack spacing={2}>
