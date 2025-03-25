@@ -239,7 +239,7 @@ export default function DisplayUser(props) {
       newSource.push ({ source: s, page: p});
       setSource(newSource);
     }
-    handleGPSWordsandResults(id, file.name, 'photo', file, c, w, p);
+    handleGPSWordsandResults(id, uuidv4(), 'photo', file, c, w, p);
   }
 
   const handleOnMultiDrop = (e, id, c, w, p) => {
@@ -320,10 +320,16 @@ export default function DisplayUser(props) {
   }
 
   const saveResults = async(id, value, type, file, lat, long, what3words) => {
+    var newFileName = value;
     if (file != null) {
       try {
+        const fileName = file.name;
+        const fileArr = fileName.split(".");
+        if (fileArr.length == 2) {
+          newFileName = newFileName + "." + fileArr[1];
+        }
         uploadData({
-          path: `picture-submissions/${props.userId}/${file.name}`,
+          path: `picture-submissions/${props.userId}/${newFileName}`,
           data: file,
         });
       } catch (exception) {
@@ -337,7 +343,7 @@ export default function DisplayUser(props) {
         id: uuidv4(),
         transaction_id: props.transaction,
         template_question_id: id,
-        result_photo_value: type == 'photo' ? value : null,
+        result_photo_value: type == 'photo' ? newFileName : null,
         result_option_value: 
           type == 'toggle_button' || 
           type == 'multiple_dropdown' || 

@@ -82,6 +82,7 @@ export default function ResultsByTemplate(props) {
 		templateId: '',
 		transactionId: '',
 		question: '',
+		questionOrder: 0,
 		questionType: '',
 		result: '',
 		what3words: '',
@@ -114,6 +115,7 @@ export default function ResultsByTemplate(props) {
 				templateId: item.template_id,
 				transactionId: item.transaction_id,
 				question: item.question,
+				questionOrder: item.question_order,
 				questionType: item.question_type,
 				result: item.result,
 				created: getDate(item.created),
@@ -183,15 +185,27 @@ export default function ResultsByTemplate(props) {
 		if (data.length < 1) {
 			return ;
 		}
-		var colData = [];
+		var colData = [{}];
 		for (var indx = 0; indx < data.length; indx++) {
 			const foundMatch = colData.filter(comp => comp == data[indx].question);
 			if (foundMatch.length == 0) {
-				colData.push(data[indx].question);
+				colData.push( {
+					question: data[indx].question, value: data[indx].questionOrder
+			});
 			}
 		}
+		colData.sort(function (a, b) {
+			if (a.value > b.value) {
+				return 1;
+			}
+			if (a.value < b.value) {
+				return -1;
+			}
+			return 0;
+		});
+
 		for (var i = 0; i < colData.length; i++) {
-			const columnData = { field: colData[i], 
+			const columnData = { field: colData[i].question, 
 				headerName: colData[i], 
 				headerClassName: 'grid-headers',
 				width: 150 };
@@ -312,6 +326,8 @@ export default function ResultsByTemplate(props) {
 			delete myObj.transactionId;
 			delete myObj.questionType;
 			delete myObj.photoAddress;
+			delete myObj.company;
+			delete myObj.division;
 			newArr.push(myObj);
 		}
 		return newArr;
@@ -531,7 +547,12 @@ function CustomToolbar() {
 				onColumnVisibilityModelChange={(newCompany) =>
 					setColumnVisibilityModel(newCompany)
 				}
-				initialState={{ pagination: { paginationModel: { pageSize: 10} } }}
+				initialState={{ 
+					pagination: { paginationModel: { pageSize: 10} },
+					sorting: {
+						sortModel: [{ field: 'created', sort: 'desc'}]
+					}
+				}}
 				pageSizeOptions={[10, 20, 50, 100, { value: -1, label: 'All'}]}
 				onRowClick={handleRowClick}
 				onRowCountChange={handleRowChangeEvent}
