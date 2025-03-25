@@ -328,10 +328,10 @@ export default function DisplayUser(props) {
         if (fileArr.length == 2) {
           newFileName = newFileName + "." + fileArr[1];
         }
-        uploadData({
+        const result = await uploadData({
           path: `picture-submissions/${props.userId}/${newFileName}`,
           data: file,
-        });
+        }).result;
       } catch (exception) {
         setAlertMessage('Error trying to save photo..' + exception);
         setTheSeverity("error");
