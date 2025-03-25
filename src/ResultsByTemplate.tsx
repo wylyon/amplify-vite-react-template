@@ -185,9 +185,9 @@ export default function ResultsByTemplate(props) {
 		if (data.length < 1) {
 			return ;
 		}
-		var colData = [{}];
+		var colData = [];
 		for (var indx = 0; indx < data.length; indx++) {
-			const foundMatch = colData.filter(comp => comp == data[indx].question);
+			const foundMatch = colData.filter(comp => comp.question == data[indx].question);
 			if (foundMatch.length == 0) {
 				colData.push( {
 					question: data[indx].question, value: data[indx].questionOrder
@@ -206,7 +206,7 @@ export default function ResultsByTemplate(props) {
 
 		for (var i = 0; i < colData.length; i++) {
 			const columnData = { field: colData[i].question, 
-				headerName: colData[i], 
+				headerName: colData[i].question, 
 				headerClassName: 'grid-headers',
 				width: 150 };
 			columns.push(columnData);
@@ -416,7 +416,7 @@ const columns: GridColDef[] = [
 		width: 80, 
 		headerClassName: 'grid-headers' },
 	{ field: 'created', type: 'dateTime', headerName: 'Post Date', width: 100, headerClassName: 'grid-headers' },
-	{ field: 'createdBy', headerName: 'Creator', width: 160, headerClassName: 'grid-headers' },
+	{ field: 'createdBy', headerName: 'Creator', width: 170, headerClassName: 'grid-headers' },
 	{ field: 'question',
 		headerName: 'Question',
 		width: 170, 
@@ -431,9 +431,9 @@ const columns: GridColDef[] = [
 			return valueParsed },
 		width: 170, 
 		headerClassName: 'grid-headers' },
-	{ field: 'what3words', headerName: 'What3words', width: 150, headerClassName: 'grid-headers' },
-	{ field: 'lattitude', headerName: 'Latitude', width: 110, headerClassName: 'grid-headers' },
-	{ field: 'longitude', headerName: 'Longitude', width: 110, headerClassName: 'grid-headers' },
+	{ field: 'what3words', headerName: 'What3words', width: 200, headerClassName: 'grid-headers' },
+	{ field: 'lattitude', headerName: 'Latitude', width: 150, headerClassName: 'grid-headers' },
+	{ field: 'longitude', headerName: 'Longitude', width: 150, headerClassName: 'grid-headers' },
 	{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
 		type: 'actions',
 		width: 80,
