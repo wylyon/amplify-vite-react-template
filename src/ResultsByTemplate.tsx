@@ -144,6 +144,7 @@ export default function ResultsByTemplate(props) {
 		var pivotData = [];
 		var pivotQuestion = [];
 		var pivotMetrics = {};
+		var isNew = true;
 		var tranie = data[0].transactionId;
 		for (var indx = 0; indx < data.length; indx++) {
 			if (data[indx].transactionId != tranie) {
@@ -151,8 +152,9 @@ export default function ResultsByTemplate(props) {
 				tranie = data[indx].transactionId;
 				pivotQuestion = [];
 				pivotMetrics = {};
+				isNew = true;
 			}
-			if (pivotMetrics == {} || data[indx].questionType == 'photo') {
+			if (isNew || data[indx].questionType == 'photo') {
 				pivotMetrics = {
 					id: data[indx].id,
 					company: data[indx].company,
@@ -170,6 +172,7 @@ export default function ResultsByTemplate(props) {
 					questionType: data[indx].questionType,
 					photoAddress: data[indx].result
 				};
+				isNew = false;
 			}
 			const myObject = {};
 			const newPropertyName = data[indx].question;

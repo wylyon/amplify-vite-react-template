@@ -26,6 +26,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import { uploadData } from "aws-amplify/storage";
+import CircularProgress from '@mui/material/CircularProgress';
 import { useGeolocated } from "react-geolocated";
 import what3words, {
   ApiVersion,
@@ -39,6 +40,7 @@ import what3words, {
 export default function DisplayUser(props) {
   const [source, setSource] = useState([]);
   const [isAlert, setIsAlert] = useState(false);
+  const [isWaiting, setIsWaiting] = useState(false);
   const [wait, setWait] = useState(true);
   const [alertMessage, setAlertMessage] = useState('');
   const [theSeverity, setTheSeverity] = useState('error');
@@ -332,41 +334,54 @@ export default function DisplayUser(props) {
           path: `picture-submissions/${props.userId}/${newFileName}`,
           data: file,
         }).result;
+        const now = new Date();
+        const { errors, data: items } = await client.models.question_result.create({
+          id: uuidv4(),
+          transaction_id: props.transaction,
+          template_question_id: id,
+          result_photo_value: type == 'photo' ? newFileName : null,
+          result_option_value: 
+            type == 'toggle_button' || 
+            type == 'multiple_dropdown' || 
+            type == 'dropdown' || 
+            type == 'radiobox' || 
+            type == 'checkbox_button' ||
+            type == 'input' || type == 'text' ||
+            type == 'button' || type == 'contained_button_color' ||
+            type == 'switch' ? value : null,
+          result_date_value: type == 'datepicker' ? getDate(value) : null,
+          gps_lat: lat,
+          gps_long: long,
+          what3words: what3words,
+          created: now,
+          created_by: props.userId			
+        });
+        if (errors) {
+          setTheSeverity("error");
+          setAlertMessage(errors[0].message);
+          setIsAlert(true);
+        }
       } catch (exception) {
         setAlertMessage('Error trying to save photo..' + exception);
         setTheSeverity("error");
         setIsAlert(true);
       }
     }
-      const now = new Date();
-      const { errors, data: items } = await client.models.question_result.create({
-        id: uuidv4(),
-        transaction_id: props.transaction,
-        template_question_id: id,
-        result_photo_value: type == 'photo' ? newFileName : null,
-        result_option_value: 
-          type == 'toggle_button' || 
-          type == 'multiple_dropdown' || 
-          type == 'dropdown' || 
-          type == 'radiobox' || 
-          type == 'checkbox_button' ||
-          type == 'input' || type == 'text' ||
-          type == 'button' || type == 'contained_button_color' ||
-          type == 'switch' ? value : null,
-        result_date_value: type == 'datepicker' ? getDate(value) : null,
-        gps_lat: lat,
-        gps_long: long,
-        what3words: what3words,
-        created: now,
-        created_by: props.userId			
-      });
-      if (errors) {
-        setTheSeverity("error");
-        setAlertMessage(errors[0].message);
-        setIsAlert(true);
-      }
   }
   
+  const saveAllResults = async () => {
+    setIsWaiting(true);
+    const promises = results.map(async (comp) => {
+      if (comp.type != 'dialog_input' && comp.value != null) {
+        await new Promise(saveResults(comp.id, comp.value, comp.type, comp.file, comp.lat, comp.long, comp.what3words));
+      };
+    });
+    const myResuts = await Promise.all(promises);
+    setIsWaiting(false);
+    resetState();
+    setOpen(true);
+  }
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
  //     const formData = new FormData(event.currentTarget);
@@ -388,12 +403,7 @@ export default function DisplayUser(props) {
         }
       });
       saveTransaction(lt, lg, w3w);
-      results.map(comp => 
-        comp.type != 'dialog_input' ? 
-          (comp.value != null ?
-          saveResults(comp.id, comp.value, comp.type, comp.file, comp.lat, comp.long, comp.what3words) : null) : null);
-      resetState();
-    setOpen(true);
+      saveAllResults();
   };
 
   function getNonDialogQuestion (index) {
@@ -455,6 +465,7 @@ export default function DisplayUser(props) {
       {isAlert &&  <Alert severity={theSeverity} onClose={handleOnAlert}>
             {alertMessage}
           </Alert>}
+          {isWaiting && <CircularProgress />}
       <Paper sx={{marginLeft: '5px'}}>
       {!wait && <form onSubmit={handleSubmit} >
         <Stack spacing={2}>
