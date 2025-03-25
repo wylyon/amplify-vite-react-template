@@ -371,12 +371,11 @@ export default function DisplayUser(props) {
   
   const saveAllResults = async () => {
     setIsWaiting(true);
-    const promises = results.map(async (comp) => {
-      if (comp.type != 'dialog_input' && comp.value != null) {
-        await new Promise(saveResults(comp.id, comp.value, comp.type, comp.file, comp.lat, comp.long, comp.what3words));
-      };
-    });
-    const myResuts = await Promise.all(promises);
+    for (var indx = 0; indx < results.length; indx++) {
+      if (results[indx].type != 'dialog_input' && results[indx].value != null) {
+        await saveResults(results[indx].id, results[indx].value, results[indx].type, results[indx].file, results[indx].lat, results[indx].long, results[indx].what3words);
+      }
+    }
     setIsWaiting(false);
     resetState();
     setOpen(true);
