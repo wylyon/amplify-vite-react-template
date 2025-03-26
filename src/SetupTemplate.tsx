@@ -390,7 +390,7 @@ export default function SetupTemplate(props) {
     }
     if (!isUpdate && listToDelete == null) {
       newTemplateQuestion.push({
-        id: props.isWizard ? uuidv4() : null,
+        id: uuidv4(),
         question_order: formData.questionOrder,
         pre_load_attributes: formData.preLoadAttributes,   
         title: formData.title,
@@ -399,6 +399,7 @@ export default function SetupTemplate(props) {
         question_values: formData.questionValues,
         post_load_attributes: formData.postLoadAttributes,
         optional_flag: (!formData.optionalFlag ? 0 : 1),
+        notes: props.isWizard ? '' : 'new',
         trigger_value: formData.questionType == 'dialog_input' ? formData.questionValues : ''
       });
     }
