@@ -46,6 +46,7 @@ import PopupReview from "../src/PopupPreview";
 import MoveUpIcon from '@mui/icons-material/MoveUp';
 import { min } from "moment";
 import { IconButton } from "@mui/material";
+import { HexColorPicker } from 'react-colorful';
 import { cleanUpTextArray, countNumOfTabs, setTitle, setLabel } from '../src/utils.js';
 
 export default function SetupTemplate(props) {
@@ -94,6 +95,7 @@ export default function SetupTemplate(props) {
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
   const [openCancel, setOpenCancel] = useState(false);
   const [isAnyChanges, setIsAnyChanges] = useState(false);
+  const [color, setColor] = useState ("#b32aa9");
 
   const handleClickOpen = () => {
     if (formData.questionValues == '') {
@@ -101,6 +103,10 @@ export default function SetupTemplate(props) {
     } else {
       if (whichControl.startsWith("Button") || whichControl.startsWith("Color")) {
         setDialogPrompt(formData.questionValues);
+        const textArr = formData.questionValues.split("|");
+        if (textArr.length > 1) {
+          setColor(textArr[0]);
+        }
       } else {
         const textArr = formData.questionValues.split("|");
         var newText = textArr[0];
@@ -116,6 +122,10 @@ export default function SetupTemplate(props) {
 
   const handleButtonAttributeClick = () => {
     setDialogPrompt(formData.questionValues);
+    const textArr = formData.questionValues.split("|");
+    if (textArr.length > 1) {
+      setColor(textArr[0]);
+    }
     setOpen(true);
   }
 
@@ -1131,17 +1141,20 @@ export default function SetupTemplate(props) {
             {whichControl.startsWith('Dialog') ? "Enter trigger value:" :
             "Enter each " + whichControl == '' ? 'Default' : whichControl + " value"}
           </DialogContentText>
-          {whichControl.startsWith("Button") || whichControl.startsWith("Color") ?
-            <TextField
-              autoFocus 
-              defaultValue={whichControl.startsWith("Color") ? dialogPrompt.split("|")[0] : null}
-              disabled = {whichControl.startsWith("Button")}
-              margin="dense"
-              id="name"
-              name="textValues"
-              label="Color"
-            />
-          :
+          {whichControl.startsWith("Color") ?
+            <Stack direction="column" spacing={2}>
+              <HexColorPicker color={color} onChange={setColor} />
+              <TextField
+                autoFocus 
+                value={color}
+                disabled = {whichControl.startsWith("Button")}
+                margin="dense"
+                id="name"
+                name="textValues"
+                label="Color"
+              />
+            </Stack>
+          : whichControl.startsWith("Button") ? null :
           <Stack direction="row" spacing={2}>
             <TextField
               autoFocus
@@ -1247,34 +1260,15 @@ export default function SetupTemplate(props) {
                       </Paper>
                       :
                       <Box>
-                        <Tooltip title="Select this to input a photo" placement="top">
-                        <FormControlLabel value="photo"
-                          control={(formData.questionType=="photo") ? <Radio checked="true" size="small"/> : <Radio size="small"/>} 
-                          label="Photo" 
-                          onClick={handlePhotoClick} onChange={handleChange}/></Tooltip>
-                        <Tooltip title="Select this to input a dropdown for a single input" placement="right">
-                        <FormControlLabel value="dropdown" 
-                          control={(formData.questionType=="dropdown") ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                          label="Dropdown" 
-                          onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
-                        <Tooltip title="Select this to input a dropdown for multiple inputs" placement="right">
-                        <FormControlLabel value="multiple_dropdown" 
-                          control={formData.questionType=="multiple_dropdown" ? <Radio checked="true" size="small"/> : <Radio size="small" />} 
-                          label="Multiple Dropdown" onClick={handleMultipleDropDownClick} onChange={handleChange}/></Tooltip>
                         <Tooltip title="Select this to input radio boxes for different input" placement="right">
                         <FormControlLabel value="radiobox" 
                           control={formData.questionType=="radiobox" ? <Radio checked="true"  size="small"/> : <Radio  size="small"/>} 
                           label="Radio" 
-                          onClick={handleRadioClick} onChange={handleChange}/></Tooltip>
-                        <Tooltip title="Select this to input an input box for data" placement="right">
-                        <FormControlLabel value="input" 
-                          control={formData.questionType=="input" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                          label="Input" 
-                          onClick={handleInputClick} onChange={handleChange}/></Tooltip>
+                          onClick={handleRadioClick} onChange={handleChange}/></Tooltip><br/>
                         <Tooltip title="Select this to input text input for data" placement="right">
                         <FormControlLabel value="text" 
                           control={formData.questionType=="text" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                          label="Text" 
+                          label="Input/Text" 
                           onClick={handleTextClick} onChange={handleChange}/></Tooltip>
                         <Tooltip title="Select this to input date data" placement="right">
                         <FormControlLabel value="datepicker" 
@@ -1291,30 +1285,16 @@ export default function SetupTemplate(props) {
                           control={formData.questionType=="contained_button_color" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                           label="Color Button" 
                           onClick={handleColorButtonClick} onChange={handleChange}/></Tooltip>
-                        <Stack direction="row">
                           <Tooltip title="Select this for a switch" placement="right">
                           <FormControlLabel value="switch" 
                             control={formData.questionType=="switch" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                             label="Switch" 
                             onClick={handleSwitchClick} onChange={handleChange}/></Tooltip>
-                          <Tooltip title="Select this for a toggle button" placement="right">
-                          <FormControlLabel value="toggle_button" 
-                            control={formData.questionType=="toggle_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                            label="Toggle Button" 
-                            onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
-                        </Stack>
-                        <Stack direction="row">
-                          <Tooltip title="Select this for a multi-select toggle button" placement="right">
-                          <FormControlLabel value="checkbox_button" 
-                            control={formData.questionType=="checkbox_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                            label="Multi-Toggle Button" 
-                            onClick={handleMultipleToggleButtonClick} onChange={handleChange}/></Tooltip>
                           <Tooltip title="Select this for a dialog input (triggered by previous question)" placement="right">
                           <FormControlLabel value="dialog_input" 
                             control={formData.questionType=="dialog_input" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                             label="Dialog Input" 
                             onClick={handleDialogInputClick} onChange={handleChange}/></Tooltip>
-                        </Stack>
                       </Box> }
                   </RadioGroup>
                 </Box>
@@ -1372,7 +1352,7 @@ export default function SetupTemplate(props) {
                     <TextField id="question_pre" name="preLoadAttributes" value={formData.preLoadAttributes} 
                       label="label" variant="outlined" size="small" multiline
                       maxRows={4} sx={{ width: "350px"}} 
-                      onClick={handleClickOpenPre} onChange={handleChange}/></Tooltip>
+                      onChange={handleChange}/></Tooltip>
                     <br /> <br />  
                     {(whichControl.startsWith("Button") || whichControl.startsWith("Color")) ?
                       <Tooltip title="Click here to set button attribues, like color and button label." placement="right">
@@ -1382,10 +1362,7 @@ export default function SetupTemplate(props) {
                       <Tooltip title="Click here to set values (ie. dropdown or radio values)." placement="right">
                         <Button variant="contained" disabled={isValuesDisabled} color="primary" onClick={handleClickOpen}>Set Values</Button>
                       </Tooltip>  
-                    : whichControl == "Default Input Value" || whichControl == "Text value" ?
-                      <Tooltip title="Click here to set any Input or Text value." placement="right">
-                        <Button variant="contained" disabled={isValuesDisabled} color="primary" onClick={handleClickOpen}>{"Set " + (whichControl == "Default Input Value" ? "Input" : "Text") + " Value"}</Button>
-                      </Tooltip>  
+                    : whichControl == "Default Input Value" || whichControl == "Text value" ? null 
                     : whichControl.startsWith("Dialog") ?
                     <Tooltip title="Click here to enter trigger value for a Dialog box on prior control." placement="right">
                       <Button variant="contained" disabled={isValuesDisabled} color="primary" onClick={handleClickOpen}>Set Trigger</Button>
@@ -1395,7 +1372,7 @@ export default function SetupTemplate(props) {
                       <TextField id="question_values" name="questionValues" value={formData.questionValues} 
                         label="dropdown/button list values" 
                         disabled={isValuesDisabled} variant="outlined" size="small" multiline
-                        maxRows={4} sx={{ width: "350px"}} onClick={handleClickOpen} onChange={handleChange}/>
+                        maxRows={4} sx={{ width: "350px"}}  onChange={handleChange}/>
                     </Tooltip>  } 
                     {formData.questionValues == '' ? null :
                       <Stack direction="column" spacing={0}>

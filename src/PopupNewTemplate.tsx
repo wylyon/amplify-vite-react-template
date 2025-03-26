@@ -121,7 +121,7 @@ export default function PopupNewTemplate(props) {
           const description = formJson.description;
           const liveDate = formJson.liveDate;
           const prodDate = formJson.prodDate;
-          const notes = formJson.notes;
+          const notes = '';
           const filterTitle = props.rows.filter(comp => comp.title == title);
           if (filterTitle != null && filterTitle.length > 0) {
             setError("Title " + title + " already exists.   Please choose another.");
@@ -176,17 +176,6 @@ export default function PopupNewTemplate(props) {
             label="Description"
             type="text"
             fullWidth
-            variant="standard"
-          />
-        <TextField
-            margin="dense"
-            id="notes"
-            name="notes"
-            label="Notes"
-            type="text"
-            fullWidth
-            multiline
-            maxRows={3}
             variant="standard"
           />
         <FormControlLabel control={<Checkbox defaultChecked checked={checked} onChange={handleChangeBox} inputProps={{ 'aria-label': 'controlled'}}/>} label="Page all controls?" />
