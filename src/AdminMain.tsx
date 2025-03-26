@@ -149,8 +149,7 @@ export default function AdminMain(props) {
   return (
 	<Stack>
 	<Typography variant="h4">{company.name} Admin</Typography>
-	<Box
-		>
+	<Box>
 		<Tabs
 			orientation="horizontal"
 			variant="scrollable"

@@ -34,6 +34,7 @@ import Radio from '@mui/material/Radio';
 import CircularProgress from '@mui/material/CircularProgress';
 import RadioGroup from '@mui/material/RadioGroup';
 import ListItemText from '@mui/material/ListItemText';
+import { v4 as uuidv4 } from 'uuid';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -212,7 +213,9 @@ export default function DisplayUserRow(props) {
     if (target.files) {
       if (target.files.length !== 0) {
         const file = target.files[0];
-        const newUrl = URL.createObjectURL(file);
+        const newFileName = uuidv4() + ".jpg";
+        const renamedFile = new File([file], newFileName, { type: file.type });
+        const newUrl = URL.createObjectURL(renamedFile);
   //      checkGPS(false);
         var coordinates = {lat: 0, long: 0};
         try {
@@ -233,9 +236,9 @@ export default function DisplayUserRow(props) {
 
           client
           .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-          .then((res: LocationJsonResponse) => props.onPicture(file, props.question.id, coordinates, res.words, newUrl, props.whatPage ));
+          .then((res: LocationJsonResponse) => props.onPicture(renamedFile, props.question.id, coordinates, res.words, newUrl, props.whatPage ));
         } else {
-          props.onPicture(file, props.question.id, coordinates, '', newUrl, props.whatPage);
+          props.onPicture(renamedFile, props.question.id, coordinates, '', newUrl, props.whatPage);
         }
 
         if (props.props.userData[0].usePagination==0) {

@@ -117,15 +117,13 @@ export default function AdminSuper(props) {
 	}
 	
   return (
-	<Box
-		sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex', height: 1000 }}>
+	<Box>
 		<Tabs
-			orientation="vertical"
+			orientation="horizontal"
 			variant="scrollable"
 			value={value}
 			onChange={handleChange}
 			aria-label="Vertical tabs example"
-			sx={{ borderRight: 1, borderColor: 'divider' }}
 		>
 			<Tab label="Companies" {...a11yProps(0)} />
 			<Tab label="Divisions" {...a11yProps(1)} />

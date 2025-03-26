@@ -39,11 +39,15 @@ export default function DetermineMode(props) {
   const [disableMsg, setDisableMsg] = useState('');
   const [isWaiting, setIsWaiting] = useState(true);
   const [mode, setMode] = useState(9);
+  const [open, setOpen] = useState(false);
 
   function isMobile () {
     return (window.navigator.userAgent.match(/iPhone/i) || 
-      window.navigator.userAgent.match(/iPad/i) ||
       window.navigator.userAgent.match(/Android/i)) ? true : false;
+  }
+
+  function isTablet () {
+    return (navigator.userAgent.match(/Tablet|iPad|iPod/i) && window.innerWidth <= 1280 && window.innerHeight >= 800);
   }
 
   const fetchAdmins = (emailId, items, isValid, isRecycle) => {
@@ -78,6 +82,9 @@ export default function DetermineMode(props) {
  //       setIsSuperAdmin(false);
         return false;
       }
+    }
+    if (isTablet()) {
+      setOpen(true);
     }
     setMode(0);
     return false;
@@ -143,13 +150,58 @@ export default function DetermineMode(props) {
     allAdminsAfterWelcome(true, props.userId);
   }
 
+  const handleSuperClose = () => {
+    setOpen(false);
+  };
+
   const handleWelcomeClose = () => {
     setIsDisabledUser(true);
     setDisableMsg("User is not Authorized for Access.");
   }
 
+  const handleListItemClick = (value: string) => {
+    setOpen(false);
+    setWelcome(false);
+    if (value == "exit") {
+      handleWelcomeClose;
+    }
+    if (value == "welcome") {
+      setMode(2);
+    } else if (value == "admin") {
+      setMode(0);
+    } else {
+      setMode(1);
+      setIsSuperAdmin(false);
+    }
+  };
+
   return (
     <>
+    <Dialog onClose={handleSuperClose} open={open}>
+      <DialogTitle>Which Access?</DialogTitle>
+      <List sx={{ pt: 0 }}>
+        <ListItem disableGutters key="super">
+          <ListItemButton onClick={() => handleListItemClick("admin")}>
+            <ListItemAvatar>
+              <Avatar sx={{ bgcolor: blue[100], color: blue[600] }}>
+                <PersonIcon />
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText primary="Admin" />
+          </ListItemButton>         
+        </ListItem>
+        <ListItem disableGutters key="regular">
+          <ListItemButton onClick={() => handleListItemClick("regular")}>
+            <ListItemAvatar>
+              <Avatar sx={{ bgcolor: blue[100], color: blue[600] }}>
+                <PersonIcon />
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText primary="Regular" />
+          </ListItemButton>         
+        </ListItem>
+      </List>
+    </Dialog>
     {isDisabledUser && <DisableMode userId={props.userId} onSubmitChange={handleOnCancel} message={disableMsg} /> }
     {!isDisabledUser && mode == 2 && <PopupWelcome userId={props.userId} companyName={props.companyName} onClose={handleWelcomeClose} onDone={handleOnDone} />}
     {!isDisabledUser && mode == 0 && <AdminMode userId={props.userId} googleAPI={props.googleAPI} onSubmitChange={handleOnCancel} 
