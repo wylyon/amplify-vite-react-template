@@ -176,6 +176,9 @@ export const schema = configure({
         gps_lat: a.float(),
         gps_long: a.float(),
         what3words: a.string(),
+        status: a.ref("TransactionsStatus"),
+        reason: a.string(),
+        last_update: a.datetime().required(),
         created: a.datetime().required(),
         created_by: a.string().required()
     }).identifier([
@@ -225,5 +228,10 @@ export const schema = configure({
         "switch",
         "toggle_button",
         "dialog_input"
+    ]),
+    TransactionsStatus: a.enum([
+        "Open",
+        "Pending",
+        "Closed"
     ])
 });
