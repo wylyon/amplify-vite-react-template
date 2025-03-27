@@ -85,6 +85,7 @@ export default function DetermineMode(props) {
     }
     if (isTablet()) {
       setOpen(true);
+      return;
     }
     setMode(0);
     return false;
@@ -161,7 +162,6 @@ export default function DetermineMode(props) {
 
   const handleListItemClick = (value: string) => {
     setOpen(false);
-    setWelcome(false);
     if (value == "exit") {
       handleWelcomeClose;
     }

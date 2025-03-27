@@ -88,6 +88,9 @@ export default function ResultsByTemplate(props) {
 		what3words: '',
 		lattitude: null,
 		longitude: null, 
+		status: '',
+		reason: '',
+		lastUpdated: null,
 		created: null,
 		createdBy: '',
 	  }]);
@@ -122,6 +125,9 @@ export default function ResultsByTemplate(props) {
 				what3words: item.what3words,
 				lattitude: item.lat,
 				longitude: item.lng,
+				status: item.status,
+				reason: item.reason,
+				lastUpdated: getDate(item.last_update),
 				createdBy: item.created_by,}
 		  );
 		}
@@ -170,7 +176,10 @@ export default function ResultsByTemplate(props) {
 					longitude: data[indx].longitude,
 					createdBy: data[indx].createdBy,
 					questionType: data[indx].questionType,
-					photoAddress: data[indx].result
+					photoAddress: data[indx].result,
+					status: data[indx].status,
+					reason: data[indx].reason,
+					lastUpdated: data[indx].lastUpdated
 				};
 				isNew = false;
 			}
@@ -437,6 +446,9 @@ const columns: GridColDef[] = [
 	{ field: 'what3words', headerName: 'What3words', width: 200, headerClassName: 'grid-headers' },
 	{ field: 'lattitude', headerName: 'Latitude', width: 150, headerClassName: 'grid-headers' },
 	{ field: 'longitude', headerName: 'Longitude', width: 150, headerClassName: 'grid-headers' },
+	{ field: 'status', headerName: 'Status', width: 80, headerClassName: 'grid-headers'},
+	{ field: 'reason', headerName: 'Reason', width: 120, headerClassName: 'grid-headers'},
+	{ field: 'lastUpdated', type: 'dateTime', headerName: 'Updated', width: 100, headerClassName: 'grid-headers'},
 	{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
 		type: 'actions',
 		width: 80,
