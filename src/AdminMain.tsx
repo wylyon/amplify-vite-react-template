@@ -9,6 +9,7 @@ import UserGrid from '../src/UserGrid';
 import SummaryAllResults from '../src/SummaryAllResults';
 import SummaryByTemplate from '../src/SummaryByTemplate';
 import ResultsByTemplate from '../src/ResultsByTemplate';
+import TransactionStatus from "../src/TransactionStatus";
 import ResultSummary from '../src/ResultSummary';
 import TransactionsAllByCompany from "../src/TransactionsAllByCompany";
 import * as React from 'react';
@@ -160,8 +161,9 @@ export default function AdminMain(props) {
 			<Tab label="Log Apps" {...a11yProps(0)} />
 			<Tab label="Users" {...a11yProps(1)} />
 			{isDivisions && <Tab label="Divisions" {...a11yProps(2)} /> }
-			<Tab label="Reports" {...a11yProps(3)} />
-			<Tab label="Profile" {...a11yProps(4)} />
+			<Tab label="Transaction Status" {...a11yProps(3)} />
+			<Tab label="Reports" {...a11yProps(4)} />
+			<Tab label="Profile" {...a11yProps(5)} />
 		</Tabs>
 		<TabPanel value={value} index={0}>
 			{ company && company.id != null && <TemplateGrid props={props} userId={props.userId} filter={company} id={id} isDivision={isDivisions} /> }
@@ -169,10 +171,13 @@ export default function AdminMain(props) {
 		<TabPanel value={value} index={1}>
 			<UserGrid props={props} userId={props.userId} filter={company}/>
 		</TabPanel>
-		<TabPanel value={value} index={isDivisions ? 2 : 4}>
+		<TabPanel value={value} index={isDivisions ? 2 : 5}>
 			<DivisionGrid props={props} userId={props.userId} filter={company} id={id} onRowSelect={handleOnRowSelectDivision}/>
 		</TabPanel>
 		<TabPanel value={value} index={isDivisions ? 3 : 2}>
+			<TransactionStatus props={props} filter={company} googleAPI={props.googleAPI} transactionId={templateId} />
+		</TabPanel>
+		<TabPanel value={value} index={isDivisions ? 4 : 3}>
 			<Tabs
 				orientation="horizontal"
 				variant="scrollable"
@@ -201,7 +206,7 @@ export default function AdminMain(props) {
 				<ResultSummary props={props} filter={company} templateId={templateId} />
 			</CustomTabPanel>
 		</TabPanel>
-		<TabPanel value={value} index={isDivisions ? 4 : 3}>
+		<TabPanel value={value} index={isDivisions ? 5 : 4}>
 			<InputCustCompany props={props} 
 				company={company} isAddMode = {false} onSubmitChange={handleOnSignOut} onTurnOnDivision={handleTurnOnDivision} isDivision={isDivisions} />
 		</TabPanel>
