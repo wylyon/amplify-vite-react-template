@@ -311,6 +311,9 @@ export default function DisplayUser(props) {
       gps_lat: lat,
       gps_long: long,
       what3words: what3words,
+      status: 'Open',
+      reason: null,
+      last_update: now,
       created: now,
       created_by: props.userId		
     });

@@ -163,8 +163,8 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .handler(a.handler.inlineSql(
       "SELECT c.name as company, c.id as company_id, d.id as division_id, d.name as division, t.title as template, t.id as template_id, r.transaction_id, q.title as question, " +
       "q.question_order, q.question_type, case when q.question_type = 'photo' then r.result_photo_value when q.question_type = 'datepicker' then r.result_date_value else r.result_option_value end as result, " +
-      "r.gps_lat as lat, r.gps_long as lng, r.what3words, r.created, r.created_by FROM logistics.question_result r join logistics.template_question q on q.id = r.template_question_id " +
-      "join logistics.template t on t.id = q.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id " +
+      "r.gps_lat as lat, r.gps_long as lng, r.what3words, r.created, r.created_by, tt.status, tt.reason, tt.last_update FROM logistics.question_result r join logistics.template_question q on q.id = r.template_question_id " +
+      "join logistics.transactions tt on tt.id = r.transaction_id join logistics.template t on t.id = q.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id " +
       "WHERE q.question_type != 'dialog_input' and template_id = :templateId order by r.transaction_id, r.created;"
     )).authorization(allow => allow.publicApiKey()),
     listResultsByTransactionId: a.query()
@@ -175,8 +175,8 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .handler(a.handler.inlineSql(
       "SELECT c.name as company, c.id as company_id, d.id as division_id, d.name as division, t.title as template, t.id as template_id, r.transaction_id, q.title as question, " +
       "q.question_order, q.question_type, case when q.question_type = 'photo' then r.result_photo_value when q.question_type = 'datepicker' then r.result_date_value else r.result_option_value end as result, " +
-      "r.gps_lat as lat, r.gps_long as lng, r.what3words, r.created, r.created_by FROM logistics.question_result r join logistics.template_question q on q.id = r.template_question_id " +
-      "join logistics.template t on t.id = q.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id " +
+      "r.gps_lat as lat, r.gps_long as lng, r.what3words, r.created, r.created_by, tt.status, tt.reason, tt.last_update FROM logistics.question_result r join logistics.template_question q on q.id = r.template_question_id " +
+      "join logistics.transactions tt on tt.id = r.transaction_id join logistics.template t on t.id = q.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id " +
       "WHERE q.question_type != 'dialog_input' and r.transaction_id = :transactionId order by r.transaction_id, r.created;"
     )).authorization(allow => allow.publicApiKey()),
     summaryResultsByTemplateId: a.query()
