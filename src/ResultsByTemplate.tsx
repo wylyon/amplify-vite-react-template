@@ -446,7 +446,18 @@ const columns: GridColDef[] = [
 	{ field: 'what3words', headerName: 'What3words', width: 200, headerClassName: 'grid-headers' },
 	{ field: 'lattitude', headerName: 'Latitude', width: 150, headerClassName: 'grid-headers' },
 	{ field: 'longitude', headerName: 'Longitude', width: 150, headerClassName: 'grid-headers' },
-	{ field: 'status', headerName: 'Status', width: 80, headerClassName: 'grid-headers'},
+	{ field: 'status', headerName: 'Status', width: 80, headerClassName: 'grid-headers',
+		cellClassName: (params: GridCellParams<any, number>) => {
+			if (params.value == 'Open') {
+				return 'grid-open';
+			} else if (params.value == 'Pending') {
+				return 'grid-pending'
+			} else if (params.value == 'Closed') {
+				return 'grid-closed'
+			}
+			return '';
+		}
+	},
 	{ field: 'reason', headerName: 'Reason', width: 120, headerClassName: 'grid-headers'},
 	{ field: 'lastUpdated', type: 'dateTime', headerName: 'Updated', width: 100, headerClassName: 'grid-headers'},
 	{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',

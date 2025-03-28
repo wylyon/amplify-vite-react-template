@@ -20,6 +20,18 @@
     .grid-alert {
       background-color: red;
     }
+    .grid-open {
+      background-color: #73AD21;
+    }
+    .grid-inprocess {
+      background-color: #008000;
+    }
+    .grid-pending {
+      background-color: burlywood;
+    }
+    .grid-closed {
+      background-color: #2196F3;
+    }
     .gwd-p-1l8f {
       text-align: center;
       font-weight: bold;

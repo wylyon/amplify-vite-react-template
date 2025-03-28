@@ -51,7 +51,7 @@ export default function PopupStatus(props) {
         component: 'form',
         onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
           event.preventDefault();
-          props.onStatus(status, reasons);
+          props.onStatus(props.id, status, reasons);
           handleCloseValues();
         },
       }}
@@ -77,7 +77,11 @@ export default function PopupStatus(props) {
           <MenuItem value='Closed'>Closed</MenuItem>
         </Select>
       </FormControl>
-      <TextField id='outlined-reason' label='Reason Notes' variant="outlined" fullWidth onChange={handleTextChange}></TextField>
+      <TextField id='outlined-reason' label='Reason Notes' value={reasons} variant="outlined" fullWidth onChange={handleTextChange} slotProps={{
+                      inputLabel: {
+                        shrink: true,
+                      },
+                    }}></TextField>
     </Box>
     </DialogContent>
     <DialogActions>

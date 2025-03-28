@@ -510,6 +510,7 @@ export default function SetupTemplate(props) {
         return;
       }
     }
+
     setIsWaiting(false);
     setOpenSetup(false);
     props.onSubmitChange(

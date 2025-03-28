@@ -98,6 +98,14 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .handler(a.handler.inlineSql(
       "SELECT id, template_id, user_id, enabled_date, verified_date, created, created_by FROM logistics.template_permissions WHERE user_id = :userId;"
     )).authorization(allow => allow.publicApiKey()),
+    listTemplatePermissionsByTemplate: a.query()
+    .arguments({
+      templateId: a.string().required(),
+    })
+    .returns(a.ref("template_permissions").array())
+    .handler(a.handler.inlineSql(
+      "SELECT id, template_id, user_id, enabled_date, verified_date, created, created_by FROM logistics.template_permissions WHERE template_id = :templateId;"
+    )).authorization(allow => allow.publicApiKey()),
     listUserTemplatePermissions: a.query()
     .arguments({
       templateId: a.string().required(),

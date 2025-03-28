@@ -43,6 +43,7 @@ import PopupStatus from '../src/PopupStatus';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import EditAttributesIcon from '@mui/icons-material/EditAttributes';
 import Switch from '@mui/material/Switch';
 import CancelIcon from '@mui/icons-material/Close';
 import { v4 as uuidv4 } from 'uuid';
@@ -55,11 +56,15 @@ import '@aws-amplify/ui-react/styles.css';
 import MapIcon from '@mui/icons-material/Map';
 import MapWithGoogle from '../src/MapWithGoogle';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import CircularProgress from '@mui/material/CircularProgress';
 import { MenuItem } from '@mui/material';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 export default function TransactionStatus(props) {
 	const [loading, setLoading] = useState(true);
 	const [open, setOpen] = useState(false);
+	const [isWaiting, setIsWaiting] = useState(false);
 	const [openMap, setOpenMap] = useState(false);
 	const [openPhoto, setOpenPhoto] = useState(false);
 	const [error, setError] = useState('');
@@ -74,6 +79,8 @@ export default function TransactionStatus(props) {
 	const [status, setStatus] = useState('');
 	const [reason, setReason] = useState('');
 	const [openStatus, setOpenStatus] = useState(false);
+	const [tranyId, setTranyId] = useState(null);
+	const [statusFilter, setStatusFilter] = useState('All');
 
 	const client = generateClient<Schema>();
 	const [userData, setUserData] = useState([{
@@ -99,7 +106,7 @@ export default function TransactionStatus(props) {
 		createdBy: '',
 	  }]);
 
-	  var theGrid = [];
+	  var theGrid = userData.length > 0 ? userData : [];
 	const apiRef = useGridApiRef();
 	function getDate(value) {
 		if (value == null) {
@@ -227,10 +234,12 @@ export default function TransactionStatus(props) {
 				width: 150 };
 			columns.push(columnData);
 		}
+		columns.push(actionColumns[0]);
 		setColumns(columns);
 	  }
 
 	  const allResults = async (id) => {
+		setIsWaiting(true);
 		const { data: items, errors } = await client.queries.listResultsByTemplateId({
 				templateId: id
 			});
@@ -248,6 +257,7 @@ export default function TransactionStatus(props) {
 				setUserData(pivotData);
 			  }
 		}
+		setIsWaiting(false);
 	  }
 
 	const allResultTemplates = async () => {
@@ -282,6 +292,37 @@ export default function TransactionStatus(props) {
 		allResultTemplates();
 	  }, []);
 
+	const updateTransaction = async(id, newStatus, newReason) => {
+		const now = new Date();
+		setIsWaiting(true);
+		const { errors, data: items } = await client.models.transactions.update({
+			id: id,
+			status: newStatus,
+			reason: newReason,
+			last_update: now
+		});
+		if (errors) {
+			setError(errors[0].message);
+			setOpen(true);	
+		} else {
+			const newUserData = [];
+			for (var indx = 0; indx < userData.length; indx++) {
+				if (userData[indx].transactionId == id) {
+					const newObj = userData[indx];
+					newObj.status = newStatus;
+					newObj.reason = newReason;
+					newObj.lastUpdated = now;
+					newUserData[indx] = newObj;
+				} else {
+					newUserData[indx] = userData[indx];
+				}
+			}
+			theGrid = newUserData;
+			setUserData(newUserData);
+		}
+		setIsWaiting(false);
+	}
+
 	function handleRowClick (params, event, details) {
 	}
   
@@ -292,6 +333,7 @@ export default function TransactionStatus(props) {
 	  } else {
 		if (rowSelectionModel.length == 1) {
 			const row = userData.filter((row) => row.transactionId == rowSelectionModel[0]);
+			setTranyId(row[0].transactionId);
 			setStatus(row[0].status);
 			setReason(row[0].reason);
 			setOpenStatus(true);
@@ -314,7 +356,10 @@ export default function TransactionStatus(props) {
 	  	template: false,
 	  	transactionId: false,
 	  	question: false,
-	  	result: false
+	  	result: false,
+		what3words: false,
+		lattitude: false,
+		longitude: false
     });
 
 	function handleRowClick (params, event, details) {
@@ -322,6 +367,17 @@ export default function TransactionStatus(props) {
   
 	function onSelectedTemplate (id) {
 		allResults(id);
+	}
+
+	const handleEditIt = (id: GridRowId) => () => {
+		const row = theGrid.filter((row) => row.transactionId == id);
+		if (row.length < 1) {
+			return;
+		}
+		setTranyId(id);
+		setStatus(row[0].status);
+		setReason(row[0].reason);
+		setOpenStatus(true);
 	}
 
 	const handleMapIt = (id: GridRowId) => () => {
@@ -338,8 +394,13 @@ export default function TransactionStatus(props) {
 		setLoading(false);
 	}
 
-	const handleOnStatus = (stat, reas) => {
+	const handleStatusFilter = (event: React.MouseEvent<HTMLElement>, newStatus: string | null) => {
+		setStatusFilter(newStatus);
+	}
+
+	const handleOnStatus = (id, stat, reas) => {
 		setOpenStatus(false);
+		updateTransaction(id, stat, reas);
 	}
 
 	const handleOnStatusClosed = (e) => {
@@ -372,6 +433,20 @@ export default function TransactionStatus(props) {
 		setOpenPhoto(false);
 		setPhoto('');
 	}
+
+const actionColumns: GridColDef[] = [
+	{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
+		type: 'actions',
+		width: 80,
+		getActions: ({ id }) => {
+			return [
+			<Tooltip title="Press to edit Status and Reason." placement="top">
+				<GridActionsCellItem icon={<EditAttributesIcon />} label="Edit Status/Reason" color='primary' onClick={handleEditIt(id)} />
+			</Tooltip>,
+			]
+		}
+	}
+];
 
 const columns: GridColDef[] = [
 	{ field: 'id', headerName: 'Id'},
@@ -421,12 +496,23 @@ const columns: GridColDef[] = [
 	{ field: 'what3words', headerName: 'What3words', width: 200, headerClassName: 'grid-headers' },
 	{ field: 'lattitude', headerName: 'Latitude', width: 150, headerClassName: 'grid-headers' },
 	{ field: 'longitude', headerName: 'Longitude', width: 150, headerClassName: 'grid-headers' },
-	{ field: 'status', headerName: 'Status', width: 80, headerClassName: 'grid-headers'},
+	{ field: 'status', headerName: 'Status', width: 80, headerClassName: 'grid-headers',
+		cellClassName: (params: GridCellParams<any, number>) => {
+			if (params.value == 'Open') {
+				return 'grid-open';
+			} else if (params.value == 'Pending') {
+				return 'grid-pending'
+			} else if (params.value == 'Closed') {
+				return 'grid-closed'
+			}
+			return '';
+		}
+	},
 	{ field: 'reason', headerName: 'Reason', width: 120, headerClassName: 'grid-headers'},
 	{ field: 'lastUpdated', type: 'dateTime', headerName: 'Updated', width: 100, headerClassName: 'grid-headers'},
-	{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
+	{ field: 'mapPicActions', headerName: 'Map/Picture', headerClassName: 'grid-headers',
 		type: 'actions',
-		width: 80,
+		width: 100,
 		getActions: ({ id }) => {
 			const row = theGrid.filter((row) => row.transactionId == id);
 			return [
@@ -511,16 +597,23 @@ function CustomToolbar() {
           </Button>
         </DialogActions>
       </Dialog>
-	  {openStatus && <PopupStatus props={props} status={status} reasons={reason} onStatus={handleOnStatus} onStatusClosed={handleOnStatusClosed}/>}
+	  {isWaiting && <CircularProgress />}
+	  {openStatus && <PopupStatus props={props} id={tranyId} status={status} reasons={reason} onStatus={handleOnStatus} onStatusClosed={handleOnStatusClosed}/>}
 	<Stack>
 		<Stack direction="row" spacing={2} >
 			{props.transactionId == null && needTemplate && allTemplates.length > 0 && 
 				<SelectTemplate props={props} templateName={userData.length > 0 ? userData[0].template : null} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} setAll={false}/> }
+			<ToggleButtonGroup value={statusFilter} exclusive aria-label='Filter Status' onChange={handleStatusFilter}> 
+				<ToggleButton value="All" aria-label='filter all'>All</ToggleButton>
+				<ToggleButton value="Open" aria-label='filter open' sx={{ backgroundColor: '#73AD21'}}>Open</ToggleButton>
+				<ToggleButton value="Pending" aria-label='filter pending' sx={{ backgroundColor: 'burlywood'}}>Pending</ToggleButton>
+				<ToggleButton value="Closed" aria-label='filter closed' sx={{ backgroundColor: '#2196F3'}}>Closed</ToggleButton>
+			</ToggleButtonGroup>
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			{userData.length > 1 && userData[0].id != '' ?
 			<DataGrid
-				rows={userData}
+				rows={statusFilter == 'All' ? userData : userData.filter(comp => comp.status == statusFilter)}
 				slots={{ toolbar: CustomToolbar}}
 				loading={loading}
 				columns={columnsNew.length < 1 ? columns : columnsNew}
