@@ -511,6 +511,37 @@ export default function SetupTemplate(props) {
       }
     }
 
+    const { errors: permErrors, data: permissions } = await client.queries.listTemplatePermissionsByTemplate({
+      templateId: props.templateId
+    });
+    if (permErrors) {
+      setAlertMessage("Warning:  Cant check/assign Admin to template.");
+      setIsAlert(true);
+    } else {
+      if (permissions.length == 0) {
+        // need to add Admin to this template
+        const { errors: userError, data: adminData } = await client.queries.listUserByEmail({
+          email: props.userId
+        });
+        if (userError) {
+          setAlertMessage("Warning: Cant check/assign Admin to template.");
+          setIsAlert(true);
+        } else {
+          const { errors: permCreateErrors, data: newTemplatePermission } = await client.models.template_permissions.create({ 
+            id: uuidv4(),
+            template_id: props.templateId,
+            user_id: adminData[0].id,
+            enabled_date: now,
+            created: now,
+            created_by: props.userId
+          });
+          if (permCreateErrors) {
+            setAlertMessage("Warning: Cant check/assign Admin to template.")
+            setIsAlert(true);
+          }
+        }
+      }
+    }
     setIsWaiting(false);
     setOpenSetup(false);
     props.onSubmitChange(
