@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import { Authenticator, Input, TextField, useAuthenticator } from '@aws-amplify/ui-react';
 import { getCurrentUser } from 'aws-amplify/auth';
 import '@aws-amplify/ui-react/styles.css';
 import { generateClient } from 'aws-amplify/data';
@@ -51,13 +50,12 @@ const fetchSettings = async () => {
   }
 }
 
-function App() {
+function App(props)  {
 
   const [isAccessDisabled, setIsAccessDisabled] = useState(false);
   const [disableMsg, setDisableMsg] = useState('');
   const [isWaiting, setIsWaiting] = useState(true);
-  const [emailAddress, setEmailAddress] = useState(null);
-  const [reload, setReload] = useState(false);
+  const [emailAddress, setEmailAddress] = useState(props.userId);
 
   const checkSettings = async (items, errors, googleAPIKey, what3wordAPI) => {
     if (errors) {
@@ -82,7 +80,7 @@ function App() {
   const logOut = async() => {
     clearState();
     await signOut();
-    setReload(true);
+    props.onSubmitChange(false);
   }
 
   const fetchEmail = async () => {
@@ -98,16 +96,14 @@ function App() {
   }
 
   useEffect(() => {
-    if (reload) {
-      window.location.reload();
-      }
+
     const fetchTheSettings = async () => {
       const {data: items, googleAPIKey, what3wordAPI, errors} = await fetchSettings();
       checkSettings(items, errors, googleAPIKey, what3wordAPI);
     }
 //    setIsWaiting(true);
     fetchTheSettings();
-  }, [reload]);
+  }, []);
 
   function nothingToDo() {
   }
@@ -116,15 +112,6 @@ function App() {
     <>
     {isAccessDisabled && <DisableMode userId="Nobody" onSubmitChange={nothingToDo} message={disableMsg} /> }
     {emailAddress && <DetermineMode userId={emailAddress} googleAPI={googleAPIKeyValue} what3words={what3wordAPIValue} onSubmitChange={logOut} companyName={''} />}
-    {!isAccessDisabled && <Authenticator>
-      {({ signOut, user }) => {
-        if (user.signInDetails === undefined || user.signInDetails.loginId === undefined ) {
-          fetchEmail();
-        } else {
-          setEmailAddress(user.signInDetails.loginId);
-        }
-      }}
-    </Authenticator> }
     {isWaiting && <CircularProgress />}
     </>
   );

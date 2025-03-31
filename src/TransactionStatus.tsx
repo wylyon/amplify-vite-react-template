@@ -380,6 +380,17 @@ export default function TransactionStatus(props) {
 		setOpenStatus(true);
 	}
 
+	const handleStatus = (statusType, id: GridRowId) => () => {
+		const row = theGrid.filter((row) => row.transactionId == id);
+		if (row.length < 1) {
+			return;
+		}
+		setTranyId(id);
+		setStatus(statusType);
+		setReason(row[0].reason);
+		updateTransaction(id, statusType, row[0].reason);
+	}
+
 	const handleMapIt = (id: GridRowId) => () => {
 		setLoading(true);
 		const row = theGrid.filter((row) => row.transactionId == id);
@@ -443,6 +454,9 @@ const actionColumns: GridColDef[] = [
 			<Tooltip title="Press to edit Status and Reason." placement="top">
 				<GridActionsCellItem icon={<EditAttributesIcon />} label="Edit Status/Reason" color='primary' onClick={handleEditIt(id)} />
 			</Tooltip>,
+			<GridActionsCellItem sx={{ backgroundColor: '#73AD21'}} label='Set Status OPEN' onClick={handleStatus('Open', id)} showInMenu/>,
+			<GridActionsCellItem sx={{ backgroundColor: 'burlywood'}} label='Set Status PENDING' onClick={handleStatus('Pending', id)} showInMenu/>,
+			<GridActionsCellItem sx={{ backgroundColor: '#2196F3'}} label='Set Status CLOSED' onClick={handleStatus('Closed', id)} showInMenu/>,
 			]
 		}
 	}
