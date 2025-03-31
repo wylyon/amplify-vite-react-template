@@ -9,7 +9,7 @@ export function AppLog(props) {
 
   const signOutRedirect = () => {
     const clientId = "5hulpf92bf14aevl7r8els5okp";
-    const logoutUri = "https://logit-app.pro";
+    const logoutUri = "https://logit-app.pro/";
     const cognitoDomain = "https://6abf3bd3517b8b0c5de5.auth.us-east-1.amazoncognito.com";
 //    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
     window.location.href = `${cognitoDomain}/logout?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(logoutUri)}&cope=openid+profile+aws.cognito.signin.user.admin`;

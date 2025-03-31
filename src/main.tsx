@@ -18,7 +18,7 @@ Amplify.configure({
 const cognitoAuthConfig = {
   authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_aNDjqQEqZ",
   client_id: "5hulpf92bf14aevl7r8els5okp",
-  redirect_uri: "https://logit-app.pro",
+  redirect_uri: "https://logit-app.pro/",
   response_type: "code",
   scope: "aws.cognito.signin.user.admin email openid phone profile",
 };
