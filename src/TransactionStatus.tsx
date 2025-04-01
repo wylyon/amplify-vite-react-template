@@ -292,6 +292,23 @@ export default function TransactionStatus(props) {
 		allResultTemplates();
 	  }, []);
 
+	const updateTransformArray = (arr, id, newStatus, newReason) => {
+		const newUserData = [];
+		const now = new Date();
+		for (var indx = 0; indx < arr.length; indx++) {
+			if (userData[indx].transactionId == id) {
+				const newObj = arr[indx];
+				newObj.status = newStatus;
+				newObj.reason = newReason;
+				newObj.lastUpdated = now;
+				newUserData[indx] = newObj;
+			} else {
+				newUserData[indx] = arr[indx];
+			}
+		}
+		return newUserData;
+	} 
+
 	const updateTransaction = async(id, newStatus, newReason) => {
 		const now = new Date();
 		setIsWaiting(true);
@@ -305,20 +322,12 @@ export default function TransactionStatus(props) {
 			setError(errors[0].message);
 			setOpen(true);	
 		} else {
-			const newUserData = [];
-			for (var indx = 0; indx < userData.length; indx++) {
-				if (userData[indx].transactionId == id) {
-					const newObj = userData[indx];
-					newObj.status = newStatus;
-					newObj.reason = newReason;
-					newObj.lastUpdated = now;
-					newUserData[indx] = newObj;
-				} else {
-					newUserData[indx] = userData[indx];
-				}
+			if (userData.length == 0 || (userData.length == 1 && userData[0].id == "")) {
+				setUserData(updateTransformArray(theGrid, id, newStatus, newReason));
+			} else {
+				theGrid = updateTransformArray(userData, id, newStatus, newReason);
+				setUserData(theGrid);
 			}
-			theGrid = newUserData;
-			setUserData(newUserData);
 		}
 		setIsWaiting(false);
 	}
@@ -522,7 +531,7 @@ const columns: GridColDef[] = [
 			return '';
 		}
 	},
-	{ field: 'reason', headerName: 'Reason', width: 120, headerClassName: 'grid-headers'},
+	{ field: 'reason', headerName: 'Notes', width: 120, headerClassName: 'grid-headers'},
 	{ field: 'lastUpdated', type: 'dateTime', headerName: 'Updated', width: 100, headerClassName: 'grid-headers'},
 	{ field: 'mapPicActions', headerName: 'Map/Picture', headerClassName: 'grid-headers',
 		type: 'actions',

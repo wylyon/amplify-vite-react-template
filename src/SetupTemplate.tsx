@@ -861,8 +861,9 @@ export default function SetupTemplate(props) {
       variant: 'outlined',
     },
     paginationDisplayMode: 'pages',
-    enableSelectAll: false,
+    enableSelectAll: true,
     enableRowSelection: true,
+    enableMultiRowSelection: false,
     enableRowActions: true,
     displayColumnDefOptions: {
       'mrt-row-actions': {

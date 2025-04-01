@@ -56,10 +56,10 @@ export default function PopupStatus(props) {
         },
       }}
     >
-    <DialogTitle>Status and Reasons</DialogTitle>
+    <DialogTitle>Status and Notes</DialogTitle>
     <DialogContent>
       <DialogContentText>
-        Select a Status and Reason
+        Select a Status and Notes
       </DialogContentText>
       <Box sx={{ minWidth: 300 }}>
         <br/>
