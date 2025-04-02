@@ -81,6 +81,7 @@ export default function TransactionStatus(props) {
 	const [openStatus, setOpenStatus] = useState(false);
 	const [tranyId, setTranyId] = useState(null);
 	const [statusFilter, setStatusFilter] = useState('All');
+	const [batchIds, setBatchIds] = useState([]);
 
 	const client = generateClient<Schema>();
 	const [userData, setUserData] = useState([{
@@ -331,23 +332,17 @@ export default function TransactionStatus(props) {
 		}
 		setIsWaiting(false);
 	}
-
-	function handleRowClick (params, event, details) {
-	}
   
 	function handleRowSelection (rowSelectionModel, details) {
 	  // called on checkbox for row.   
 	  if (rowSelectionModel.length == 0) {
-
+		setBatchIds([]);
 	  } else {
-		if (rowSelectionModel.length == 1) {
-			const row = userData.filter((row) => row.transactionId == rowSelectionModel[0]);
-			setTranyId(row[0].transactionId);
-			setStatus(row[0].status);
-			setReason(row[0].reason);
-			setOpenStatus(true);
-		} else {
+		const rowIds = [];
+		for (var indx = 0; indx < rowSelectionModel.length; indx++) {
+			rowIds.push(rowSelectionModel[indx]);
 		}
+		setBatchIds(rowIds);
 	  }
 	}
 
@@ -400,6 +395,13 @@ export default function TransactionStatus(props) {
 		updateTransaction(id, statusType, row[0].reason);
 	}
 
+	const handleBatchStatus = () => {
+		setTranyId(null);
+		setStatus('Open');
+		setReason('');
+		setOpenStatus(true);
+	}
+
 	const handleMapIt = (id: GridRowId) => () => {
 		setLoading(true);
 		const row = theGrid.filter((row) => row.transactionId == id);
@@ -420,7 +422,13 @@ export default function TransactionStatus(props) {
 
 	const handleOnStatus = (id, stat, reas) => {
 		setOpenStatus(false);
-		updateTransaction(id, stat, reas);
+		if (id == null) {
+			for (var indx = 0; indx < batchIds.length; indx++) {
+				updateTransaction(batchIds[indx], stat, reas);
+			}
+		} else {
+			updateTransaction(id, stat, reas);
+		}
 	}
 
 	const handleOnStatusClosed = (e) => {
@@ -632,6 +640,7 @@ function CustomToolbar() {
 				<ToggleButton value="Pending" aria-label='filter pending' sx={{ backgroundColor: 'burlywood'}}>Pending</ToggleButton>
 				<ToggleButton value="Closed" aria-label='filter closed' sx={{ backgroundColor: '#2196F3'}}>Closed</ToggleButton>
 			</ToggleButtonGroup>
+			<ToggleButton value="Change" aria-label="change status" disabled={batchIds.length == 0} onClick={handleBatchStatus}>Update Status</ToggleButton>
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			{userData.length > 1 && userData[0].id != '' ?
@@ -643,6 +652,8 @@ function CustomToolbar() {
 				getRowHeight={() => 'auto'}
 				getRowId={(row) => row.transactionId}
 				columnVisibilityModel={columnVisibilityModel}
+				checkboxSelection
+				disableRowSelectionOnClick
 				onColumnVisibilityModelChange={(newCompany) =>
 					setColumnVisibilityModel(newCompany)
 				}
