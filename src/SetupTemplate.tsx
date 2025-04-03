@@ -144,90 +144,6 @@ export default function SetupTemplate(props) {
     setOpenPreAttributes(false);
   };
 
-  const handleClickOpenPre = () => {
-    if (formData.preLoadAttributes == '') {
-      setDialogPrompt('');
-      setDialogControls({
-        lines: 0,
-        tabs: 0,
-        tabsAfter: 0
-      });
-    } else {
-      const preLoadText = formData.preLoadAttributes;
-      var nlines = 0;
-      if (preLoadText.indexOf("<br><br><br><br><br><br><br><br><br><br>") < 0) {
-        if (preLoadText.indexOf("<br><br><br><br><br><br><br><br><br>") < 0) {
-          if (preLoadText.indexOf("<br><br><br><br><br><br><br><br>") < 0) {
-            if (preLoadText.indexOf("<br><br><br><br><br><br><br>") < 0) {
-              if (preLoadText.indexOf("<br><br><br><br><br><br>") < 0) {
-                if (preLoadText.indexOf("<br><br><br><br><br>") < 0) {
-                  if (preLoadText.indexOf("<br><br><br><br>") < 0) {
-                    if (preLoadText.indexOf("<br><br><br>") < 0) {
-                      if (preLoadText.indexOf("<br><br>") < 0) {
-                        if (preLoadText.indexOf("<br>") < 0) {
-                          nlines = 0;
-                        } else {
-                          nlines = 1;
-                        }
-                      } else {
-                        nlines = 2;
-                      }
-                    } else {
-                      nlines = 3;
-                    }
-                  } else {
-                    nlines = 4;
-                  }
-                } else {
-                  nlines = 5;
-                }
-              } else {
-                nlines = 6;
-              }
-            } else {
-              nlines = 7;
-            }
-          } else {
-            nlines = 8;
-          }
-        } else {
-          nlines = 9;
-        }
-      } else {
-        nlines = 10;
-      }
-      const preLoadTextNoLines = preLoadText.replace(/<br>/g, "");
-      const ntabs  = countNumOfTabs(preLoadTextNoLines);
-      if (preLoadTextNoLines.indexOf("&emsp;") == 0) {
-        const preLoadTextNoLinesNoTabs = preLoadTextNoLines.replace(/&emsp;/g, "");
-        setDialogPrompt(preLoadTextNoLinesNoTabs);
-        setDialogControls({
-          lines: nlines,
-          tabs: ntabs,
-          tabsAfter: 0
-        });
-      } else {
-        if (preLoadTextNoLines.indexOf("&emsp;") > 0) {
-          const preLoadTextNoLinesNoTabs = preLoadTextNoLines.replace(/&emsp;/g, "");
-          setDialogPrompt(preLoadTextNoLinesNoTabs);
-          setDialogControls({
-            lines: nlines,
-            tabs: 0,
-            tabsAfter: ntabs
-          });        
-        } else {
-          setDialogPrompt(preLoadTextNoLines);
-          setDialogControls({
-            lines: nlines,
-            tabs: 0,
-            tabsAfter: ntabs
-          });              
-        }
-      }
-    }
-    setOpenPreAttributes(true);
-  }
-
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
   }
@@ -1241,9 +1157,10 @@ export default function SetupTemplate(props) {
               borderStyle: 'solid', borderWidth: '2px' }} >
             <h4>Add Questions/Controls: <br/>
             {props.isWizard ? null :
-            <FormControlLabel control={<Checkbox checked={isAdvanced} onChange={handleAdvanced} inputProps={{ 'aria-label' : 'controlled'}} />} label="Show Advanced Controls" /> }
+            <FormControlLabel disabled={isValuesDisabled && isUpdate}
+              control={<Checkbox checked={isAdvanced} onChange={handleAdvanced} inputProps={{ 'aria-label' : 'controlled'}} />} label="Show Advanced Controls" /> }
             {props.isWizard ? null :
-              <Button variant="contained" color="success" onClick={handleOnNew}>Add Wizard</Button> }
+              <Button disabled={isUpdate} variant="contained" color="success" onClick={handleOnNew}>Add Wizard</Button> }
             </h4>
             <FormControl>
               <Stack direction="row" spacing={2}>
@@ -1259,33 +1176,33 @@ export default function SetupTemplate(props) {
                         <Typography variant="h6" alignContent="center">Step 1: Select Control</Typography>
                         </Tooltip>
                         <Tooltip title="Select this to input a photo" placement="top">
-                        <FormControlLabel value="photo"
-                          control={(formData.questionType=="photo") ? <Radio checked="true" size="small"/> : <Radio size="small"/>} 
+                        <FormControlLabel value="photo" disabled={!isValuesDisabled && isUpdate}
+                          control={(formData.questionType=="photo") ? <Radio checked size="small"/> : <Radio size="small"/>} 
                           label="Add a Photo" 
                           onClick={handlePhotoClick} onChange={handleChange}/></Tooltip>
                         <Stack direction="column" spacing={3}>
                           <Paper elevation={3}>
                             <Typography variant="caption">Single Input Controls</Typography>
                             <Tooltip title="Select this to input a dropdown for a single input" placement="right">
-                            <FormControlLabel value="dropdown" 
-                              control={(formData.questionType=="dropdown") ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                            <FormControlLabel value="dropdown" disabled={isValuesDisabled && isUpdate}
+                              control={(formData.questionType=="dropdown") ? <Radio checked size="small"/> : <Radio  size="small"/>} 
                               label="Add a Dropdown of Values" 
                               onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
                             <Tooltip title="Select this for a toggle button" placement="right">
-                            <FormControlLabel value="toggle_button" 
-                              control={formData.questionType=="toggle_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                            <FormControlLabel value="toggle_button"  disabled={isValuesDisabled && isUpdate}
+                              control={formData.questionType=="toggle_button" ? <Radio checked size="small"/> : <Radio  size="small"/>} 
                               label="Add a List of Buttons" 
                               onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
                           </Paper>
                           <Paper elevation={3}>
                             <Typography variant="caption">Multiple Input Controls</Typography>
                             <Tooltip title="Select this to input a dropdown for multiple inputs" placement="right">
-                            <FormControlLabel value="multiple_dropdown" 
-                              control={formData.questionType=="multiple_dropdown" ? <Radio checked="true" size="small"/> : <Radio size="small" />} 
+                            <FormControlLabel value="multiple_dropdown"  disabled={isValuesDisabled && isUpdate}
+                              control={formData.questionType=="multiple_dropdown" ? <Radio checked size="small"/> : <Radio size="small" />} 
                               label="Add a Dropdown for multiple selections" onClick={handleMultipleDropDownClick} onChange={handleChange}/></Tooltip>
                             <Tooltip title="Select this for a multi-select toggle button" placement="right">
-                            <FormControlLabel value="checkbox_button" 
-                              control={formData.questionType=="checkbox_button" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                            <FormControlLabel value="checkbox_button"  disabled={isValuesDisabled && isUpdate}
+                              control={formData.questionType=="checkbox_button" ? <Radio checked size="small"/> : <Radio  size="small"/>} 
                               label="Add a List of Buttons with multiple selections" 
                               onClick={handleMultipleToggleButtonClick} onChange={handleChange}/></Tooltip>
                           </Paper>
@@ -1304,7 +1221,7 @@ export default function SetupTemplate(props) {
                           label="Input/Text" 
                           onClick={handleTextClick} onChange={handleChange}/></Tooltip>
                         <Tooltip title="Select this to input date data" placement="right">
-                        <FormControlLabel value="datepicker" 
+                        <FormControlLabel value="datepicker" disabled={!isValuesDisabled && isUpdate}
                           control={formData.questionType=="datepicker" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                           label="Date Picker" 
                           onClick={handleDateClick} onChange={handleChange}/></Tooltip>
@@ -1319,7 +1236,7 @@ export default function SetupTemplate(props) {
                           label="Color Button" 
                           onClick={handleColorButtonClick} onChange={handleChange}/></Tooltip>
                           <Tooltip title="Select this for a switch" placement="right">
-                          <FormControlLabel value="switch" 
+                          <FormControlLabel value="switch" disabled={!isValuesDisabled && isUpdate}
                             control={formData.questionType=="switch" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
                             label="Switch" 
                             onClick={handleSwitchClick} onChange={handleChange}/></Tooltip>

@@ -333,6 +333,18 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .returns(a.json().array())
     .handler(a.handler.inlineSql("DELETE from logistics.company WHERE id = :id;"))
     .authorization(allow => allow.publicApiKey()),
+    deleteTransactionsByTemplateId: a.mutation().arguments({
+      templateId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("DELETE from logistics.transactions WHERE template_id = :templateId;"))
+    .authorization(allow => allow.publicApiKey()),
+    backupTransactionsByTemplateId: a.mutation().arguments({
+      templateId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("INSERT into logistics.transactions_delete SELECT * FROM logistics.transactions WHERE template_id = :templateId;"))
+    .authorization(allow => allow.publicApiKey()),
     backupTemplatePermissionsByUserId: a.mutation().arguments({
       userId: a.string().required()
     })
