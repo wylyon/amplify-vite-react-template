@@ -386,6 +386,9 @@ export default function DivisionGrid(props) {
 						await client.mutations.deleteQuestionByTemplateId({
 							templateId: items[indx].id
 						  });
+						await client.mutations.deleteTransactionsByTemplateId({
+							templateId: items[indx].id
+						});
 					}
 					await client.mutations.deleteTemplateByDivisionId({
 						divisionId: id
@@ -441,6 +444,9 @@ export default function DivisionGrid(props) {
 						templateId: templateItems[indx].id
 					});
 					await client.mutations.backupQuestionsByTemplate({
+						templateId: templateItems[indx].id
+					});
+					await client.mutations.backupTransactionsByTemplateId({
 						templateId: templateItems[indx].id
 					});
 				}

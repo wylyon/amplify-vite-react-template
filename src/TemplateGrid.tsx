@@ -400,6 +400,9 @@ export default function TemplateGrid(props) {
 			await client.mutations.deleteQuestionByTemplateId({
 			  templateId: id
 			});
+			await client.mutations.deleteTransactionsByTemplateId({
+				templateId: id
+			});
 	}
 
 	const handleDeleteRow = async(id) => {
@@ -418,6 +421,9 @@ export default function TemplateGrid(props) {
 					templateId: id
 				});
 				await client.mutations.backupQuestionsByTemplate({
+					templateId: id
+				});
+				await client.mutations.backupTransactionsByTemplateId({
 					templateId: id
 				});
 				handleDeleteCascade(id);
