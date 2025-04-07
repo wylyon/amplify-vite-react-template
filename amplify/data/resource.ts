@@ -56,7 +56,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .arguments({
       templateId: a.string().required(),
     })
-    .returns(a.ref("admin").array())
+    .returns(a.ref("question_result").array())
     .handler(a.handler.inlineSql(
       "SELECT qr.* from logistics.question_result qr join logistics.transactions t on t.id = qr.transaction_id " +
       "WHERE t.template_id = :templateId and not result_photo_value is null;"
