@@ -49,6 +49,7 @@ import PopupReview from '../src/PopupPreview';
 import AssociateUsers from '../src/AssociateUsers';
 import SetupTemplate from '../src/SetupTemplate';
 import PopupNewTemplate from '../src/PopupNewTemplate';
+import { remove } from 'aws-amplify/storage';
 import moment from 'moment';
 
 interface EditToolbarProps {
@@ -391,6 +392,20 @@ export default function TemplateGrid(props) {
 	}
 
 	const handleDeleteCascade = async(id) => {
+		const { errors: picErrors, data: picItems } = await client.queries.listPhotoResultsByTemplate({
+			templateId: id
+		});
+		if (!picErrors) {
+			for (var i = 0; i < picItems.length; i++) {
+				try {
+					const result = await remove({
+						path: `picture-submissions/${picItems[i].created_by}/${picItems[i].result_photo_value}`,
+					});
+				} catch (error) {
+					console.log('Error ', error);
+				}
+			}
+		}
 		await client.mutations.deletePermissionsByTemplateId({
 			templateId: id
 		  });

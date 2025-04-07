@@ -42,6 +42,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SelectGridCustomer from '../src/SelectGridCustomer';
 import SelectGridState from '../src/SelectGridState';
 import PopupNewDivision from '../src/PopupNewDivision';
+import { remove } from 'aws-amplify/storage';
 import CryptoJS from 'crypto-js';
 import { CognitoIdentityProvider } from '@aws-sdk/client-cognito-identity-provider';
 
@@ -392,6 +393,23 @@ export default function DivisionGrid(props) {
 					setError("Can't cascade division due to error getting users.");
 					setOpen(true);
 				} else {
+					// delete picture data (S3)
+					for (var indx = 0; indx < items.length; indx++) {
+						const { errors: picErrors, data: picItems } = await client.queries.listPhotoResultsByTemplate({
+							templateId: items[indx].id
+						});
+						if (!picErrors) {
+							for (var i = 0; i < picItems.length; i++) {
+								try {
+									const result = await remove({
+										path: `picture-submissions/${picItems[i].created_by}/${picItems[i].result_photo_value}`,
+									});
+								} catch (error) {
+									console.log('Error ', error);
+								}
+							}
+						}
+					}
 					// delete template related table data
 					for (var indx = 0; indx < items.length; indx++) {
 						await client.mutations.deletePermissionsByTemplateId({
