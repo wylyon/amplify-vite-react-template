@@ -353,6 +353,23 @@ export default function DivisionGrid(props) {
 		getDivisions();
 	}
 
+	
+	const getMatchingUser =  (emailAddress, listOfUsers) => {
+		var reducedUserAttributes = [];
+		for (var indx = 0; indx < listOfUsers.length; indx++) {
+			const attributes = listOfUsers[indx].Attributes;
+			const foundMatch = attributes.filter(comp => comp.Name == 'email' && comp.Value == emailAddress);
+			if (foundMatch.length > 0) {
+				reducedUserAttributes.push({
+					userName: listOfUsers[indx].Username,
+					status: listOfUsers[indx].UserStatus,
+					email: emailAddress
+				});
+			}
+		}
+		return reducedUserAttributes;
+	  }
+
 	const handleDeleteRow = async(id) => {
 		const { errors: divDeleteErrors, data: deletedData } = await client.models.division.delete({
 			id: id
@@ -401,16 +418,43 @@ export default function DivisionGrid(props) {
 							secretAccessKey: CryptoJS.AES.decrypt(secret, ourWord).toString(CryptoJS.enc.Utf8),
 						}
 						});
-					for (var i = 0; i < itemsForUsers.length; i++) {
-						try {
-							const response = await cognito.adminDeleteUser({
-								UserPoolId: userPoolId,
-								Username: itemsForUsers[i].email_address
-							}).promise();
-			
-						} catch (error) {
+					var cognitoUsers = [];
+					try {
+						const response = await cognito.listUsers({
+							AttributesToGet: null,
+							Filter: "",
+							UserPoolId : userPoolId
+						});
+						cognitoUsers = response.Users;
+					} catch (error) {
+						console.log(error);
+					}
+					
+					var dataStatus = [];
+					for (var i=0; i < itemsForUsers.length; i++) {
+						const foundUser = getMatchingUser(itemsForUsers[i].email_address, cognitoUsers);
+						if (foundUser.length > 0) {
+							try {
+								if (foundUser.length == 1) {
+									const response = await cognito.adminDeleteUser({
+										UserPoolId: userPoolId,
+										Username: foundUser[0].userName
+									}).promise();
+								} else {
+									const response2 = await cognito.adminDeleteUser({
+										UserPoolId: userPoolId,
+										Username: foundUser[0].userName
+									}).promise();
+									const response3 = await cognito.adminDeleteUser({
+										UserPoolId: userPoolId,
+										Username: foundUser[1].userName
+									}).promise();
+								}
+							} catch (error) {
+							}
 						}
 					}
+
 					await client.mutations.deleteUserByDivisionId({
 						divisionId: id
 					})

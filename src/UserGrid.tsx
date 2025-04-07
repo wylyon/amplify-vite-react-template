@@ -89,8 +89,8 @@ function EditToolbar(props: EditToolbarProps) {
 			...oldRows,
 			isAdmin ?
 			{ id: item.id, 
-				username: '',
 				companyId: filter.id,
+				userName: item.email_address,
 				company: filter.name,
 				email: item.email_address,
 				firstName: item.first_name,
@@ -102,9 +102,9 @@ function EditToolbar(props: EditToolbarProps) {
 				isNew: false
 			} :
 			{ id: item.id, 
-			  username: '',
 			  companyId: filter.id,
 			  divisionId: item.division_id,
+			  userName: item.email_address,
 			  division: arrayDivisions.filter(comp => comp.id == item.division_id)[0].name,
 			  company: filter.name,
 			  email: item.email_address,
@@ -129,7 +129,7 @@ function EditToolbar(props: EditToolbarProps) {
 		setRows((oldRows) => [
 		  ...oldRows,
 		  { id, 
-			  username: '',
+			  userName: '',
 			  companyId: '',
 			  company: '',
 			  divisionId: '',
@@ -314,6 +314,22 @@ export default function UserGrid(props) {
 		return new Date(formattedDate);
 	  }
 	
+	  const getMatchingUser =  (emailAddress, listOfUsers) => {
+		var reducedUserAttributes = [];
+		for (var indx = 0; indx < listOfUsers.length; indx++) {
+			const attributes = listOfUsers[indx].Attributes;
+			const foundMatch = attributes.filter(comp => comp.Name == 'email' && comp.Value == emailAddress);
+			if (foundMatch.length > 0) {
+				reducedUserAttributes.push({
+					userName: listOfUsers[indx].Username,
+					status: listOfUsers[indx].UserStatus,
+					email: emailAddress
+				});
+			}
+		}
+		return reducedUserAttributes;
+	  }
+
 	  const getUserStatus = async (data) => {
 		const cognito = new CognitoIdentityProvider({
 			region: region,
@@ -322,20 +338,28 @@ export default function UserGrid(props) {
 				secretAccessKey: CryptoJS.AES.decrypt(secret, ourWord).toString(CryptoJS.enc.Utf8),
 			}
 		});
+		var cognitoUsers = [];
+		try {
+			const response = await cognito.listUsers({
+				AttributesToGet: null,
+				Filter: "",
+				UserPoolId : userPoolId
+			});
+			cognitoUsers = response.Users;
+		} catch (error) {
+			console.log(error);
+		}
+
 		var dataStatus = [];
 		for (var i=0; i < data.length; i++) {
-			var userStatus = null;
-			try {
-				const response = await cognito.adminGetUser({
-					UserPoolId: userPoolId,
-					Username: data[i].email
-				});
-				userStatus = response.UserStatus;
-			} catch (error) {
+			const foundUser = getMatchingUser(data[i].email, cognitoUsers);
 
-			}
 			dataStatus.push({
 				id: data[i].id,
+				userName: 
+					foundUser.length == 0 ? null : 
+					foundUser.length == 1 ? [foundUser[0].userName] : 
+					[foundUser[0].userName, foundUser[1].userName] ,
 				company: data[i].company,
 				divisionId: data[i].divisionId,
 				division: data[i].division,
@@ -346,7 +370,9 @@ export default function UserGrid(props) {
 				middleName: data[i].middleName,
 				activeDate: data[i].activeDate,
 				deactiveDate: data[i].deactiveDate,
-				userStatus: userStatus,
+				userStatus: 
+					foundUser.length == 0 ? null :
+					foundUser[0].status,
 				notes: data[i].notes,
 				created: data[i].created,
 				createdBy: data[i].createdBy,
@@ -464,6 +490,7 @@ export default function UserGrid(props) {
 
 	const handleDeactiveOrActivate = async(id, isDeactive, emailAddress) => {
 		const now = new Date();
+		const row = rows.filter((row) => row.id === id);
 		const { errors, data: updatedData } = 
 			(isAdmin) ? 	
 				await client.models.admin.update({
@@ -486,15 +513,42 @@ export default function UserGrid(props) {
 				}
 				});
 			try {
-				const response = (isDeactive) ? await cognito.adminDisableUser({
-					UserPoolId: userPoolId,
-					Username: emailAddress
-				}).promise() :
-					await cognito.adminEnableUser({
+				if (row[0].userName == null || row[0].userName == '' || row[0].userName == emailAddress || (row[0].userName.length == 1 && row[0].userName[0] == emailAddress)) {
+					const response = (isDeactive) ? await cognito.adminDisableUser({
 						UserPoolId: userPoolId,
 						Username: emailAddress
-					}).promise();
-		
+					}).promise() :
+						await cognito.adminEnableUser({
+							UserPoolId: userPoolId,
+							Username: emailAddress
+						}).promise();
+				} else if (row[0].userName.length == 1) {
+					const response = (isDeactive) ? await cognito.adminDisableUser({
+						UserPoolId: userPoolId,
+						Username: row[0].userName[0]
+					}).promise() :
+						await cognito.adminEnableUser({
+							UserPoolId: userPoolId,
+							Username: row[0].userName[0]
+						}).promise();
+				} else if (row[0].userName.length == 2) {
+					const response2 = (isDeactive) ? await cognito.adminDisableUser({
+						UserPoolId: userPoolId,
+						Username: row[0].userName[0]
+					}).promise() :
+						await cognito.adminEnableUser({
+							UserPoolId: userPoolId,
+							Username: row[0].userName[0]
+						}).promise();
+					const response3 = (isDeactive) ? await cognito.adminDisableUser({
+						UserPoolId: userPoolId,
+						Username: row[0].userName[1]
+					}).promise() :
+						await cognito.adminEnableUser({
+							UserPoolId: userPoolId,
+							Username: row[0].userName[1]
+						}).promise();
+				}
 			} catch (error) {
 				setError("Warning...Could not initiate reset password.");
 				setOpen(true);
@@ -504,7 +558,8 @@ export default function UserGrid(props) {
 		getUsers(isAdmin, true);
 	}
 
-	const deleteAllReferences = async(id, emailAddress) => {
+	const deleteAllReferences = async(id, row) => {
+		const emailAddress = row[0].email;
 		var deleteCognito = true;
 		if (!isAdmin) {
 		// first delete any links between a user and a template
@@ -543,24 +598,40 @@ export default function UserGrid(props) {
 				}
 				});
 			try {
-				const response = await cognito.adminDeleteUser({
-					UserPoolId: userPoolId,
-					Username: emailAddress
-				}).promise();
+				if (row[0].userName == null || row[0].userName == '' || row[0].userName == emailAddress || (row[0].userName.length == 1 && row[0].userName[0] == emailAddress)) {
+					const response = await cognito.adminDeleteUser({
+						UserPoolId: userPoolId,
+						Username: emailAddress
+					}).promise();
+				} else if (row[0].userName.length == 1) {
+					const response2 = await cognito.adminDeleteUser({
+						UserPoolId: userPoolId,
+						Username: row[0].userName[0]
+					}).promise();
+				} else if (row[0].userName.length == 2) {
+					const response2 = await cognito.adminDeleteUser({
+						UserPoolId: userPoolId,
+						Username: row[0].userName[0]
+					}).promise();
+					const response3 = await cognito.adminDeleteUser({
+						UserPoolId: userPoolId,
+						Username: row[0].userName[1]
+					}).promise();
+				}
 
 			} catch (error) {
 			}
 		}
 	}
 
-	const deletePrepAllReferences = async(id, emailAddress) => {
+	const deletePrepAllReferences = async(id, row) => {
 		if (isBackups && !isAdmin) {
 			const { errors, data } = await client.mutations.backupTemplatePermissionsByUserId ({
 				userId: id
 			});
-			deleteAllReferences(id, emailAddress);
+			deleteAllReferences(id, row);
 		} else {
-			deleteAllReferences(id, emailAddress);
+			deleteAllReferences(id, row);
 		}
 	}
 
@@ -578,7 +649,7 @@ export default function UserGrid(props) {
 			setOpen(true);
 		}
 		const row = rows.filter((row) => row.id === id);
-		deletePrepAllReferences(id, row[0].email);
+		deletePrepAllReferences(id, row);
 	}
 
 	const handleDeletePrep = async(id) => {

@@ -44,7 +44,6 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "SELECT a.id, a.division_id, d.name as division, c.name as company, a.email_address, a.first_name, a.last_name, a.middle_name, a.active_date, a.deactive_date, a.notes, a.created, a.created_by " +
       "FROM logistics.user a join logistics.division d on d.id = a.division_id join logistics.company c on c.id = d.company_id WHERE c.id = :companyId;"
     )).authorization(allow => allow.publicApiKey()),
-
     listAdminByEmail: a.query()
     .arguments({
       email: a.string().required(),
@@ -52,6 +51,15 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .returns(a.ref("admin").array())
     .handler(a.handler.inlineSql(
       "SELECT id, username, email_address, company_id, first_name, last_name, middle_name, active_date, deactive_date, created, created_by FROM logistics.admin WHERE email_address = :email;"
+    )).authorization(allow => allow.publicApiKey()),
+    listPhotoResultsByTemplate: a.query()
+    .arguments({
+      templateId: a.string().required(),
+    })
+    .returns(a.ref("admin").array())
+    .handler(a.handler.inlineSql(
+      "SELECT qr.* from logistics.question_result qr join logistics.transactions t on t.id = qr.transaction_id " +
+      "WHERE t.template_id = :templateId and not result_photo_value is null;"
     )).authorization(allow => allow.publicApiKey()),
     listAllTemplates: a.query()
     .arguments({})
