@@ -640,10 +640,9 @@ function CustomToolbar() {
 				<ToggleButton value="Pending" aria-label='filter pending' sx={{ backgroundColor: 'burlywood'}}>Pending</ToggleButton>
 				<ToggleButton value="Closed" aria-label='filter closed' sx={{ backgroundColor: '#2196F3'}}>Closed</ToggleButton>
 			</ToggleButtonGroup>
-			<ToggleButton value="Change" aria-label="change status" disabled={batchIds.length == 0} onClick={handleBatchStatus}>Update Status</ToggleButton>
+			<Button variant="contained" color="primary" aria-label="change status" disabled={batchIds.length == 0} onClick={handleBatchStatus}>Update Status For Selected Items</Button>
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
-			{userData.length > 1 && userData[0].id != '' ?
 			<DataGrid
 				rows={statusFilter == 'All' ? userData : userData.filter(comp => comp.status == statusFilter)}
 				slots={{ toolbar: CustomToolbar}}
@@ -668,7 +667,7 @@ function CustomToolbar() {
 				onRowCountChange={handleRowChangeEvent}
 				onRowSelectionModelChange={handleRowSelection}
 				sx={{ border: 0 }}
-			/> : null }
+			/> 
   		</Paper>
 	</Stack>
 	</React.Fragment>

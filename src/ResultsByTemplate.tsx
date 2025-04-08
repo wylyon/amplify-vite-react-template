@@ -561,7 +561,6 @@ function CustomToolbar() {
 				<SelectTemplate props={props} templateName={userData.length > 0 ? userData[0].template : null} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} setAll={false}/> }
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
-			{userData.length > 1 && userData[0].id != '' ?
 			<DataGrid
 				rows={userData}
 				slots={{ toolbar: CustomToolbar}}
@@ -584,7 +583,7 @@ function CustomToolbar() {
 				onRowCountChange={handleRowChangeEvent}
 				onRowSelectionModelChange={handleRowSelection}
 				sx={{ border: 0 }}
-			/> : null }
+			/> 
   		</Paper>
 	</Stack>
 	</React.Fragment>

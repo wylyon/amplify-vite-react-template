@@ -100,7 +100,7 @@ export default function DetermineMode(props) {
       setIsDisabledUser(true);
     } else {
       setFiltered(items.filter(comp => comp.email_address.includes(props.userId)));
-      fetchAdmins (userId, items, isValid, false);
+      fetchAdmins (userId, items, isValid, true);
       setIsWaiting(false);
     }
   }
