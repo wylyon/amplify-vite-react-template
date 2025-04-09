@@ -513,47 +513,43 @@ export default function UserGrid(props) {
 					secretAccessKey: CryptoJS.AES.decrypt(secret, ourWord).toString(CryptoJS.enc.Utf8),
 				}
 				});
-			try {
 				if (row[0].userName == null || row[0].userName == '' || row[0].userName == emailAddress || (row[0].userName.length == 1 && row[0].userName[0] == emailAddress)) {
 					const response = (isDeactive) ? await cognito.adminDisableUser({
 						UserPoolId: userPoolId,
 						Username: emailAddress
-					}).promise() :
+					}) :
 						await cognito.adminEnableUser({
 							UserPoolId: userPoolId,
 							Username: emailAddress
-						}).promise();
+						});
 				} else if (row[0].userName.length == 1) {
-					const response = (isDeactive) ? await cognito.adminDisableUser({
+					(isDeactive) ? await cognito.adminDisableUser({
 						UserPoolId: userPoolId,
 						Username: row[0].userName[0]
-					}).promise() :
+					}) :
 						await cognito.adminEnableUser({
 							UserPoolId: userPoolId,
 							Username: row[0].userName[0]
-						}).promise();
+						});
 				} else if (row[0].userName.length == 2) {
-					const response2 = (isDeactive) ? await cognito.adminDisableUser({
+					(isDeactive) ? await cognito.adminDisableUser({
 						UserPoolId: userPoolId,
 						Username: row[0].userName[0]
-					}).promise() :
+					}) :
 						await cognito.adminEnableUser({
 							UserPoolId: userPoolId,
 							Username: row[0].userName[0]
-						}).promise();
-					const response3 = (isDeactive) ? await cognito.adminDisableUser({
+						});
+					(isDeactive) ? await cognito.adminDisableUser({
 						UserPoolId: userPoolId,
 						Username: row[0].userName[1]
-					}).promise() :
+					}) :
 						await cognito.adminEnableUser({
 							UserPoolId: userPoolId,
 							Username: row[0].userName[1]
-						}).promise();
+						});
 				}
-			} catch (error) {
-				setError("Warning...Could not initiate reset password.");
-				setOpen(true);
-			}
+
 		}
 		setLoading(true);
 		getUsers(isAdmin, true);
@@ -603,21 +599,21 @@ export default function UserGrid(props) {
 					const response = await cognito.adminDeleteUser({
 						UserPoolId: userPoolId,
 						Username: emailAddress
-					}).promise();
+					});
 				} else if (row[0].userName.length == 1) {
 					const response2 = await cognito.adminDeleteUser({
 						UserPoolId: userPoolId,
 						Username: row[0].userName[0]
-					}).promise();
+					});
 				} else if (row[0].userName.length == 2) {
 					const response2 = await cognito.adminDeleteUser({
 						UserPoolId: userPoolId,
 						Username: row[0].userName[0]
-					}).promise();
+					});
 					const response3 = await cognito.adminDeleteUser({
 						UserPoolId: userPoolId,
 						Username: row[0].userName[1]
-					}).promise();
+					});
 				}
 
 			} catch (error) {

@@ -457,16 +457,16 @@ export default function DivisionGrid(props) {
 									const response = await cognito.adminDeleteUser({
 										UserPoolId: userPoolId,
 										Username: foundUser[0].userName
-									}).promise();
+									});
 								} else {
 									const response2 = await cognito.adminDeleteUser({
 										UserPoolId: userPoolId,
 										Username: foundUser[0].userName
-									}).promise();
+									});
 									const response3 = await cognito.adminDeleteUser({
 										UserPoolId: userPoolId,
 										Username: foundUser[1].userName
-									}).promise();
+									});
 								}
 							} catch (error) {
 							}
