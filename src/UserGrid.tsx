@@ -171,6 +171,7 @@ export default function UserGrid(props) {
 	const [open, setOpen] = useState(false);
 	const [error, setError] = useState('');
 	const [deleteId, setDeleteId] = useState('');
+	const [openSuicide, setOpenSuicide] = useState(false);
 
 	const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
 
@@ -774,6 +775,11 @@ export default function UserGrid(props) {
 	const handleDeleteClick = (id: GridRowId) => () => {
 		setOpen(false);
 		setError('');
+		const row = rows.filter((row) => row.id === id);
+		if (row[0].email == props.userId) {
+			setOpenSuicide(true);
+			return;
+		}
 		setRows(rows.filter((row) => row.id !== id));
 		handleDeletePrep(id);
 	};	
@@ -794,6 +800,10 @@ export default function UserGrid(props) {
 
 	const handleMakeSuperAdmin = (id: GridRowId) => () => {
 		handleSuperAdmin(id);
+	}
+
+	const handleDontDie = () => {
+		setOpenSuicide(false);
 	}
 
 	const handleCancelClick = (id: GridRowId) => () => {
@@ -963,6 +973,23 @@ export default function UserGrid(props) {
 
   return (
 	<React.Fragment>
+    <Dialog
+      open={openSuicide}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">
+        Invalid Delete
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          You are Attempting to delete yourself.   You must have another Admin delete you, or you must delete your division/company and all your data.
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button variant='contained' color='success' onClick={handleDontDie}>Ok</Button>
+      </DialogActions>
+    </Dialog>
       <Dialog
         open={open}
         onClose={handleClose}

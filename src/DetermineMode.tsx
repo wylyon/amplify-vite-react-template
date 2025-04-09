@@ -17,6 +17,9 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
 import PersonIcon from '@mui/icons-material/Person';
 import AddIcon from '@mui/icons-material/Add';
 import LoginIcon from '@mui/icons-material/Login';
@@ -40,6 +43,7 @@ export default function DetermineMode(props) {
   const [isWaiting, setIsWaiting] = useState(true);
   const [mode, setMode] = useState(9);
   const [open, setOpen] = useState(false);
+  const [openCancel, setOpenCancel] = useState(false);
 
   function isMobile () {
     return (window.navigator.userAgent.match(/iPhone/i) || 
@@ -65,6 +69,10 @@ export default function DetermineMode(props) {
 //	        setIsSuperAdmin(false);
 	        return false;
 	      }
+      }
+      if (isMobile()) {
+        setOpenCancel(true);
+        return;
       }
       clearState();
       setMode(2);
@@ -100,7 +108,7 @@ export default function DetermineMode(props) {
       setIsDisabledUser(true);
     } else {
       setFiltered(items.filter(comp => comp.email_address.includes(props.userId)));
-      fetchAdmins (userId, items, isValid, true);
+      fetchAdmins (userId, items, isValid, isValid ? false : true);
       setIsWaiting(false);
     }
   }
@@ -175,8 +183,30 @@ export default function DetermineMode(props) {
     }
   };
 
+  const handleCancel = () => {
+    setOpenCancel(false);
+    props.onSubmitChange(false);
+  }
+
   return (
     <>
+    <Dialog
+      open={openCancel}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">
+        Creating Admin
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          You are Attempting to create Admin via Cell phone...please do this on a laptop.
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button variant='contained' color='success' onClick={handleCancel}>Ok</Button>
+      </DialogActions>
+    </Dialog>
     <Dialog onClose={handleSuperClose} open={open}>
       <DialogTitle>Which Access?</DialogTitle>
       <List sx={{ pt: 0 }}>
