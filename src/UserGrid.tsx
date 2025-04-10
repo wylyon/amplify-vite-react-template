@@ -51,6 +51,7 @@ import PasswordIcon from '@mui/icons-material/Password';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import { resetPassword } from 'aws-amplify/auth';
 import CryptoJS from 'crypto-js';
+import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import { CognitoIdentityProvider } from '@aws-sdk/client-cognito-identity-provider';
 
 interface EditToolbarProps {
@@ -747,10 +748,10 @@ export default function UserGrid(props) {
 			}
 			});
 		try {
-		const response = await cognito.adminResetUserPassword({
-			UserPoolId: userPoolId,
-			Username: emailAddress
-		}).promise();
+			const response = await cognito.adminResetUserPassword({
+				UserPoolId: userPoolId,
+				Username: emailAddress
+		});
 	
 		} catch (error) {
 			setError("Warning...Could not initiate reset password.");
@@ -758,9 +759,34 @@ export default function UserGrid(props) {
 		}
 	  }
 
+	const handleResetRemove = async(emailAddress) => {
+	const cognito = new CognitoIdentityProvider({
+		region: region,
+		credentials: {
+			accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),
+			secretAccessKey: CryptoJS.AES.decrypt(secret, ourWord).toString(CryptoJS.enc.Utf8),
+		}
+		});
+	try {
+		const response = await cognito.adminDeleteUser({
+			UserPoolId: userPoolId,
+			Username: emailAddress
+	});
+
+	} catch (error) {
+		setError("Warning...Could not initiate reset login.");
+		setOpen(true);
+	}
+	}
+
 	const handleReset = (id: GridRowId) => () => {
 		const row = rows.filter((row) => row.id === id);
 		handleResetPassword(row[0].email);
+	}
+
+	const handleResetLogin = (id: GridRowId) => () => {
+		const row = rows.filter((row) => row.id === id);
+		handleResetRemove(row[0].email);
 	}
 
 	const handleActivate = (id: GridRowId) => () => {
@@ -955,6 +981,7 @@ export default function UserGrid(props) {
 				<GridActionsCellItem icon={<PasswordIcon />} label="Reset Password" onClick={handleReset(id)} showInMenu />,
 				<GridActionsCellItem icon={<DeleteOutlineIcon />} label="Deactivate" onClick={handleDeactivate(id)} showInMenu/>,
 				<GridActionsCellItem icon={<AddCircleOutlineIcon />} label="Activate" onClick={handleActivate(id)} showInMenu/>,
+				<GridActionsCellItem icon={<PersonRemoveIcon />} label="Reset Login" onClick={handleResetLogin(id)} showInMenu/>,
 				<GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={handleDelete(id)} showInMenu />,
 				]
 			}
