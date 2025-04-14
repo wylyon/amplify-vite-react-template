@@ -389,11 +389,22 @@ export default function SetupTemplate(props) {
     }
     setIsWaiting(true);
     // first find any questions you have marked for deletion that may still have results.   We will mark these inactive
-    const {errors: questionErrors, data: questionData} = await client.queries.listQuestionsByTemplateId({
+    const {errors: questionErrors, data: questionData} = await client.queries.listQuestionsWithResultsByTemplateId({
       templateId: props.templateId
     });
     if (!questionErrors) {
       // match up each question to our new list...if missing then it is a delete
+      for (var i = 0; i < questionData.length; i++) {
+        const foundMatch = templateQuestion.filter(comp => comp.id == questionData[i].id);
+        if (foundMatch == null || foundMatch.length == 0) {
+          const now = new Date();
+          // mark this puppy as inactive
+          await client.models.template_question.update({
+            id: questionData[i].id,
+            deactive_date: now
+          });
+        }
+      }
     }
     // first delete all existing questions...then add new ones
     try {
