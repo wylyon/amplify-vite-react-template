@@ -388,6 +388,13 @@ export default function SetupTemplate(props) {
       return;
     }
     setIsWaiting(true);
+    // first find any questions you have marked for deletion that may still have results.   We will mark these inactive
+    const {errors: questionErrors, data: questionData} = await client.queries.listQuestionsByTemplateId({
+      templateId: props.templateId
+    });
+    if (!questionErrors) {
+      // match up each question to our new list...if missing then it is a delete
+    }
     // first delete all existing questions...then add new ones
     try {
       await client.mutations.deleteQuestionByTemplateId({
