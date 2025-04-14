@@ -408,7 +408,7 @@ export default function SetupTemplate(props) {
     }
     // first delete all existing questions...then add new ones
     try {
-      await client.mutations.deleteQuestionByTemplateId({
+      await client.mutations.deleteActiveQuestionByTemplateId({
         templateId: props.templateId
       });
     } catch (errors) {

@@ -181,7 +181,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "q.question_order, q.question_type, case when q.question_type = 'photo' then r.result_photo_value when q.question_type = 'datepicker' then r.result_date_value else r.result_option_value end as result, " +
       "r.gps_lat as lat, r.gps_long as lng, r.what3words, r.created, r.created_by, tt.status, tt.reason, tt.last_update FROM logistics.question_result r join logistics.template_question q on q.id = r.template_question_id " +
       "join logistics.transactions tt on tt.id = r.transaction_id join logistics.template t on t.id = q.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id " +
-      "WHERE q.question_type != 'dialog_input' and q.template_id = :templateId order by r.transaction_id, r.created;"
+      "WHERE q.question_type != 'dialog_input' and q.template_id = :templateId and q.deactive_date is null order by r.transaction_id, r.created;"
     )).authorization(allow => allow.publicApiKey()),
     listResultsByTransactionId: a.query()
     .arguments({
@@ -193,7 +193,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "q.question_order, q.question_type, case when q.question_type = 'photo' then r.result_photo_value when q.question_type = 'datepicker' then r.result_date_value else r.result_option_value end as result, " +
       "r.gps_lat as lat, r.gps_long as lng, r.what3words, r.created, r.created_by, tt.status, tt.reason, tt.last_update FROM logistics.question_result r join logistics.template_question q on q.id = r.template_question_id " +
       "join logistics.transactions tt on tt.id = r.transaction_id join logistics.template t on t.id = q.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id " +
-      "WHERE q.question_type != 'dialog_input' and r.transaction_id = :transactionId order by r.transaction_id, r.created;"
+      "WHERE q.question_type != 'dialog_input' and r.transaction_id = :transactionId and q.deactive_date is null order by r.transaction_id, r.created;"
     )).authorization(allow => allow.publicApiKey()),
     summaryResultsByTemplateId: a.query()
     .arguments({
@@ -204,7 +204,7 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
       "SELECT c.name as company, c.id as company_id,  t.title, t.id as template_id, r.transaction_id, count(r.transaction_id) as num_questions, max(r.created) as created, max(what3words) as what3words, " +
       "max(gps_lat) as lattitude, max(gps_long) as longitude, max(r.created_by) as created_by FROM logistics.question_result r " +
       "join logistics.template_question q on q.id = r.template_question_id join logistics.template t on t.id = q.template_id join logistics.division d on d.id = t.division_id join logistics.company c on c.id = d.company_id where template_id = :templateId " +
-      "and q.question_type != 'dialog_input' group by c.name, c.id, t.title, t.id, r.transaction_id order by c.name, c.id, t.title, t.id, r.created;"
+      "and q.question_type != 'dialog_input' and q.deactive_date is null group by c.name, c.id, t.title, t.id, r.transaction_id order by c.name, c.id, t.title, t.id, r.created;"
     )).authorization(allow => allow.publicApiKey()),
     resultsTotals: a.query()
     .arguments({})
