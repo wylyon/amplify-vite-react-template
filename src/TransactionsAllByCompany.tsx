@@ -411,8 +411,8 @@ export default function TransactionsAllByCompany(props) {
 					{props.templateId == null && needTemplate && allTemplates.length > 0 && 
 						<SelectTemplate props={props} templateName={null} theTemplates={allTemplates} setAll={true}
 						onSelectTemplate={onSelectedTemplate} /> }
-					<Typography variant='body1'>Heat Map:</Typography>
-					<Tooltip title="Press to see heat map of each transaction" placement="top">
+					<Typography variant='body1'>Overview Map:</Typography>
+					<Tooltip title="Press to see overview map of each transaction" placement="top">
 						<IconButton aria-label="map" color="primary" size="large" onClick={handleMapIt()}><MapIcon /></IconButton>
 					</Tooltip>
 				</Stack>

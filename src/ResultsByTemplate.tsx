@@ -53,13 +53,15 @@ import { StorageImage } from '@aws-amplify/ui-react-storage';
 import '@aws-amplify/ui-react/styles.css';
 import MapIcon from '@mui/icons-material/Map';
 import MapWithGoogle from '../src/MapWithGoogle';
+import MapMultipleWithGoogleAlt from '../src/MapMultipleWithGoogleAlt';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-import { MenuItem } from '@mui/material';
+import { IconButton, MenuItem } from '@mui/material';
 
 export default function ResultsByTemplate(props) {
 	const [loading, setLoading] = useState(true);
 	const [open, setOpen] = useState(false);
 	const [openMap, setOpenMap] = useState(false);
+	const [openOverviewMap, setOpenOverviewMap] = useState(false);
 	const [openPhoto, setOpenPhoto] = useState(false);
 	const [error, setError] = useState('');
 	const [deleteId, setDeleteId] = useState('');
@@ -89,7 +91,7 @@ export default function ResultsByTemplate(props) {
 		lattitude: null,
 		longitude: null, 
 		status: '',
-		reason: '',
+		notes: '',
 		lastUpdated: null,
 		created: null,
 		createdBy: '',
@@ -126,7 +128,7 @@ export default function ResultsByTemplate(props) {
 				lattitude: item.lat,
 				longitude: item.lng,
 				status: item.status,
-				reason: item.reason,
+				notes: item.reason,
 				lastUpdated: getDate(item.last_update),
 				createdBy: item.created_by,}
 		  );
@@ -178,14 +180,14 @@ export default function ResultsByTemplate(props) {
 					questionType: data[indx].questionType,
 					photoAddress: data[indx].result,
 					status: data[indx].status,
-					reason: data[indx].reason,
+					notes: data[indx].reason,
 					lastUpdated: data[indx].lastUpdated
 				};
 				isNew = false;
 			}
 			const myObject = {};
 			const newPropertyName = data[indx].question;
-			const newPropertyValue = data[indx].result;
+			const newPropertyValue = data[indx].questionType == 'photo' ? '...' : data[indx].result;
 			myObject[newPropertyName] = newPropertyValue;
 			pivotQuestion.push(myObject);
 		}
@@ -371,6 +373,16 @@ export default function ResultsByTemplate(props) {
 		setLoading(false);
 	}
 
+	const handleOverviewMapIt = () => () => {
+		if (userData.length > 0) {
+			setLoading(true);
+			const row = userData.filter((row) => row.lattitude > 0);
+			setMapKeyId(row[0].id);
+			setOpenOverviewMap(true);
+			setLoading(false);
+		}
+	}
+
 	const handlePhoto = (id: GridRowId) => () => {
 		const row = theGrid.filter((row) => row.transactionId == id);
 		if (row.length < 1) {
@@ -389,6 +401,12 @@ export default function ResultsByTemplate(props) {
 
 	const handleCloseMap = () => {
 		setOpenMap(false);
+		setLat(0);
+		setLng(0);
+	}
+
+	const handleOverviewCloseMap = () => {
+		setOpenOverviewMap(false);
 		setLat(0);
 		setLng(0);
 	}
@@ -458,7 +476,7 @@ const columns: GridColDef[] = [
 			return '';
 		}
 	},
-	{ field: 'reason', headerName: 'Reason', width: 120, headerClassName: 'grid-headers'},
+	{ field: 'notes', headerName: 'Notes', width: 120, headerClassName: 'grid-headers'},
 	{ field: 'lastUpdated', type: 'dateTime', headerName: 'Updated', width: 100, headerClassName: 'grid-headers'},
 	{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
 		type: 'actions',
@@ -555,10 +573,33 @@ function CustomToolbar() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog
+        open={openOverviewMap}
+		maxWidth="xl"
+        onClose={handleOverviewCloseMap}
+        aria-labelledby="map-dialog-title"
+        aria-describedby="map-dialog-description"
+      >
+        <DialogTitle id="map-dialog-title">
+          Map of Transactions
+        </DialogTitle>
+        <DialogContent>
+			<MapMultipleWithGoogleAlt props={props} markers={userData} googleAPI={props.googleAPI} />		
+        </DialogContent>
+        <DialogActions>
+          <Button variant='contained' color='error' onClick={handleOverviewCloseMap} autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
 	<Stack>
 		<Stack direction="row" spacing={2} >
 			{props.transactionId == null && needTemplate && allTemplates.length > 0 && 
 				<SelectTemplate props={props} templateName={userData.length > 0 ? userData[0].template : null} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} setAll={false}/> }
+			<Typography variant='body1'>Overview Map:</Typography>
+			<Tooltip title="Press to see overview map of each transaction" placement="top">
+				<IconButton aria-label="map" color="primary" size="large" onClick={handleOverviewMapIt()}><MapIcon /></IconButton>
+			</Tooltip>
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid

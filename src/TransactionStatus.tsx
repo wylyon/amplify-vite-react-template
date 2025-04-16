@@ -57,16 +57,19 @@ import MapIcon from '@mui/icons-material/Map';
 import MapWithGoogle from '../src/MapWithGoogle';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import CircularProgress from '@mui/material/CircularProgress';
-import { MenuItem } from '@mui/material';
+import { IconButton, MenuItem } from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import MapMultipleWithGoogleAlt from '../src/MapMultipleWithGoogleAlt';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { remove } from 'aws-amplify/storage';
 
 export default function TransactionStatus(props) {
 	const [loading, setLoading] = useState(true);
 	const [open, setOpen] = useState(false);
 	const [isWaiting, setIsWaiting] = useState(false);
 	const [openMap, setOpenMap] = useState(false);
+	const [openOverviewMap, setOpenOverviewMap] = useState(false);
 	const [openPhoto, setOpenPhoto] = useState(false);
 	const [error, setError] = useState('');
 	const [deleteId, setDeleteId] = useState('');
@@ -103,7 +106,7 @@ export default function TransactionStatus(props) {
 		lattitude: null,
 		longitude: null, 
 		status: '',
-		reason: '',
+		notes: '',
 		lastUpdated: null,
 		created: null,
 		createdBy: '',
@@ -140,7 +143,7 @@ export default function TransactionStatus(props) {
 				lattitude: item.lat,
 				longitude: item.lng,
 				status: item.status,
-				reason: item.reason,
+				notes: item.reason,
 				lastUpdated: getDate(item.last_update),
 				createdBy: item.created_by,}
 		  );
@@ -192,14 +195,14 @@ export default function TransactionStatus(props) {
 					questionType: data[indx].questionType,
 					photoAddress: data[indx].result,
 					status: data[indx].status,
-					reason: data[indx].reason,
+					notes: data[indx].reason,
 					lastUpdated: data[indx].lastUpdated
 				};
 				isNew = false;
 			}
 			const myObject = {};
 			const newPropertyName = data[indx].question;
-			const newPropertyValue = data[indx].result;
+			const newPropertyValue = data[indx].questionType == 'photo' ? '...' : data[indx].result;
 			myObject[newPropertyName] = newPropertyValue;
 			pivotQuestion.push(myObject);
 		}
@@ -302,7 +305,7 @@ export default function TransactionStatus(props) {
 			if (arr[indx].transactionId == id) {
 				const newObj = arr[indx];
 				newObj.status = newStatus;
-				newObj.reason = newReason;
+				newObj.notes = newReason;
 				newObj.lastUpdated = now;
 				newUserData[indx] = newObj;
 			} else {
@@ -382,7 +385,7 @@ export default function TransactionStatus(props) {
 		}
 		setTranyId(id);
 		setStatus(row[0].status);
-		setReason(row[0].reason);
+		setReason(row[0].notes);
 		setOpenStatus(true);
 	}
 
@@ -398,14 +401,30 @@ export default function TransactionStatus(props) {
 	const handleDeleteTransaction = async() => {
 		setOpenDelete(false);
 		setIsWaiting(true);
+		// delete any pictures first
+		const row = theGrid.filter((row) => row.transactionId == tranyId);
+		if (row.length > 0 && row[0].questionType == 'photo') {
+			try {
+				const result = await remove({
+					path: `picture-submissions/${row[0].createdBy}/${row[0].photoAddress}`,
+				});
+			} catch (error) {
+				console.log('Error ', error);
+			}
+		}
+		await client.mutations.deleteResultsByTransactionId({
+			transactionId: tranyId
+		});
 		const { errors, data: items } = await client.models.transactions.delete({
-			id: id
+			id: tranyId
 		});
 		if (errors) {
 			setError(errors[0].message);
 			setOpen(true);	
 		}
+		setTranyId(null);
 		setIsWaiting(false);
+		allResultTemplates();
 	}
 
 	const handleStatus = (statusType, id: GridRowId) => () => {
@@ -415,8 +434,8 @@ export default function TransactionStatus(props) {
 		}
 		setTranyId(id);
 		setStatus(statusType);
-		setReason(row[0].reason);
-		updateTransaction(id, statusType, row[0].reason);
+		setReason(row[0].notes);
+		updateTransaction(id, statusType, row[0].notes);
 	}
 
 	const handleBatchStatus = () => {
@@ -424,6 +443,22 @@ export default function TransactionStatus(props) {
 		setStatus('Open');
 		setReason('');
 		setOpenStatus(true);
+	}
+
+	const handleOverviewMapIt = () => () => {
+		if (userData.length > 0) {
+			setLoading(true);
+			const row = userData.filter((row) => row.lattitude > 0);
+			setMapKeyId(row[0].id);
+			setOpenOverviewMap(true);
+			setLoading(false);
+		}
+	}
+
+	const handleOverviewCloseMap = () => {
+		setOpenOverviewMap(false);
+		setLat(0);
+		setLng(0);
 	}
 
 	const handleMapIt = (id: GridRowId) => () => {
@@ -567,7 +602,7 @@ const columns: GridColDef[] = [
 			return '';
 		}
 	},
-	{ field: 'reason', headerName: 'Notes', width: 120, headerClassName: 'grid-headers'},
+	{ field: 'notes', headerName: 'Notes', width: 120, headerClassName: 'grid-headers'},
 	{ field: 'lastUpdated', type: 'dateTime', headerName: 'Updated', width: 100, headerClassName: 'grid-headers'},
 	{ field: 'mapPicActions', headerName: 'Map/Picture', headerClassName: 'grid-headers',
 		type: 'actions',
@@ -677,6 +712,25 @@ function CustomToolbar() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog
+        open={openOverviewMap}
+		maxWidth="xl"
+        onClose={handleOverviewCloseMap}
+        aria-labelledby="map-dialog-title"
+        aria-describedby="map-dialog-description"
+      >
+        <DialogTitle id="map-dialog-title">
+          Map of Transactions
+        </DialogTitle>
+        <DialogContent>
+			<MapMultipleWithGoogleAlt props={props} markers={userData} googleAPI={props.googleAPI} />		
+        </DialogContent>
+        <DialogActions>
+          <Button variant='contained' color='error' onClick={handleOverviewCloseMap} autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
 	  {isWaiting && <CircularProgress />}
 	  {openStatus && <PopupStatus props={props} id={tranyId} status={status} reasons={reason} onStatus={handleOnStatus} onStatusClosed={handleOnStatusClosed}/>}
 	<Stack>
@@ -690,6 +744,10 @@ function CustomToolbar() {
 				<ToggleButton value="Closed" aria-label='filter closed' sx={{ backgroundColor: '#2196F3'}}>Closed</ToggleButton>
 			</ToggleButtonGroup>
 			<Button variant="contained" color="primary" aria-label="change status" disabled={batchIds.length == 0} onClick={handleBatchStatus}>Update Status For Selected Items</Button>
+			<Typography variant='body1'>Overview Map:</Typography>
+			<Tooltip title="Press to see overview map of each transaction" placement="top">
+				<IconButton aria-label="map" color="primary" size="large" onClick={handleOverviewMapIt()}><MapIcon /></IconButton>
+			</Tooltip>
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
