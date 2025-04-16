@@ -26,8 +26,8 @@ const cognitoAuthConfigProd = {
 };
 
 const cognitoAuthConfigDev = {
-  authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_B8X7g6van",
-  client_id: "3tsf96nb6oei8f6atca2isk8ds",
+  authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_mhpW4BB3Y",
+  client_id: "6t5dpvs95gmjao2l33e0gb7a0p",
   redirect_uri: "http://localhost:5173",
   response_type: "code",
   scope: "aws.cognito.signin.user.admin email openid phone profile",

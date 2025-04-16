@@ -60,6 +60,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { MenuItem } from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function TransactionStatus(props) {
 	const [loading, setLoading] = useState(true);
@@ -82,6 +83,7 @@ export default function TransactionStatus(props) {
 	const [tranyId, setTranyId] = useState(null);
 	const [statusFilter, setStatusFilter] = useState('All');
 	const [batchIds, setBatchIds] = useState([]);
+	const [openDelete, setOpenDelete] = useState(false);
 
 	const client = generateClient<Schema>();
 	const [userData, setUserData] = useState([{
@@ -297,7 +299,7 @@ export default function TransactionStatus(props) {
 		const newUserData = [];
 		const now = new Date();
 		for (var indx = 0; indx < arr.length; indx++) {
-			if (userData[indx].transactionId == id) {
+			if (arr[indx].transactionId == id) {
 				const newObj = arr[indx];
 				newObj.status = newStatus;
 				newObj.reason = newReason;
@@ -384,6 +386,28 @@ export default function TransactionStatus(props) {
 		setOpenStatus(true);
 	}
 
+	const handleDelete = (id: GridRowId) => () => {
+		const row = theGrid.filter((row) => row.transactionId == id);
+		if (row.length < 1) {
+			return;
+		}
+		setTranyId(id);
+		setOpenDelete(true);
+	}
+
+	const handleDeleteTransaction = async() => {
+		setOpenDelete(false);
+		setIsWaiting(true);
+		const { errors, data: items } = await client.models.transactions.delete({
+			id: id
+		});
+		if (errors) {
+			setError(errors[0].message);
+			setOpen(true);	
+		}
+		setIsWaiting(false);
+	}
+
 	const handleStatus = (statusType, id: GridRowId) => () => {
 		const row = theGrid.filter((row) => row.transactionId == id);
 		if (row.length < 1) {
@@ -451,6 +475,11 @@ export default function TransactionStatus(props) {
 		setDeleteId('');
 	};
 
+	const handleCloseDelete = () => {
+		setOpenDelete(false);
+		setTranyId(null);
+	}
+
 	const handleCloseMap = () => {
 		setOpenMap(false);
 		setLat(0);
@@ -468,9 +497,8 @@ const actionColumns: GridColDef[] = [
 		width: 80,
 		getActions: ({ id }) => {
 			return [
-			<Tooltip title="Press to edit Status and Reason." placement="top">
-				<GridActionsCellItem icon={<EditAttributesIcon />} label="Edit Status/Reason" color='primary' onClick={handleEditIt(id)} />
-			</Tooltip>,
+			<GridActionsCellItem icon={<EditAttributesIcon />} label="Edit Status/Reason" color='primary' onClick={handleEditIt(id)} showInMenu/>,
+			<GridActionsCellItem icon={<DeleteIcon />} label="Delete a Transaction" color='primary' onClick={handleDelete(id)} showInMenu/>,
 			<GridActionsCellItem sx={{ backgroundColor: '#73AD21'}} label='Set Status OPEN' onClick={handleStatus('Open', id)} showInMenu/>,
 			<GridActionsCellItem sx={{ backgroundColor: 'burlywood'}} label='Set Status PENDING' onClick={handleStatus('Pending', id)} showInMenu/>,
 			<GridActionsCellItem sx={{ backgroundColor: '#2196F3'}} label='Set Status CLOSED' onClick={handleStatus('Closed', id)} showInMenu/>,
@@ -569,6 +597,27 @@ function CustomToolbar() {
 
   return (
 	<React.Fragment>
+      <Dialog
+        open={openDelete}
+        onClose={handleCloseDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Are You Sure?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete this transaction and Results?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+			    <Button variant='contained' color='success' onClick={handleDeleteTransaction}>Delete</Button>
+          <Button variant='contained' color='error' onClick={handleCloseDelete} autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog
         open={open}
         onClose={handleClose}

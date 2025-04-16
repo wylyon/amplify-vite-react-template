@@ -364,6 +364,12 @@ const sqlSchema = generatedSqlSchema.authorization(allow => allow.publicApiKey()
     .returns(a.json().array())
     .handler(a.handler.inlineSql("DELETE from logistics.transactions WHERE template_id = :templateId;"))
     .authorization(allow => allow.publicApiKey()),
+    deleteResultsByTransactionId: a.mutation().arguments({
+      transactionId: a.string().required()
+    })
+    .returns(a.json().array())
+    .handler(a.handler.inlineSql("DELETE from logistics.question_result WHERE transaction_id = :transactionId;"))
+    .authorization(allow => allow.publicApiKey()),
     backupTransactionsByTemplateId: a.mutation().arguments({
       templateId: a.string().required()
     })
