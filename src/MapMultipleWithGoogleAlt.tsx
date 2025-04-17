@@ -1,5 +1,8 @@
 import React from 'react'
 import { useState} from "react";
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api'
 
 const containerStyle = {
@@ -34,7 +37,8 @@ export default function MapMultipleWithGoogleAlt(props) {
     setMap(null)
   }, [])
 
-  return isLoaded ? (
+  return   isLoaded ? (
+    <React.Fragment>
     <GoogleMap
       mapContainerStyle={containerStyle}
       center={center}
@@ -46,7 +50,7 @@ export default function MapMultipleWithGoogleAlt(props) {
         <Marker
           position={{ lat: marker.lattitude, lng: marker.longitude }}
           key={marker.id}
-          label={"(" + marker.status + ")"}
+          label={props.points ? "(" + marker.status + ")" : null}
           onMouseOver={(m) => {
               setSelectedCenter(marker);
               setCenter( { lat: marker.lattitude, lng: marker.longitude});
@@ -69,9 +73,10 @@ export default function MapMultipleWithGoogleAlt(props) {
         lng: selectedCenter.longitude
       }}
       options={{ pixelOffset: new window.google.maps.Size(0, -40)}}
-   ><div><p><b>{"Transaction status of " + selectedCenter.status + (selectedCenter.reason && selectedCenter.reason != null ? ' - ' + selectedCenter.reason : '')}</b></p><p>{'Created ' + selectedCenter.created}</p><p>{'by ' + selectedCenter.createdBy}</p></div></InfoWindow> )}
+   ><div><p><b>{"Transaction status of " + selectedCenter.status + (selectedCenter.notes && selectedCenter.notes != null ? ' - ' + selectedCenter.notes : '')}</b></p><p>{'Created ' + selectedCenter.created}</p><p>{'by ' + selectedCenter.createdBy}</p></div></InfoWindow> )}
       <></>
     </GoogleMap>
+    </React.Fragment>
   ) : (
     <></>
   )

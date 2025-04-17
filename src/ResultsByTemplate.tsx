@@ -72,7 +72,7 @@ export default function ResultsByTemplate(props) {
 	const [mapKeyId, setMapKeyId] = useState('');
 	const [photo, setPhoto] = useState('');
 	const [columnsNew, setColumns] = useState<GridColDef[]>([]);
-
+	const [showPoints, setShowPoints] = useState(false);
 	const client = generateClient<Schema>();
 	const [userData, setUserData] = useState([{
 		id: '',
@@ -304,6 +304,10 @@ export default function ResultsByTemplate(props) {
 		}
 	  }
 	}
+
+	const handleStatusPoints = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setShowPoints(event.target.checked);
+	  };
 
 	const handleRowChangeEvent: GridEventListener<'rowCountChange'> = (params, event, details) => {
 		//setLoading(false);
@@ -584,7 +588,10 @@ function CustomToolbar() {
           Map of Transactions
         </DialogTitle>
         <DialogContent>
-			<MapMultipleWithGoogleAlt props={props} markers={userData} googleAPI={props.googleAPI} />		
+			<FormGroup>
+				<FormControlLabel control={<Switch onChange={handleStatusPoints} />} label="Show Status Points" />
+			</FormGroup>
+			<MapMultipleWithGoogleAlt props={props} markers={userData} points={showPoints} googleAPI={props.googleAPI} />		
         </DialogContent>
         <DialogActions>
           <Button variant='contained' color='error' onClick={handleOverviewCloseMap} autoFocus>
@@ -596,9 +603,8 @@ function CustomToolbar() {
 		<Stack direction="row" spacing={2} >
 			{props.transactionId == null && needTemplate && allTemplates.length > 0 && 
 				<SelectTemplate props={props} templateName={userData.length > 0 ? userData[0].template : null} theTemplates={allTemplates} onSelectTemplate={onSelectedTemplate} setAll={false}/> }
-			<Typography variant='body1'>Overview Map:</Typography>
 			<Tooltip title="Press to see overview map of each transaction" placement="top">
-				<IconButton aria-label="map" color="primary" size="large" onClick={handleOverviewMapIt()}><MapIcon /></IconButton>
+				<Button variant="contained" color="secondary" aria-label="overview map" onClick={handleOverviewMapIt()} startIcon={<MapIcon />}>Overview Map</Button>
 			</Tooltip>
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>

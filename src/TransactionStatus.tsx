@@ -87,6 +87,7 @@ export default function TransactionStatus(props) {
 	const [statusFilter, setStatusFilter] = useState('All');
 	const [batchIds, setBatchIds] = useState([]);
 	const [openDelete, setOpenDelete] = useState(false);
+	const [showPoints, setShowPoints] = useState(false);
 
 	const client = generateClient<Schema>();
 	const [userData, setUserData] = useState([{
@@ -195,7 +196,7 @@ export default function TransactionStatus(props) {
 					questionType: data[indx].questionType,
 					photoAddress: data[indx].result,
 					status: data[indx].status,
-					notes: data[indx].reason,
+					notes: data[indx].notes,
 					lastUpdated: data[indx].lastUpdated
 				};
 				isNew = false;
@@ -494,6 +495,10 @@ export default function TransactionStatus(props) {
 		setOpenStatus(false);
 	}
 	
+	const handleStatusPoints = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setShowPoints(event.target.checked);
+	  };
+
 	const handlePhoto = (id: GridRowId) => () => {
 		const row = theGrid.filter((row) => row.transactionId == id);
 		if (row.length < 1) {
@@ -723,7 +728,10 @@ function CustomToolbar() {
           Map of Transactions
         </DialogTitle>
         <DialogContent>
-			<MapMultipleWithGoogleAlt props={props} markers={userData} googleAPI={props.googleAPI} />		
+			<FormGroup>
+				<FormControlLabel control={<Switch onChange={handleStatusPoints} />} label="Show Status Points" />
+			</FormGroup>
+			<MapMultipleWithGoogleAlt props={props} points={showPoints} markers={userData} googleAPI={props.googleAPI} />		
         </DialogContent>
         <DialogActions>
           <Button variant='contained' color='error' onClick={handleOverviewCloseMap} autoFocus>
@@ -744,9 +752,8 @@ function CustomToolbar() {
 				<ToggleButton value="Closed" aria-label='filter closed' sx={{ backgroundColor: '#2196F3'}}>Closed</ToggleButton>
 			</ToggleButtonGroup>
 			<Button variant="contained" color="primary" aria-label="change status" disabled={batchIds.length == 0} onClick={handleBatchStatus}>Update Status For Selected Items</Button>
-			<Typography variant='body1'>Overview Map:</Typography>
 			<Tooltip title="Press to see overview map of each transaction" placement="top">
-				<IconButton aria-label="map" color="primary" size="large" onClick={handleOverviewMapIt()}><MapIcon /></IconButton>
+				<Button variant="contained" color="secondary" aria-label="overview map" onClick={handleOverviewMapIt()} startIcon={<MapIcon />}>Overview Map</Button>
 			</Tooltip>
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
