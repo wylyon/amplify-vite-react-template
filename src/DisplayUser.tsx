@@ -333,6 +333,12 @@ export default function DisplayUser(props) {
           if (fileArr.length == 2) {
             newFileName = newFileName + "." + fileArr[1];
           }
+          const newFileArr = newFileName.split(".");
+          if (newFileArr.length == 2) {
+            if (newFileArr[0] == 'image') {
+              newFileName = uuidv4() + "." + newFileArr[1];
+            }
+          }
           const result = await uploadData({
             path: `picture-submissions/${props.userId}/${newFileName}`,
             data: file,
@@ -372,8 +378,9 @@ export default function DisplayUser(props) {
       }
   }
   
-  const saveAllResults = async () => {
+  const saveAllResults = async (lt, lg, w3w) => {
     setIsWaiting(true);
+    await saveTransaction(lt, lg, w3w);
     for (var indx = 0; indx < results.length; indx++) {
       if (results[indx].type != 'dialog_input' && results[indx].value != null) {
         await saveResults(results[indx].id, results[indx].value, results[indx].type, results[indx].file, results[indx].lat, results[indx].long, results[indx].what3words);
@@ -404,8 +411,7 @@ export default function DisplayUser(props) {
           }
         }
       });
-      saveTransaction(lt, lg, w3w);
-      saveAllResults();
+      saveAllResults(lt, lg, w3w);
   };
 
   function getNonDialogQuestion (index) {
