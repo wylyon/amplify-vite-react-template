@@ -51,7 +51,7 @@ export default function DetermineMode(props) {
   }
 
   function isTablet () {
-    return (navigator.userAgent.match(/Tablet|iPad|iPod|Android/i) || (window.innerWidth <= 1280 && window.innerHeight >= 800));
+    return (navigator.userAgent.match(/Tablet|iPad|iPod|Android/i) || (window.innerWidth < 1280 && window.innerHeight < 700));
   }
 
   const fetchAdmins = (emailId, items, isValid, isRecycle) => {

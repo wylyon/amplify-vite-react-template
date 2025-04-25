@@ -62,7 +62,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import MapMultipleWithGoogleAlt from '../src/MapMultipleWithGoogleAlt';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { remove } from 'aws-amplify/storage';
+import { remove, downloadData } from 'aws-amplify/storage';
 
 export default function TransactionStatus(props) {
 	const [loading, setLoading] = useState(true);
@@ -531,6 +531,12 @@ export default function TransactionStatus(props) {
 		setPhoto('');
 	}
 
+const handleDownloadPhoto = async() => {
+	const { body, eTag } = await downloadData({
+		path: "picture-submissions/" + photo
+	}).result;
+}
+
 const actionColumns: GridColDef[] = [
 	{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
 		type: 'actions',
@@ -694,9 +700,8 @@ function CustomToolbar() {
 		  {photo != '' ? <StorageImage alt={photo} path={"picture-submissions/" + photo}/> : "<< No Photo Available >>" }
         </DialogContent>
         <DialogActions>
-          <Button variant='contained' color='error' onClick={handleClosePhoto} autoFocus>
-            Cancel
-          </Button>
+		  <Button variant='contained' disabled={photo == ''} color='primary' onClick={handleDownloadPhoto}>Download</Button>
+          <Button variant='contained' color='error' onClick={handleClosePhoto} autoFocus>Cancel</Button>
         </DialogActions>
       </Dialog>
       <Dialog

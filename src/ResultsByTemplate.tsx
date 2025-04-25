@@ -56,6 +56,7 @@ import MapWithGoogle from '../src/MapWithGoogle';
 import MapMultipleWithGoogleAlt from '../src/MapMultipleWithGoogleAlt';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { IconButton, MenuItem } from '@mui/material';
+import { downloadData } from 'aws-amplify/storage';
 
 export default function ResultsByTemplate(props) {
 	const [loading, setLoading] = useState(true);
@@ -420,6 +421,12 @@ export default function ResultsByTemplate(props) {
 		setPhoto('');
 	}
 
+	const handleDownloadPhoto = async() => {
+		const { body, eTag } = await downloadData({
+			path: "picture-submissions/" + photo
+		}).result;
+	}
+
 const columns: GridColDef[] = [
 	{ field: 'id', headerName: 'Id'},
 	{ field: 'company', 
@@ -554,9 +561,8 @@ function CustomToolbar() {
 		  {photo != '' ? <StorageImage alt={photo} path={"picture-submissions/" + photo}/> : "<< No Photo Available >>" }
         </DialogContent>
         <DialogActions>
-          <Button variant='contained' color='error' onClick={handleClosePhoto} autoFocus>
-            Cancel
-          </Button>
+			<Button variant='contained' disabled={photo == ''} color='primary' onClick={handleDownloadPhoto}>Download</Button>
+          	<Button variant='contained' color='error' onClick={handleClosePhoto} autoFocus>Cancel</Button>
         </DialogActions>
       </Dialog>
       <Dialog

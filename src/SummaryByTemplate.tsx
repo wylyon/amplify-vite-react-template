@@ -371,7 +371,11 @@ export default function SummaryByTemplate(props) {
 				onColumnVisibilityModelChange={(newCompany) =>
 					setColumnVisibilityModel(newCompany)
 				}
-				initialState={{ pagination: { paginationModel: { pageSize: 10} } }}
+				initialState={{ pagination: { paginationModel: { pageSize: 10} },
+					sorting: {
+						sortModel: [{ field: 'latestPosting', sort: 'desc'}]
+					}
+				}}
 				pageSizeOptions={[10, 20, 50, 100, { value: -1, label: 'All'}]}
 				onRowClick={handleRowClick}
 				onRowCountChange={handleRowChangeEvent}
