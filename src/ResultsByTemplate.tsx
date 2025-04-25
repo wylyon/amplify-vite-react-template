@@ -421,10 +421,16 @@ export default function ResultsByTemplate(props) {
 		setPhoto('');
 	}
 
-	const handleDownloadPhoto = async() => {
+	const monitorDownloadPhoto = async() => {
 		const { body, eTag } = await downloadData({
 			path: "picture-submissions/" + photo
 		}).result;
+	}
+	
+	const handleDownloadPhoto = async() => {
+		setLoading(true);
+		await monitorDownloadPhoto();
+		setLoading(false);
 	}
 
 const columns: GridColDef[] = [

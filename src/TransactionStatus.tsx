@@ -531,11 +531,17 @@ export default function TransactionStatus(props) {
 		setPhoto('');
 	}
 
-const handleDownloadPhoto = async() => {
-	const { body, eTag } = await downloadData({
-		path: "picture-submissions/" + photo
-	}).result;
-}
+	const monitorDownloadPhoto = async() => {
+		const { body, eTag } = await downloadData({
+			path: "picture-submissions/" + photo
+		}).result;
+	}
+	
+	const handleDownloadPhoto = async() => {
+		setLoading(true);
+		await monitorDownloadPhoto();
+		setLoading(false);
+	}
 
 const actionColumns: GridColDef[] = [
 	{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
