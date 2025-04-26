@@ -57,6 +57,7 @@ import MapMultipleWithGoogleAlt from '../src/MapMultipleWithGoogleAlt';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { IconButton, MenuItem } from '@mui/material';
 import { downloadData } from 'aws-amplify/storage';
+import DownloadIcon from '@mui/icons-material/Download';
 
 export default function ResultsByTemplate(props) {
 	const [loading, setLoading] = useState(true);
@@ -421,10 +422,25 @@ export default function ResultsByTemplate(props) {
 		setPhoto('');
 	}
 
+
+	const saveBlob = (blob, filename) => {
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename || 'download';
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	  };
+
 	const monitorDownloadPhoto = async() => {
-		const { body, eTag } = await downloadData({
+		const downloadResult = await downloadData({
 			path: "picture-submissions/" + photo
 		}).result;
+		const fileName = photo.split("/")[1];
+		const myFile = await downloadResult.body.blob();
+		saveBlob(myFile, fileName);
 	}
 	
 	const handleDownloadPhoto = async() => {
@@ -567,7 +583,7 @@ function CustomToolbar() {
 		  {photo != '' ? <StorageImage alt={photo} path={"picture-submissions/" + photo}/> : "<< No Photo Available >>" }
         </DialogContent>
         <DialogActions>
-			<Button variant='contained' disabled={photo == ''} color='primary' onClick={handleDownloadPhoto}>Download</Button>
+			<Button variant='contained' startIcon={<DownloadIcon />} disabled={photo == ''} color='primary' onClick={handleDownloadPhoto}>Download</Button>
           	<Button variant='contained' color='error' onClick={handleClosePhoto} autoFocus>Cancel</Button>
         </DialogActions>
       </Dialog>

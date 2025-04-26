@@ -9,7 +9,7 @@ export function AppLog(props) {
   const domain = window.location.hostname;
 
   const signOutRedirect = () => {
-    const clientId = domain.includes('localhost') ? "l5m5lsuj4m1oe4hj42oq1qqkc" : "5hulpf92bf14aevl7r8els5okp";
+    const clientId = domain.includes('localhost') ? "3q1u66rgg47fl30mnf82lhu8on" : "5hulpf92bf14aevl7r8els5okp";
     const logoutUri = domain.includes('localhost') ? "http://localhost:5173" : "https://logit-app.pro/";
     const cognitoDomain = domain.includes('localhost') ? "https://c4ec69b5fbb16a799515.auth.us-east-1.amazoncognito.com" : "https://6abf3bd3517b8b0c5de5.auth.us-east-1.amazoncognito.com";
 //    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
