@@ -101,6 +101,24 @@ export default function ResultsByTemplate(props) {
 
 	  var theGrid = [];
 	const apiRef = useGridApiRef();
+	const visibilityJSON = localStorage.getItem("resultsByTemplate_visibility");
+	const visibilityModel = (visibilityJSON) ? JSON.parse(visibilityJSON) : {
+		id: false,
+		company: false,
+      	companyId: false,
+	  	templateId: false,
+	  	divisionId: false,
+	  	division: false,
+	  	template: false,
+	  	transactionId: false,
+	  	question: false,
+	  	result: false
+    };
+	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>(visibilityModel);
+	const filterJSON = localStorage.getItem("resultsByTemplate_filter");
+	const initialFilterModel = (filterJSON) ? JSON.parse(filterJSON) : {items: []};
+	const [filterModel, setFilterModel] = useState<GridFilterModel>(initialFilterModel);
+
 	function getDate(value) {
 		if (value == null) {
 			return null
@@ -314,19 +332,6 @@ export default function ResultsByTemplate(props) {
 	const handleRowChangeEvent: GridEventListener<'rowCountChange'> = (params, event, details) => {
 		//setLoading(false);
 	}
-
-	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
-		id: false,
-		company: false,
-      	companyId: false,
-	  	templateId: false,
-	  	divisionId: false,
-	  	division: false,
-	  	template: false,
-	  	transactionId: false,
-	  	question: false,
-	  	result: false
-    });
 
 	function handleRowClick (params, event, details) {
 	}
@@ -644,9 +649,16 @@ function CustomToolbar() {
 				getRowHeight={() => 'auto'}
 				getRowId={(row) => row.transactionId}
 				columnVisibilityModel={columnVisibilityModel}
-				onColumnVisibilityModelChange={(newCompany) =>
-					setColumnVisibilityModel(newCompany)
+				onColumnVisibilityModelChange={(newCompany) => {
+					localStorage.setItem("resultsByTemplate_visibility", JSON.stringify(newCompany));
+					setColumnVisibilityModel(newCompany);
 				}
+				}
+				filterModel={filterModel}
+				onFilterModelChange={(newCompany) => {
+					localStorage.setItem("resultsByTemplate_filter", JSON.stringify(newCompany));
+					setFilterModel(newCompany);
+				}}
 				initialState={{ 
 					pagination: { paginationModel: { pageSize: 10} },
 					sorting: {
