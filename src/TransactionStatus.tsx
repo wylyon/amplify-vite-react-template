@@ -116,6 +116,26 @@ export default function TransactionStatus(props) {
 
 	  var theGrid = userData.length > 0 ? userData : [];
 	const apiRef = useGridApiRef();
+	const visibilityJSON = localStorage.getItem("transactionStatus_visibility");
+	const visibilityModel = (visibilityJSON) ? JSON.parse(visibilityJSON) : {
+		id: false,
+		company: false,
+      	companyId: false,
+	  	templateId: false,
+	  	divisionId: false,
+	  	division: false,
+	  	template: false,
+	  	transactionId: false,
+	  	question: false,
+	  	result: false,
+		what3words: false,
+		lattitude: false,
+		longitude: false
+    };
+	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>(visibilityModel);
+	const filterJSON = localStorage.getItem("transactionStatus_filter");
+	const initialFilterModel = (filterJSON) ? JSON.parse(filterJSON) : {items: []};
+	const [filterModel, setFilterModel] = useState<GridFilterModel>(initialFilterModel);
 	function getDate(value) {
 		if (value == null) {
 			return null
@@ -356,22 +376,6 @@ export default function TransactionStatus(props) {
 	const handleRowChangeEvent: GridEventListener<'rowCountChange'> = (params, event, details) => {
 		//setLoading(false);
 	}
-
-	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
-		id: false,
-		company: false,
-      	companyId: false,
-	  	templateId: false,
-	  	divisionId: false,
-	  	division: false,
-	  	template: false,
-	  	transactionId: false,
-	  	question: false,
-	  	result: false,
-		what3words: false,
-		lattitude: false,
-		longitude: false
-    });
 
 	function handleRowClick (params, event, details) {
 	}
@@ -793,9 +797,15 @@ function CustomToolbar() {
 				columnVisibilityModel={columnVisibilityModel}
 				checkboxSelection
 				disableRowSelectionOnClick
-				onColumnVisibilityModelChange={(newCompany) =>
+				onColumnVisibilityModelChange={(newCompany) => {
+					localStorage.setItem("transactionStatus_visibility", JSON.stringify(newCompany));
 					setColumnVisibilityModel(newCompany)
-				}
+				}}
+				filterModel={filterModel}
+				onFilterModelChange={(newCompany) => {
+					localStorage.setItem("transactionStatus_filter", JSON.stringify(newCompany));
+					setFilterModel(newCompany);
+				}}
 				initialState={{ 
 					pagination: { paginationModel: { pageSize: 10} },
 					sorting: {

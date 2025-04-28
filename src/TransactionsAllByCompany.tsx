@@ -95,6 +95,17 @@ export default function TransactionsAllByCompany(props) {
 		locationId: 0
 	  }]);
 
+	  const visibilityJSON = localStorage.getItem("transactions_visibility");
+	  const visibilityModel = (visibilityJSON) ? JSON.parse(visibilityJSON) : {
+		id: false,
+      	companyId: false,
+	  	templateId: false,
+	  };
+	  const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>(visibilityModel);
+	  const filterJSON = localStorage.getItem("transactions_filter");
+	  const initialFilterModel = (filterJSON) ? JSON.parse(filterJSON) : {items: []};
+	  const [filterModel, setFilterModel] = useState<GridFilterModel>(initialFilterModel);
+
 	  function getDate(value) {
 		if (value == null) {
 			return null
@@ -228,12 +239,6 @@ export default function TransactionsAllByCompany(props) {
 	const handleRowChangeEvent: GridEventListener<'rowCountChange'> = (params, event, details) => {
 		//setLoading(false);
 	}
-
-	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
-		id: false,
-      companyId: false,
-	  templateId: false,
-    });
 
 	const handleSelectChange = (e) => {
 		setLoading(true);
@@ -423,10 +428,21 @@ export default function TransactionsAllByCompany(props) {
 					loading={loading}
 					columns={columns}
 					columnVisibilityModel={columnVisibilityModel}
-					onColumnVisibilityModelChange={(newCompany) =>
-						setColumnVisibilityModel(newCompany)
+					onColumnVisibilityModelChange={(newCompany) => {
+						localStorage.setItem("transactions_visibility", JSON.stringify(newCompany));
+						setColumnVisibilityModel(newCompany);
 					}
-					initialState={{ pagination: { paginationModel: { pageSize: 10} } }}
+					}
+					filterModel={filterModel}
+					onFilterModelChange={(newCompany) => {
+						localStorage.setItem("transactions_filter", JSON.stringify(newCompany));
+						setFilterModel(newCompany);
+					}}
+					initialState={{ pagination: { paginationModel: { pageSize: 10} },
+						sorting: {
+							sortModel: [{ field: 'created', sort: 'desc'}]
+						}
+					}}
 					pageSizeOptions={[10, 20, 50, 100, { value: -1, label: 'All'}]}
 					onRowClick={handleRowClick}
 					onRowCountChange={handleRowChangeEvent}

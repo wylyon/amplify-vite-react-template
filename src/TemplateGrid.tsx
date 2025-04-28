@@ -217,6 +217,16 @@ export default function TemplateGrid(props) {
 	  const [filtered, setFiltered] = useState<Schema["template_question"]["type"][]>([]);
 	  const [isBackups, setIsBackups] = useState(true);
 
+	  const visibilityJSON = localStorage.getItem("templateGrid_visibility");
+	  const visibilityModel = (visibilityJSON) ? JSON.parse(visibilityJSON) : {
+		id: false,
+		divisionId: false,
+	  };
+	  const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>(visibilityModel);
+	  const filterJSON = localStorage.getItem("templateGrid_filter");
+	  const initialFilterModel = (filterJSON) ? JSON.parse(filterJSON) : {items: []};
+	  const [filterModel, setFilterModel] = useState<GridFilterModel>(initialFilterModel);
+
 	  const getAppSettings = async() => {
 		const { data: items, errors } = await client.models.app_settings.list();
 		if (errors) {
@@ -371,11 +381,6 @@ export default function TemplateGrid(props) {
 
 	const handleRowChangeEvent: GridEventListener<'rowCountChange'> = (params, event, details) => {
 	}
-
-	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
-		id: false,
-		divisionId: false,
-	  });
   
 	const handleDeactiveOrActivate = async(id, isDeactive) => {
 		const now = new Date();
@@ -890,9 +895,16 @@ export default function TemplateGrid(props) {
 			processRowUpdate={processRowUpdate}
 			onProcessRowUpdateError={processRowUpdateError}
 			columnVisibilityModel={columnVisibilityModel}
-			onColumnVisibilityModelChange={(newRow) =>
-				setColumnVisibilityModel(newRow)
+			onColumnVisibilityModelChange={(newCompany) => {
+				localStorage.setItem("templateGrid_visibility", JSON.stringify(newCompany));
+				setColumnVisibilityModel(newCompany);
 			}
+			}
+			filterModel={filterModel}
+			onFilterModelChange={(newCompany) => {
+				localStorage.setItem("templateGrid_filter", JSON.stringify(newCompany));
+				setFilterModel(newCompany);
+			}}
 			initialState={{ pagination: { paginationModel: { pageSize: 10} } }}
 			pageSizeOptions={[10, 20, 50, 100, { value: -1, label: 'All'}]}
 			onRowClick={handleRowClick}

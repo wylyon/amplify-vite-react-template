@@ -214,6 +214,18 @@ export default function UserGrid(props) {
 	  const [userPoolId, setUserPoolId] = useState('');
 	  const [isBackups, setIsBackups] = useState(true);
 
+	  const visibilityJSON = localStorage.getItem("userGrid_visibility");
+	  const visibilityModel = (visibilityJSON) ? JSON.parse(visibilityJSON) : {
+		id: false,
+		companyId: false,
+		company: false,
+		divisionId: false,
+	  };
+	  const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>(visibilityModel);
+	  const filterJSON = localStorage.getItem("userGrid_filter");
+	  const initialFilterModel = (filterJSON) ? JSON.parse(filterJSON) : {items: []};
+	  const [filterModel, setFilterModel] = useState<GridFilterModel>(initialFilterModel);
+
 	  const getAppSettings = async() => {
 		const { data: items, errors } = await client.models.app_settings.list();
 		if (errors) {
@@ -469,13 +481,6 @@ export default function UserGrid(props) {
 
 	const handleRowChangeEvent: GridEventListener<'rowCountChange'> = (params, event, details) => {
 	}
-
-	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
-      id: false,
-	  companyId: false,
-	  company: false,
-	  divisionId: false,
-    });
 
 	const handleSuperAdmin = async(id) => {
 		const { errors, data: updatedData} = await client.models.admin.update({
@@ -1053,9 +1058,16 @@ export default function UserGrid(props) {
 			processRowUpdate={processRowUpdate}
 			onProcessRowUpdateError={processRowUpdateError}
 			columnVisibilityModel={columnVisibilityModel}
-			onColumnVisibilityModelChange={(newRow) =>
-				setColumnVisibilityModel(newRow)
+			onColumnVisibilityModelChange={(newCompany) => {
+				localStorage.setItem("userGrid_visibility", JSON.stringify(newCompany));
+				setColumnVisibilityModel(newCompany);
 			}
+			}
+			filterModel={filterModel}
+			onFilterModelChange={(newCompany) => {
+				localStorage.setItem("userGrid_filter", JSON.stringify(newCompany));
+				setFilterModel(newCompany);
+			}}
 			initialState={{ pagination: { paginationModel: { pageSize: 10} } }}
 			pageSizeOptions={[10, 20, 50, 100, { value: -1, label: 'All'}]}
 			onRowClick={handleRowClick}

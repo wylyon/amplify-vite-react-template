@@ -78,6 +78,18 @@ export default function SummaryByTemplate(props) {
 		whoPosted: null,
 	  }]);
 
+	  const visibilityJSON = localStorage.getItem("summary_visibility");
+	  const visibilityModel = (visibilityJSON) ? JSON.parse(visibilityJSON) : {
+		id: false,
+      	companyId: false,
+	  	templateId: false,
+	  	transactionId: false,
+	  };
+	  const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>(visibilityModel);
+	  const filterJSON = localStorage.getItem("summary_filter");
+	  const initialFilterModel = (filterJSON) ? JSON.parse(filterJSON) : {items: []};
+	  const [filterModel, setFilterModel] = useState<GridFilterModel>(initialFilterModel);
+
 	  function getDate(value) {
 		if (value == null) {
 			return null
@@ -195,13 +207,6 @@ export default function SummaryByTemplate(props) {
 	const handleRowChangeEvent: GridEventListener<'rowCountChange'> = (params, event, details) => {
 		//setLoading(false);
 	}
-
-	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
-		id: false,
-      companyId: false,
-	  templateId: false,
-	  transactionId: false,
-    });
 
 	function handleRowClick (params, event, details) {
 	}
@@ -368,9 +373,16 @@ export default function SummaryByTemplate(props) {
 				loading={loading}
 				columns={columns}
 				columnVisibilityModel={columnVisibilityModel}
-				onColumnVisibilityModelChange={(newCompany) =>
-					setColumnVisibilityModel(newCompany)
+				onColumnVisibilityModelChange={(newCompany) => {
+					localStorage.setItem("summary_visibility", JSON.stringify(newCompany));
+					setColumnVisibilityModel(newCompany);
 				}
+				}
+				filterModel={filterModel}
+				onFilterModelChange={(newCompany) => {
+					localStorage.setItem("summary_filter", JSON.stringify(newCompany));
+					setFilterModel(newCompany);
+				}}
 				initialState={{ pagination: { paginationModel: { pageSize: 10} },
 					sorting: {
 						sortModel: [{ field: 'latestPosting', sort: 'desc'}]

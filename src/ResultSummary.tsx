@@ -85,6 +85,19 @@ export default function ResultSummary(props) {
 		count: 0,
 	  }]);
 
+	const visibilityJSON = localStorage.getItem("resultSummary_visibility");
+	const visibilityModel = (visibilityJSON) ? JSON.parse(visibilityJSON) : {
+		id: false,
+		company: false,
+      companyId: false,
+	  templateId: false,
+	  divisionId: false,
+	};
+	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>(visibilityModel);
+	const filterJSON = localStorage.getItem("resultSummary_filter");
+	const initialFilterModel = (filterJSON) ? JSON.parse(filterJSON) : {items: []};
+	const [filterModel, setFilterModel] = useState<GridFilterModel>(initialFilterModel);
+
 	function getDate(value) {
 		if (value == null) {
 			return null
@@ -266,14 +279,6 @@ export default function ResultSummary(props) {
 	const handleRowChangeEvent: GridEventListener<'rowCountChange'> = (params, event, details) => {
 		//setLoading(false);
 	}
-
-	const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({
-		id: false,
-		company: false,
-      companyId: false,
-	  templateId: false,
-	  divisionId: false,
-    });
 
 	function handleRowClick (params, event, details) {
 	}
@@ -466,9 +471,16 @@ function CustomToolbar() {
 				columns={columns}
 				getRowHeight={() => 'auto'}
 				columnVisibilityModel={columnVisibilityModel}
-				onColumnVisibilityModelChange={(newCompany) =>
-					setColumnVisibilityModel(newCompany)
+				onColumnVisibilityModelChange={(newCompany) => {
+					localStorage.setItem("resultSummary_visibility", JSON.stringify(newCompany));
+					setColumnVisibilityModel(newCompany);
 				}
+				}
+				filterModel={filterModel}
+				onFilterModelChange={(newCompany) => {
+					localStorage.setItem("resultSummary_filter", JSON.stringify(newCompany));
+					setFilterModel(newCompany);
+				}}
 				initialState={{ pagination: { paginationModel: { pageSize: 10} } }}
 				pageSizeOptions={[10, 20, 50, 100, { value: -1, label: 'All'}]}
 				onRowClick={handleRowClick}
