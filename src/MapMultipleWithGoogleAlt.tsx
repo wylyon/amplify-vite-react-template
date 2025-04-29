@@ -12,7 +12,7 @@ const containerStyle = {
 
 export default function MapMultipleWithGoogleAlt(props) {
   const [selectedCenter, setSelectedCenter] = useState(null);
-  const [zoom, setZoom] = useState(4);
+  const [zoom, setZoom] = useState(5);
   const [center, setCenter] = useState({
     lat: props.markers[0].lattitude,
     lng: props.markers[0].longitude,
@@ -50,7 +50,7 @@ export default function MapMultipleWithGoogleAlt(props) {
         <Marker
           position={{ lat: marker.lattitude, lng: marker.longitude }}
           key={marker.id}
-          label={props.points ? "(" + marker.status + ")" : null}
+          label={props.points ? marker.status.substring(0,1) : null}
           onMouseOver={(m) => {
               setSelectedCenter(marker);
               setCenter( { lat: marker.lattitude, lng: marker.longitude});

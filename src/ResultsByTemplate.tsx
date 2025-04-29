@@ -74,7 +74,7 @@ export default function ResultsByTemplate(props) {
 	const [mapKeyId, setMapKeyId] = useState('');
 	const [photo, setPhoto] = useState('');
 	const [columnsNew, setColumns] = useState<GridColDef[]>([]);
-	const [showPoints, setShowPoints] = useState(false);
+	const [showPoints, setShowPoints] = useState(true);
 	const client = generateClient<Schema>();
 	const [userData, setUserData] = useState([{
 		id: '',
@@ -622,7 +622,8 @@ function CustomToolbar() {
         </DialogTitle>
         <DialogContent>
 			<FormGroup>
-				<FormControlLabel control={<Switch onChange={handleStatusPoints} />} label="Show Status Points" />
+				<FormControlLabel control={<Switch onChange={handleStatusPoints} defaultChecked/>} label="Show Status Points" />
+				<Typography variant='caption'>NOTE:  Hover over markers for detail;  Click a Marker to zoom in more</Typography>
 			</FormGroup>
 			<MapMultipleWithGoogleAlt props={props} markers={userData} points={showPoints} googleAPI={props.googleAPI} />		
         </DialogContent>

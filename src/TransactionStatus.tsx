@@ -88,7 +88,7 @@ export default function TransactionStatus(props) {
 	const [statusFilter, setStatusFilter] = useState('All');
 	const [batchIds, setBatchIds] = useState([]);
 	const [openDelete, setOpenDelete] = useState(false);
-	const [showPoints, setShowPoints] = useState(false);
+	const [showPoints, setShowPoints] = useState(true);
 
 	const client = generateClient<Schema>();
 	const [userData, setUserData] = useState([{
@@ -759,7 +759,8 @@ function CustomToolbar() {
         </DialogTitle>
         <DialogContent>
 			<FormGroup>
-				<FormControlLabel control={<Switch onChange={handleStatusPoints} />} label="Show Status Points" />
+				<FormControlLabel control={<Switch onChange={handleStatusPoints} defaultChecked/>} label="Show Status Points" />
+				<Typography variant='caption'>NOTE:  Hover over markers for detail;  Click a Marker to zoom in more</Typography>
 			</FormGroup>
 			<MapMultipleWithGoogleAlt props={props} points={showPoints} markers={userData} googleAPI={props.googleAPI} />		
         </DialogContent>

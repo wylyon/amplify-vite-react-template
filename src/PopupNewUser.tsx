@@ -51,6 +51,7 @@ export default function PopupNewUser(props) {
   const [secret, setSecret] = useState('');
   const [region, setRegion] = useState('');
   const [ourWord, setOurWord] = useState('');
+  const [severity, setSeverity] = useState('error');
   const [userPoolId, setUserPoolId] = useState('');
   const passwordRef = useRef(null);
 
@@ -168,6 +169,7 @@ export default function PopupNewUser(props) {
 
 	const handleCloseError = () => {
 		setOpenError(false);
+    setSeverity('error');
 		setError('');
 	};
 
@@ -197,13 +199,15 @@ export default function PopupNewUser(props) {
         }],
         TemporaryPassword: password,
       }).promise();
-
+      setError("NOTE:  User Added...email invitation sent.");
+      setSeverity('success');
+      setOpenError(true);
+      return;
     } catch (error) {
       setError("Warning...could not signup on cloud...could already be defined.");
       setOpenError(true);
       return;
     }
-
   }
 
   const handleAddRow = async(email, firstName, middleName, lastName, notes, password) => {
@@ -287,7 +291,7 @@ export default function PopupNewUser(props) {
       </DialogContentText>
       <Box sx={{ minWidth: 300 }}>
       {isWaiting && <CircularProgress />}
-      {openError &&  <Alert severity="error" onClose={handleCloseError}>
+      {openError &&  <Alert severity={severity} onClose={handleCloseError}>
             {error}
           </Alert>}
       {confirm && <ConfirmPassword props={props} password={password} onGoodPassword={handleGoodPassword} onBadPassword={handleBadPassword} />}
