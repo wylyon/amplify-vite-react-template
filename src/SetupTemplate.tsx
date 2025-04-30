@@ -1213,6 +1213,14 @@ export default function SetupTemplate(props) {
                               onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
                           </Paper>
                           <Paper elevation={3}>
+                          <Tooltip title="Select this to input text input for data" placement="right">
+                            <FormControlLabel value="text" 
+                              control={formData.questionType=="text" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                              label="Input/Text" 
+                              onClick={handleTextClick} onChange={handleChange}/>
+                          </Tooltip>
+                          </Paper>
+                          <Paper elevation={3}>
                             <Typography variant="caption">Multiple Input Controls</Typography>
                             <Tooltip title="Select this to input a dropdown for multiple inputs" placement="right">
                             <FormControlLabel value="multiple_dropdown"  disabled={isValuesDisabled && isUpdate}
@@ -1233,11 +1241,6 @@ export default function SetupTemplate(props) {
                           control={formData.questionType=="radiobox" ? <Radio checked="true"  size="small"/> : <Radio  size="small"/>} 
                           label="Radio" 
                           onClick={handleRadioClick} onChange={handleChange}/></Tooltip><br/>
-                        <Tooltip title="Select this to input text input for data" placement="right">
-                        <FormControlLabel value="text" 
-                          control={formData.questionType=="text" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                          label="Input/Text" 
-                          onClick={handleTextClick} onChange={handleChange}/></Tooltip>
                         <Tooltip title="Select this to input date data" placement="right">
                         <FormControlLabel value="datepicker" disabled={!isValuesDisabled && isUpdate}
                           control={formData.questionType=="datepicker" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 

@@ -8,7 +8,7 @@ import type { Schema } from '../amplify/data/resource'; // Path to your backend 
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import { Box } from "@mui/material";
+import { Box, ButtonGroup, Icon } from "@mui/material";
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import { Check, CheckBox, Label } from "@mui/icons-material";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -40,6 +40,8 @@ import Checkbox from '@mui/material/Checkbox';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import { useGeolocated } from "react-geolocated";
 import {
   ConvertTo3waClient,
@@ -365,6 +367,45 @@ export default function DisplayUserRow(props) {
     setIsWaiting(false);
   };
 
+  const handleTextChange = async() => {
+    const tValue = textValue;
+  //      checkGPS(false);
+  var coordinates = {lat: 0, long: 0};
+  try {
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
+    });
+    coordinates.lat = position.coords.latitude;
+    coordinates.long = position.coords.longitude;
+  } catch (error) {
+    setAlertMessage(error);
+    setTheSeverity("warning");
+    setIsAlert(true);
+  }
+  if (API_KEY != null) {
+
+      const options: ConvertTo3waOptions = {
+        coordinates: { lat: coordinates.lat, lng: coordinates.long },
+      };
+
+      client
+      .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
+      .then((res: LocationJsonResponse) => props.onText (tValue, props.question.id, coordinates, res.words, props.question.question_type, props.whatPage));
+    } else {
+      props.onText (tValue, props.question.id, coordinates, '', props.question.question_type, props.whatPage);
+    }
+    props.onNextPage(true);
+  }
+
+  const handleTextCancel = () => {
+    setTextValue('');
+  }
+
+  const handleTextOnChange = async(event: React.ChangeEvent<HTMLInputElement>) => {
+    const tValue = (event.target as HTMLInputElement).value;
+    setTextValue(tValue);
+  }
+
   const handleText = async(event: React.ChangeEvent<HTMLInputElement>) => {
     const tValue = (event.target as HTMLInputElement).value;
     setTextValue(tValue);
@@ -683,9 +724,19 @@ export default function DisplayUserRow(props) {
     : props.questionType == 'input' || props.questionType == 'text' ?
       <div>
         <DisplayAttributes props={props} onParsing={handleAttribute} />
+        <Stack direction='row' spacing={1}>
         {props.questionType == 'input' ?
-            <TextField id={"input-field-"+props.question.question_order} label={value} variant="outlined" onChange={handleText} value={textValue}/>
-        :   <TextField id={"input-field-"+props.question.question_order} label={value} multiline maxRows={4} variant="outlined" onChange={handleText} value={textValue}/> }
+            <TextField id={"input-field-"+props.question.question_order} label={value} variant="outlined" onChange={handleTextOnChange} value={textValue}/>
+        :   <TextField id={"input-field-"+props.question.question_order} label={value} multiline maxRows={4} variant="outlined" onChange={handleTextOnChange} value={textValue}/> }
+          <ButtonGroup variant="contained" aria-label="text result">
+          <Paper elevation={3}>
+            <IconButton aria-label="ok" color="success" size="small" onClick={handleTextChange}><CheckIcon /></IconButton>
+            </Paper>
+            <Paper elevation={3}> 
+            <IconButton aria-label="cancel" color="error" size="small" onClick={handleTextCancel}><CloseIcon /></IconButton>
+            </Paper>
+          </ButtonGroup>
+        </Stack>
       </div>
     : props.questionType == 'datepicker' ?
       <div>

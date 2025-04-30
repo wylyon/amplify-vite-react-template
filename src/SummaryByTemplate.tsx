@@ -177,7 +177,9 @@ export default function SummaryByTemplate(props) {
 					data = data + "|" + item.template_id + "!" + item.title;
 				}
 				setAllTemplates(data);
-				setNeedTemplate(true);
+				if (userItems.length > 1) {
+					setNeedTemplate(true);
+				}
 			  }			
 		}
 		setLoading(false);
