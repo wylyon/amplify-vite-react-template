@@ -1,8 +1,7 @@
 import React from 'react'
 import { useState} from "react";
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
+import { StorageImage } from '@aws-amplify/ui-react-storage';
+import Box  from '@mui/material/Box';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api'
 
 const containerStyle = {
@@ -64,16 +63,30 @@ export default function MapMultipleWithGoogleAlt(props) {
         />
       ))}
       {selectedCenter && (
-   <InfoWindow
-      onCloseClick={() => {
-         setSelectedCenter(null);
-      }}
-      position={{
-        lat: selectedCenter.lattitude,
-        lng: selectedCenter.longitude
-      }}
-      options={{ pixelOffset: new window.google.maps.Size(0, -40)}}
-   ><div><p><b>{"Transaction status of " + selectedCenter.status + (selectedCenter.notes && selectedCenter.notes != null ? ' - ' + selectedCenter.notes : '')}</b></p><p>{'Created ' + selectedCenter.created}</p><p>{'by ' + selectedCenter.createdBy}</p></div></InfoWindow> )}
+    <InfoWindow
+        onCloseClick={() => {
+          setSelectedCenter(null);
+        }}
+        position={{
+          lat: selectedCenter.lattitude,
+          lng: selectedCenter.longitude
+        }}
+        options={{ pixelOffset: new window.google.maps.Size(0, -40)}}>
+          <div>
+            <p>{selectedCenter.createdBy}</p>
+            <p>{selectedCenter.created + ' - ' + selectedCenter.status}</p>
+            <p>{selectedCenter.notes}</p>
+            <p>{selectedCenter.what3words}</p>
+            {props.custom.map(comp => (
+              <p>{selectedCenter[comp.question]}</p>
+            ))}
+            <Box sx={{ width: 200, height: 400}}>
+            {selectedCenter.photoAddress != '' ? 
+              <StorageImage alt={selectedCenter.createdBy + "/" + selectedCenter.photoAddress} height={400} width={200}
+              path={"picture-submissions/" + selectedCenter.createdBy + "/" + selectedCenter.photoAddress}/> : "<< No Photo Available >>" }
+            </Box>
+          </div>
+      </InfoWindow> )}
       <></>
     </GoogleMap>
     </React.Fragment>

@@ -76,6 +76,7 @@ export default function ResultsByTemplate(props) {
 	const [columnsNew, setColumns] = useState<GridColDef[]>([]);
 	const [showPoints, setShowPoints] = useState(true);
 	const client = generateClient<Schema>();
+	const [customQuestions, setCustomQuestions] = useState([]);
 	const [userData, setUserData] = useState([{
 		id: '',
 		company: '',
@@ -238,6 +239,7 @@ export default function ResultsByTemplate(props) {
 			return 0;
 		});
 
+		setCustomQuestions(colData);
 		for (var i = 0; i < colData.length; i++) {
 			const columnData = { field: colData[i].question, 
 				headerName: colData[i].question, 
@@ -627,7 +629,7 @@ function CustomToolbar() {
 				<FormControlLabel control={<Switch onChange={handleStatusPoints} defaultChecked/>} label="Show Status Points" />
 				<Typography variant='caption'>NOTE:  Hover over markers for detail;  Click a Marker to zoom in more</Typography>
 			</FormGroup>
-			<MapMultipleWithGoogleAlt props={props} markers={userData} points={showPoints} googleAPI={props.googleAPI} />		
+			<MapMultipleWithGoogleAlt props={props} markers={userData} points={showPoints} custom={customQuestions} googleAPI={props.googleAPI} />		
         </DialogContent>
         <DialogActions>
           <Button variant='contained' color='error' onClick={handleOverviewCloseMap} autoFocus>

@@ -367,7 +367,7 @@ export default function DisplayUserRow(props) {
     setIsWaiting(false);
   };
 
-  const handleTextChange = async() => {
+  const handleText = async() => {
     const tValue = textValue;
   //      checkGPS(false);
   var coordinates = {lat: 0, long: 0};
@@ -404,37 +404,6 @@ export default function DisplayUserRow(props) {
   const handleTextOnChange = async(event: React.ChangeEvent<HTMLInputElement>) => {
     const tValue = (event.target as HTMLInputElement).value;
     setTextValue(tValue);
-  }
-
-  const handleText = async(event: React.ChangeEvent<HTMLInputElement>) => {
-    const tValue = (event.target as HTMLInputElement).value;
-    setTextValue(tValue);
-  //      checkGPS(false);
-  var coordinates = {lat: 0, long: 0};
-  try {
-    const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, options);
-    });
-    coordinates.lat = position.coords.latitude;
-    coordinates.long = position.coords.longitude;
-  } catch (error) {
-    setAlertMessage(error);
-    setTheSeverity("warning");
-    setIsAlert(true);
-  }
-  if (API_KEY != null) {
-
-      const options: ConvertTo3waOptions = {
-        coordinates: { lat: coordinates.lat, lng: coordinates.long },
-      };
-
-      client
-      .run({ ...options, format: 'json' }) // { format: 'json' } is the default response
-      .then((res: LocationJsonResponse) => props.onText (tValue, props.question.id, coordinates, res.words, props.question.question_type, props.whatPage));
-    } else {
-      props.onText (tValue, props.question.id, coordinates, '', props.question.question_type, props.whatPage);
-    }
-    props.onNextPage(true);
   }
 
   const handleDate = async(event) => {
@@ -730,7 +699,7 @@ export default function DisplayUserRow(props) {
         :   <TextField id={"input-field-"+props.question.question_order} label={value} multiline maxRows={4} variant="outlined" onChange={handleTextOnChange} value={textValue}/> }
           <ButtonGroup variant="contained" aria-label="text result">
           <Paper elevation={3}>
-            <IconButton aria-label="ok" color="success" size="small" onClick={handleTextChange}><CheckIcon /></IconButton>
+            <IconButton aria-label="ok" color="success" size="small" onClick={handleText}><CheckIcon /></IconButton>
             </Paper>
             <Paper elevation={3}> 
             <IconButton aria-label="cancel" color="error" size="small" onClick={handleTextCancel}><CloseIcon /></IconButton>

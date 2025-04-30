@@ -89,6 +89,7 @@ export default function TransactionStatus(props) {
 	const [batchIds, setBatchIds] = useState([]);
 	const [openDelete, setOpenDelete] = useState(false);
 	const [showPoints, setShowPoints] = useState(true);
+	const [customQuestions, setCustomQuestions] = useState([]);
 
 	const client = generateClient<Schema>();
 	const [userData, setUserData] = useState([{
@@ -255,6 +256,7 @@ export default function TransactionStatus(props) {
 			return 0;
 		});
 
+		setCustomQuestions(colData);
 		for (var i = 0; i < colData.length; i++) {
 			const columnData = { field: colData[i].question, 
 				headerName: colData[i].question, 
@@ -764,7 +766,7 @@ function CustomToolbar() {
 				<FormControlLabel control={<Switch onChange={handleStatusPoints} defaultChecked/>} label="Show Status Points" />
 				<Typography variant='caption'>NOTE:  Hover over markers for detail;  Click a Marker to zoom in more</Typography>
 			</FormGroup>
-			<MapMultipleWithGoogleAlt props={props} points={showPoints} markers={userData} googleAPI={props.googleAPI} />		
+			<MapMultipleWithGoogleAlt props={props} points={showPoints} markers={userData} custom={customQuestions} googleAPI={props.googleAPI} />		
         </DialogContent>
         <DialogActions>
           <Button variant='contained' color='error' onClick={handleOverviewCloseMap} autoFocus>
