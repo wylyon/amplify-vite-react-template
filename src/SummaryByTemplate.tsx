@@ -282,7 +282,7 @@ export default function SummaryByTemplate(props) {
 		{ field: 'lattitude', headerName: 'Latitude', width: 150, headerClassName: 'grid-headers' },
 		{ field: 'longitude', headerName: 'Longitude', width: 150, headerClassName: 'grid-headers' },
 		{ field: 'whoPosted', headerName: 'Posted By', width: 150, headerClassName: 'grid-headers' },
-		{ field: 'actions', headerName: 'Actions', headerClassName: 'grid-headers',
+		{ field: 'actions', headerName: 'Map', headerClassName: 'grid-headers',
 			type: 'actions',
 			width: 100,
 			getActions: ({ id }) => {

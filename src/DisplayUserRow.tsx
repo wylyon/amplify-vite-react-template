@@ -215,7 +215,13 @@ export default function DisplayUserRow(props) {
     if (target.files) {
       if (target.files.length !== 0) {
         const file = target.files[0];
-        const newFileName = uuidv4() + ".jpg";
+        const oldFileName = file.name;
+        const fileExt = oldFileName.split(".");
+        var fileExtension = ".jpg";
+        if (fileExt.length > 1) {
+          fileExtension = "." + fileExt[1];
+        }
+        const newFileName = uuidv4() + fileExtension;
         const renamedFile = new File([file], newFileName, { type: file.type });
         const newUrl = URL.createObjectURL(renamedFile);
   //      checkGPS(false);
