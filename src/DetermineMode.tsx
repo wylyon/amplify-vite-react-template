@@ -164,8 +164,7 @@ export default function DetermineMode(props) {
   };
 
   const handleWelcomeClose = () => {
-    setIsDisabledUser(true);
-    setDisableMsg("User is not Authorized for Access.");
+    props.onSubmitChange(false);
   }
 
   const handleListItemClick = (value: string) => {
