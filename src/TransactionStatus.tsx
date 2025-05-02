@@ -80,6 +80,8 @@ export default function TransactionStatus(props) {
 	const [lng, setLng] = useState('');
 	const [mapKeyId, setMapKeyId] = useState('');
 	const [photo, setPhoto] = useState('');
+	const [photoType, setPhotoType] = useState('image');
+	const [videoURL, setVideoURL] = useState('');
 	const [columnsNew, setColumns] = useState<GridColDef[]>([]);
 	const [status, setStatus] = useState('');
 	const [reason, setReason] = useState('');
@@ -508,12 +510,71 @@ export default function TransactionStatus(props) {
 		setShowPoints(event.target.checked);
 	  };
 
+	  const saveVideoBlob = (filename) => {
+		const url = videoURL;
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename || 'download';
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+	  }
+	  
+	  const saveBlob = (blob, filename) => {
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename || 'download';
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	  };
+
+	const monitorDownloadPhoto = async(isDownload, photoAddress) => {
+		if (photoAddress == '') {
+			return;
+		}
+		if (videoURL != '') {
+			saveVideoBlob(photoAddress.split("/")[1]);
+			return;
+		}
+		const downloadResult = await downloadData({
+			path: "picture-submissions/" + photoAddress
+		}).result;
+		const fileName = photoAddress.split("/")[1];
+		const myFile = await downloadResult.body.blob();
+		if (isDownload) {
+			saveBlob(myFile, fileName);
+		} else {
+			setVideoURL(URL.createObjectURL(myFile));
+		}
+	}
+	
+	const handleDownloadPhoto = async(isDownload, photoAddress) => {
+		await monitorDownloadPhoto(isDownload, photoAddress);
+	}
+
+	const handleDownloadPhotoButton = async() => {
+		await monitorDownloadPhoto(true, photo);
+	}
+
 	const handlePhoto = (id: GridRowId) => () => {
 		const row = theGrid.filter((row) => row.transactionId == id);
 		if (row.length < 1) {
 			return;
 		}
-		setPhoto(row[0].questionType == 'photo' ? row[0].createdBy + "/" + row[0].photoAddress : '');
+		const fileName = row[0].photoAddress;
+		const fileExt = fileName.split(".");
+		const photoAddress = row[0].questionType == 'photo' ? row[0].createdBy + "/" + row[0].photoAddress : '';
+		if (fileExt.length > 1) {
+			const ext = fileExt[1];
+			if (ext == "mp4" || ext == "MP4" || ext == "mov" || ext == "MOV" ) {
+				setPhotoType("video");
+				handleDownloadPhoto(false, photoAddress);
+			}
+		}
+		setPhoto(photoAddress);
 		setError(row[0].question);
 		setOpenPhoto(true);
 	}
@@ -536,34 +597,13 @@ export default function TransactionStatus(props) {
 	}
 
 	const handleClosePhoto = () => {
+		if (videoURL != '') {
+			URL.revokeObjectURL(videoURL);
+			setVideoURL('');
+		}
+		setPhotoType('image');
 		setOpenPhoto(false);
 		setPhoto('');
-	}
-
-	const saveBlob = (blob, filename) => {
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = filename || 'download';
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
-	  };
-
-	const monitorDownloadPhoto = async() => {
-		const downloadResult = await downloadData({
-			path: "picture-submissions/" + photo
-		}).result;
-		const fileName = photo.split("/")[1];
-		const myFile = await downloadResult.body.blob();
-		saveBlob(myFile, fileName);
-	}
-	
-	const handleDownloadPhoto = async() => {
-		setLoading(true);
-		await monitorDownloadPhoto();
-		setLoading(false);
 	}
 
 const actionColumns: GridColDef[] = [
@@ -720,16 +760,19 @@ function CustomToolbar() {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"Photo"}
+          {videoURL == '' ? "Photo" : "Video"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
 			{error}
           </DialogContentText>
-		  {photo != '' ? <StorageImage alt={photo} path={"picture-submissions/" + photo}/> : "<< No Photo Available >>" }
+		  {photoType == 'image' ?
+		  	photo != '' ? <StorageImage alt={photo} path={"picture-submissions/" + photo}/> : "<< No Photo Available >>" 
+			: <video src={videoURL} width={200} height={400} controls />
+		  }
         </DialogContent>
         <DialogActions>
-		  <Button variant='contained' startIcon={<DownloadIcon />} disabled={photo == ''} color='primary' onClick={handleDownloadPhoto}>Download</Button>
+		  <Button variant='contained' startIcon={<DownloadIcon />} disabled={photo == ''} color='primary' onClick={handleDownloadPhotoButton}>Download</Button>
           <Button variant='contained' color='error' onClick={handleClosePhoto} autoFocus>Cancel</Button>
         </DialogActions>
       </Dialog>
