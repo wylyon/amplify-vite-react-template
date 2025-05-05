@@ -314,6 +314,11 @@ export default function PopupNewUser(props) {
             setOpenError(true);
             return false;
           }
+          if (password == null) {
+            setError ("Must have password defined for this user.");
+            setOpenError(true);
+            return false;
+          }
           return handleAddRow(email, firstName, middleName, lastName, notes, password);
         },
       }}
