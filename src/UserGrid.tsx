@@ -155,7 +155,7 @@ function EditToolbar(props: EditToolbarProps) {
 				arrayDivisions={arrayDivisions} company={filter} rows={rows} isAdmin={isAdmin} userId={userId} onClose={handleOnClose} onSubmit={handleOnSubmit} />}
 			<GridToolbarContainer>
 			<Tooltip title="Add a new User">
-				<Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
+				<Button color="primary" disabled={arrayDivisions.length < 1} startIcon={<AddIcon />} onClick={handleClick}>
 				{isAdmin ? "Add an Admin" : "Add a User"}
 				</Button>
 			</Tooltip>
@@ -167,7 +167,7 @@ function EditToolbar(props: EditToolbarProps) {
 
 export default function UserGrid(props) {
 	const [loading, setLoading] = useState(true);
-	const [arrayDivisions, setArrayDivisions] = useState([{}]);
+	const [arrayDivisions, setArrayDivisions] = useState([]);
 	const [isAdmin, setIsAdmin] = useState(props.filter == null ? true : false);
 	const [open, setOpen] = useState(false);
 	const [error, setError] = useState('');

@@ -53,13 +53,31 @@ export default function PopupNewUser(props) {
   const [ourWord, setOurWord] = useState('');
   const [severity, setSeverity] = useState('error');
   const [userPoolId, setUserPoolId] = useState('');
+  const [template, setTemplate] = useState<Schema["template"]["type"][]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
   const passwordRef = useRef(null);
 
   const client = generateClient<Schema>();
 
   const handleChange = (event: SelectChangeEvent) => {
     setSelectDivision(event.target.value as string);
+    getLoggingAppsForDivision(event.target.value as string);
   };
+
+  const handleLoggingAppChange = (event: SelectChangeEvent) => {
+    setSelectedTemplate(event.target.value as string);
+  }
+
+  const getLoggingAppsForDivision = async(divisionId) => {
+    const { data: items, errors } = await client.queries.listTemplateByDivisionId ({
+      divisionId: divisionId
+    });
+    if (errors) {
+      setTemplate([]);
+    } else {
+      setTemplate(items);
+    }
+  }
 
   const getAppSettings = async() => {
     const { data: items, errors } = await client.models.app_settings.list();
@@ -121,6 +139,9 @@ export default function PopupNewUser(props) {
   useEffect(() => {
     setArrayDivisions(props.arrayDivisions);
     getAppSettings();
+    if (props.arrayDivisions.length > 0) {
+      getLoggingAppsForDivision(props.arrayDivisions[0].id);
+    }
     if (password == null) {
       passwordRef.current.focus();
     }
@@ -245,6 +266,19 @@ export default function PopupNewUser(props) {
 			setOpenError(true);
       return false;
 		}
+    if (!props.props.isAdmin && selectedTemplate != '') {
+      const { errors: tpErrors, data: tpData } = await client.models.template_permissions.create({
+        id: uuidv4(),
+        template_id: selectedTemplate,
+        user_id: id,
+        enabled_date: now,
+        created: now,
+        created_by: props.userId
+      });
+      if (tpErrors) {
+        console.log(tpErrors);
+      }
+    }
     if (password != null) {
       signThemUp(email, password);
     }
@@ -295,6 +329,7 @@ export default function PopupNewUser(props) {
             {error}
           </Alert>}
       {confirm && <ConfirmPassword props={props} password={password} onGoodPassword={handleGoodPassword} onBadPassword={handleBadPassword} />}
+      {arrayDivisions && arrayDivisions.length > 1 ? 
         <FormControl fullWidth>
           <Typography variant="caption">Division: </Typography>
           <Select fullWidth
@@ -309,7 +344,21 @@ export default function PopupNewUser(props) {
             <MenuItem key={comp.id} value={comp.id}>{comp.name}</MenuItem>
           )}
           </Select>
-        </FormControl>
+        </FormControl> : null }
+        {template && !props.props.isAdmin && template.length > 0 ? 
+        <FormControl fullWidth>
+          <Typography variant="caption">Logging App to Associate: </Typography>
+          <Select fullWidth
+            labelId="select-template-name"
+            id="demo-simple-template-select"
+            label="Logging App"
+            onChange={handleLoggingAppChange}
+          >
+          {template.map(comp => 
+            <MenuItem key={comp.id} value={comp.id}>{comp.title}</MenuItem>
+          )}
+          </Select>
+        </FormControl> : null }
         <TextField
             autoFocus
             required

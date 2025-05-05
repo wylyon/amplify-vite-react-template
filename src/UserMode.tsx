@@ -230,7 +230,7 @@ export default function UserMode(props) {
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
 		<div className="topnav">
   	  		<a href="#home" className="active">
-				<IconButton aria-label="home" onClick={handleReload}><LogoDevIcon /></IconButton>
+				<img src="../public/assets/Logit-Pro-Checkmark.png" alt="Logit.pro" width="30" height="30" onClick={handleReload}/>
 				<IconButton aria-label="install" onClick={handleInstall}><InstallMobileIcon /></IconButton>
 				{isMulti &&
 				<Tooltip title="Pop up program selection dialog to change view." placement="bottom">
