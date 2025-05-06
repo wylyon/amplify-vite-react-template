@@ -3,6 +3,7 @@ import { useState} from "react";
 import { StorageImage } from '@aws-amplify/ui-react-storage';
 import { downloadData } from 'aws-amplify/storage';
 import Box  from '@mui/material/Box';
+import moment from 'moment';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api'
 
 const containerStyle = {
@@ -71,16 +72,24 @@ export default function MapMultipleWithGoogleAlt(props) {
         <Marker
           position={{ lat: marker.lattitude, lng: marker.longitude }}
           key={marker.id}
+          icon={{
+            url: marker.status == 'Open' ? 'http://maps.google.com/mapfiles/ms/icons/green-dot.png' :
+              marker.status == 'Closed' ? 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png' :
+              'http://maps.google.com/mapfiles/ms/icons/orange-dot.png',
+          }}
           label={props.points ? marker.status.substring(0,1) : null}
-          onMouseOver={(m) => {
-              setSelectedCenter(marker);
-              setCenter( { lat: marker.lattitude, lng: marker.longitude});
-         }}
           onRightClick={(m) => {
             setZoom(4);
           }}
           onClick={(m) => {
-            setZoom(15);
+            if (zoom < 10) {
+              setSelectedCenter(marker);
+              setCenter( { lat: marker.lattitude, lng: marker.longitude});
+              setZoom(15);
+            } else {
+              setSelectedCenter(marker);
+              setCenter( { lat: marker.lattitude, lng: marker.longitude});
+            }
           }}
         />
       ))}
@@ -102,12 +111,12 @@ export default function MapMultipleWithGoogleAlt(props) {
         }}
         options={{ pixelOffset: new window.google.maps.Size(0, -40)}}>
           <div>
-            <p>{selectedCenter.createdBy}</p>
-            <p>{selectedCenter.created + ' - ' + selectedCenter.status}</p>
-            <p>{selectedCenter.notes}</p>
-            <p>{selectedCenter.what3words}</p>
+            <p><b>{selectedCenter.createdBy}</b></p>
+            <p><b>{moment(selectedCenter.created).format('MM-DD-YYYY 23:00:00') + ' - ' + selectedCenter.status}</b></p>
+            <p><b>{selectedCenter.notes}</b></p>
+            <p><b>{selectedCenter.what3words}</b></p>
             {props.custom.map(comp => (
-              <p>{selectedCenter[comp.question]}</p>
+              <p><b>{selectedCenter[comp.question]}</b></p>
             ))}
             <Box sx={{ width: 200, height: 400}}>
             {videoURL == '' ? selectedCenter.photoAddress != '' ? 
