@@ -13,6 +13,7 @@ import LogoDevIcon from '@mui/icons-material/LogoDev';
 import Tooltip from '@mui/material/Tooltip';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import usePagination from "@mui/material/usePagination/usePagination";
+import { downloadData } from 'aws-amplify/storage';
 import { AddToHomeScreen } from 'react-pwa-add-to-homescreen';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -46,6 +47,7 @@ export default function UserMode(props) {
 	const [isDefaultPage2, setIsDefaultPage2] = useState(true);
 	const [foundTemplate, setFoundTemplate] = useState(false);
 	const [install, setInstall] = useState(false);
+	const [iconURL, setIconURL] = useState('');
 	
 	const handleVerifiedDate = async(id) => {
 		const now = new Date();
@@ -184,8 +186,21 @@ export default function UserMode(props) {
 		}
 	};
 
+	const monitorDownloadIcon = async() => {
+		const downloadResult = await downloadData({
+				path: "picture-submissions/icon/Logit-Pro-Checkmark.png"
+			}).result;
+		const myFile = await downloadResult.body.blob();
+		setIconURL(URL.createObjectURL(myFile));
+	  }
+	
+	  const handleS3Icon = async() => {
+		await monitorDownloadIcon();
+	  }
+
 	useEffect(() => {
 	  getUserPageDetails(props.userId);
+	  handleS3Icon();
 	  if (reload) {
 		window.location.reload();
 	  }
@@ -230,7 +245,7 @@ export default function UserMode(props) {
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
 		<div className="topnav">
   	  		<a href="#home" className="active">
-				<img src="./images/Logit-Pro-Checkmark.png" alt="Logit-app" width="30" height="30" onClick={handleReload}/>
+				<img src={iconURL} alt="Logit-app" width="30" height="30" onClick={handleReload}/>
 				<IconButton aria-label="install" onClick={handleInstall}><InstallMobileIcon /></IconButton>
 				{isMulti &&
 				<Tooltip title="Pop up program selection dialog to change view." placement="bottom">
