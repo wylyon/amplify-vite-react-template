@@ -339,10 +339,11 @@ export default function DisplayUser(props) {
               newFileName = uuidv4() + "." + newFileArr[1];
             }
           }
-          const result = await uploadData({
+          const upload = await uploadData({
             path: `picture-submissions/${props.userId}/${newFileName}`,
             data: file,
-          }).result; 
+          }); 
+          const final = await upload.result;
         }
         const now = new Date();
         const { errors, data: items } = await client.models.question_result.create({
@@ -382,7 +383,11 @@ export default function DisplayUser(props) {
     saveTransaction(lt, lg, w3w);
     for (var indx = 0; indx < results.length; indx++) {
       if (results[indx].type != 'dialog_input' && results[indx].value != null) {
-        saveResults(results[indx].id, results[indx].value, results[indx].type, results[indx].file, results[indx].lat, results[indx].long, results[indx].what3words);
+        if (results[indx].file != null) {
+          await saveResults(results[indx].id, results[indx].value, results[indx].type, results[indx].file, results[indx].lat, results[indx].long, results[indx].what3words);
+        } else {
+          saveResults(results[indx].id, results[indx].value, results[indx].type, results[indx].file, results[indx].lat, results[indx].long, results[indx].what3words);
+        }
       }
     }
   }
