@@ -380,16 +380,18 @@ export default function DisplayUser(props) {
   }
   
   const saveAllResults = async (lt, lg, w3w) => {
-    saveTransaction(lt, lg, w3w);
+    const promises = [];
+    promises.push(saveTransaction(lt, lg, w3w));
     for (var indx = 0; indx < results.length; indx++) {
       if (results[indx].type != 'dialog_input' && results[indx].value != null) {
         if (results[indx].file != null) {
-          await saveResults(results[indx].id, results[indx].value, results[indx].type, results[indx].file, results[indx].lat, results[indx].long, results[indx].what3words);
+          promises.push (saveResults(results[indx].id, results[indx].value, results[indx].type, results[indx].file, results[indx].lat, results[indx].long, results[indx].what3words));
         } else {
-          saveResults(results[indx].id, results[indx].value, results[indx].type, results[indx].file, results[indx].lat, results[indx].long, results[indx].what3words);
+          promises.push (saveResults(results[indx].id, results[indx].value, results[indx].type, results[indx].file, results[indx].lat, results[indx].long, results[indx].what3words));
         }
       }
     }
+    await Promise.all(promises);
   }
 
   const handleSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
