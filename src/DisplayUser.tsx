@@ -379,19 +379,15 @@ export default function DisplayUser(props) {
   }
   
   const saveAllResults = async (lt, lg, w3w) => {
-    setIsWaiting(true);
-    await saveTransaction(lt, lg, w3w);
+    saveTransaction(lt, lg, w3w);
     for (var indx = 0; indx < results.length; indx++) {
       if (results[indx].type != 'dialog_input' && results[indx].value != null) {
-        await saveResults(results[indx].id, results[indx].value, results[indx].type, results[indx].file, results[indx].lat, results[indx].long, results[indx].what3words);
+        saveResults(results[indx].id, results[indx].value, results[indx].type, results[indx].file, results[indx].lat, results[indx].long, results[indx].what3words);
       }
     }
-    setIsWaiting(false);
-    resetState();
-    setOpen(true);
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
  //     const formData = new FormData(event.currentTarget);
  //     const formJson = Object.fromEntries((formData as any).entries());
@@ -411,7 +407,11 @@ export default function DisplayUser(props) {
           }
         }
       });
-      saveAllResults(lt, lg, w3w);
+      setIsWaiting(true);
+      await saveAllResults(lt, lg, w3w);
+      setIsWaiting(false);
+      resetState();
+      setOpen(true);
   };
 
   function getNonDialogQuestion (index) {
