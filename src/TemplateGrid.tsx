@@ -153,6 +153,7 @@ function EditToolbar(props: EditToolbarProps) {
 				divisionId={item.division_id} 
 				preLoadAttributes={''} 
 				postLoadAttributes={''}
+				userId={userId}
 				usePages={item.use_pagination == 1} />}
 	  <GridToolbarContainer>
 		<Tooltip title="Add a new Logging App">
