@@ -26,8 +26,8 @@ const cognitoAuthConfigProd = {
 };
 
 const cognitoAuthConfigDev = {
-  authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_qOcNeUY7J",
-  client_id: "2ji8pgk86sh5ulclloo4d189fj",
+  authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_kvDKAal9F",
+  client_id: "5fuk68r1uubgh113f5d7532t9s",
   redirect_uri: "http://localhost:5173",
   response_type: "code",
   scope: "aws.cognito.signin.user.admin email openid phone profile",
@@ -37,9 +37,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 
 // wrap the application with AuthProvider
 root.render(
-  <React.StrictMode>
     <AuthProvider {...domain.includes('localhost') ? cognitoAuthConfigDev : cognitoAuthConfigProd}>
       <AppLog />
     </AuthProvider>
-  </React.StrictMode>
 );

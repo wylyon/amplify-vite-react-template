@@ -16,63 +16,60 @@ import { clearState } from '../src/utils.js';
 
 const client = generateClient<Schema>();
 
-var googleAPIKeyValue;
-var what3wordAPIValue;
-
-const fetchSettings = async () => {
-
-  const { data: items, errors } = await client.models.Settings.list();
-  if (errors) {
-    return {
-      data: null,
-      googleAPIKey: null,
-      what3wordAPI: null,
-      errors
-    };
-  }
-  const { data: appSettings, errors: appErrors } = await client.models.app_settings.list();
-  if (appErrors) {
-    return {
-      data: null,
-      googleAPIKey: null,
-      what3wordAPI: null,
-      errors: appErrors
-    };
-  }
-  // plumb in our responses
-  const googleAPI = appSettings.filter(map => map.code.includes('GOOGLE_MAP_API_KEY'));
-  const what3wordsAPI = appSettings.filter(map => map.code == 'WHAT3WORDS_API_KEY');
-  return {
-    data: items,
-    googleAPIKey: googleAPI[0].value,
-    what3wordAPI: what3wordsAPI == null || what3wordsAPI.length < 1 ? null : what3wordsAPI[0].value,
-    errors
-  }
-}
-
 function App(props)  {
 
   const [isAccessDisabled, setIsAccessDisabled] = useState(false);
   const [disableMsg, setDisableMsg] = useState('');
-  const [isWaiting, setIsWaiting] = useState(true);
+  const [isWaiting, setIsWaiting] = useState(false);
   const [emailAddress, setEmailAddress] = useState(props.userId);
+  const [googleAPIKeyValue, setGoogleAPIKeyValue] = useState('');
+  const [what3wordAPIValue, setWhat3WordAPIVALUE] = useState('');
+
+  const fetchSettings = async () => {
+
+    const { data: items, errors } = await client.models.Settings.list();
+    if (errors) {
+      return {
+        data: null,
+        googleAPIKey: null,
+        what3wordAPI: null,
+        errors
+      };
+    }
+    const { data: appSettings, errors: appErrors } = await client.models.app_settings.list();
+    if (appErrors) {
+      return {
+        data: null,
+        googleAPIKey: null,
+        what3wordAPI: null,
+        errors: appErrors
+      };
+    }
+    // plumb in our responses
+    const googleAPI = appSettings.filter(map => map.code.includes('GOOGLE_MAP_API_KEY'));
+    const what3wordsAPI = appSettings.filter(map => map.code == 'WHAT3WORDS_API_KEY');
+    return {
+      data: items,
+      googleAPIKey: googleAPI[0].value,
+      what3wordAPI: what3wordsAPI == null || what3wordsAPI.length < 1 ? null : what3wordsAPI[0].value,
+      errors
+    }
+  }
 
   const checkSettings = async (items, errors, googleAPIKey, what3wordAPI) => {
+    setIsWaiting(false);
     if (errors) {
       alert(errors[0].message);
       setDisableMsg("Access is currently disabled.");
       setIsDisabledUser(true);
       setIsAccessDisabled(true);
-      setIsWaiting(false);
     } else {
       if (items.length > 0) {
         setDisableMsg(items[0].content);
         setIsAccessDisabled (items[0].isDisabled);
-        setIsWaiting(false);
       } else {
-        googleAPIKeyValue = googleAPIKey;
-        what3wordAPIValue = what3wordAPI;
-        setIsWaiting(false);
+        setGoogleAPIKeyValue(googleAPIKey);
+        setWhat3WordAPIVALUE(what3wordAPI);
       }
     }
   };
@@ -83,26 +80,14 @@ function App(props)  {
     props.onSubmitChange(false);
   }
 
-  const fetchEmail = async () => {
-    if (emailAddress) {
-      return;
-    }
-    try {
-      const { email} = await fetchUserAttributes();
-      setEmailAddress(email);
-    } catch (exception) {
-
-    }
-  }
-
   useEffect(() => {
-
     const fetchTheSettings = async () => {
       const {data: items, googleAPIKey, what3wordAPI, errors} = await fetchSettings();
       checkSettings(items, errors, googleAPIKey, what3wordAPI);
     }
-//    setIsWaiting(true);
+    setIsWaiting(true);
     fetchTheSettings();
+
   }, []);
 
   function nothingToDo() {

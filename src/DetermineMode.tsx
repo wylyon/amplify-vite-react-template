@@ -40,7 +40,7 @@ export default function DetermineMode(props) {
   const [isDisabledUser, setIsDisabledUser] = useState(false);
   const [isAccessDisabled, setIsAccessDisabled] = useState(false);
   const [disableMsg, setDisableMsg] = useState('');
-  const [isWaiting, setIsWaiting] = useState(true);
+  const [isWaiting, setIsWaiting] = useState(false);
   const [mode, setMode] = useState(9);
   const [open, setOpen] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
@@ -147,7 +147,9 @@ export default function DetermineMode(props) {
         }
       }
     }
-
+    if (!isWaiting) {
+      setIsWaiting(true);
+    }
     getUser(props.userId);
   }, []);
 
