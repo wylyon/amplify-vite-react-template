@@ -668,8 +668,7 @@ function CustomToolbar() {
         </DialogTitle>
         <DialogContent>
 			<FormGroup>
-				<FormControlLabel control={<Switch onChange={handleStatusPoints} defaultChecked/>} label="Show Status Points" />
-				<Typography variant='caption'>NOTE:  Hover over markers for detail;  Click a Marker to zoom in more</Typography>
+				<Typography variant='caption'>NOTE:  Click a Marker to zoom in more; Right mousclick Marker to zoom out</Typography>
 			</FormGroup>
 			<MapMultipleWithGoogleAlt props={props} markers={userData} points={showPoints} custom={customQuestions} googleAPI={props.googleAPI} />		
         </DialogContent>

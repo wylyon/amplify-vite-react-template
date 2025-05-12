@@ -4,11 +4,16 @@ import { StorageImage } from '@aws-amplify/ui-react-storage';
 import { downloadData } from 'aws-amplify/storage';
 import Box  from '@mui/material/Box';
 import moment from 'moment';
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api'
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { Button } from '@mui/material';
+import { Stack } from '@mui/material';
+import TextField from '@mui/material/TextField';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow, DirectionsRenderer } from '@react-google-maps/api'
 
 const containerStyle = {
   width: '900px',
-  height: '700px',
+  height: '600px',
 }
 
 export default function MapMultipleWithGoogleAlt(props) {
@@ -19,10 +24,33 @@ export default function MapMultipleWithGoogleAlt(props) {
     lat: props.markers[0].lattitude,
     lng: props.markers[0].longitude,
   });
+
+  const [directions, setDirections] = useState(null);
+  const [origin, setOrigin] = useState(null);
+  const [destination, setDestination] = useState(null);
+  const [alignment, setAlignment] = useState(null);
+
+  const handleGetDirections = () => {
+    const directionsService = new window.google.maps.DirectionsService();
+    directionsService.route(
+      {
+        origin: origin,
+        destination: destination,
+        travelMode: window.google.maps.TravelMode.DRIVING,
+      },
+      (response, status) => {
+        if (status === 'OK') {
+          setDirections(response);
+        } else {
+          console.error(`Directions request failed due to ${status}`);
+        }
+      }
+    );
+  };
   
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: props.googleAPI,
+    googleMapsApiKey: props.googleAPI
   })
 
   const [map, setMap] = React.useState(null)
@@ -55,6 +83,44 @@ export default function MapMultipleWithGoogleAlt(props) {
 		}
   }
 
+  const handleDirectionOrigin = () => {
+    setOrigin({
+      lat: selectedCenter.lattitude,
+      lng: selectedCenter.longitude
+    });
+  }
+
+  const handleDirectionDestination = () => {
+    setDestination({
+      lat: selectedCenter.lattitude,
+      lng: selectedCenter.longitude
+    });
+  }
+
+  const handleAlignment = (
+    event: React.MouseEvent<HTMLElement>,
+    newAlignment: string | null,
+  ) => {
+    setAlignment(newAlignment);
+  };
+
+  const resetDirections = () => {
+    setOrigin(null);
+    setDestination(null);
+    setDirections(null);
+  }
+
+  const handleMapClick = (event) => {
+    const latLng = { lat: event.latLng.lat(), lng: event.latLng.lng() };
+    if (alignment) {
+      if (alignment == 'origin') {
+        setOrigin(latLng);
+      } else {
+        setDestination(latLng);
+      }
+    }
+  };
+
   const onUnmount = React.useCallback(function callback(map) {
     setMap(null)
   }, [])
@@ -67,7 +133,9 @@ export default function MapMultipleWithGoogleAlt(props) {
       zoom={zoom}
       onLoad={onLoad}
       onUnmount={onUnmount}
+      onClick={handleMapClick}
     >
+      {directions && <DirectionsRenderer directions={directions} />}
       {props.markers.map(marker => (marker.gpsLat == 0 ? null : 
         <Marker
           position={{ lat: marker.lattitude, lng: marker.longitude }}
@@ -89,6 +157,11 @@ export default function MapMultipleWithGoogleAlt(props) {
             } else {
               setSelectedCenter(marker);
               setCenter( { lat: marker.lattitude, lng: marker.longitude});
+            }
+            if (alignment && alignment == 'origin' && origin == null) {
+              setOrigin({ lat: marker.lattitude, lng: marker.longitude})
+            } else if (alignment && alignment == 'destination' && destination == null) {
+              setDestination({ lat: marker.lattitude, lng: marker.longitude});
             }
           }}
         />
@@ -129,6 +202,47 @@ export default function MapMultipleWithGoogleAlt(props) {
       </InfoWindow> )}
       <></>
     </GoogleMap>
+    <div>
+      <Stack direction='column' spacing={2}>
+        <Stack direction='row'>
+          <Button variant='contained' color='info' onClick={handleGetDirections}>Get Directions</Button><Button variant='contained' color='error' onClick={resetDirections}>Reset</Button>
+          <ToggleButtonGroup
+            value={alignment}
+            exclusive
+            onChange={handleAlignment}
+            aria-label="text alignment"
+          >
+            <ToggleButton value="origin" aria-label="origin-align">Set Origin</ToggleButton>
+            <ToggleButton value="destination" aria-label="dest-align">Set Destination</ToggleButton>
+          </ToggleButtonGroup>
+        </Stack>
+        <Stack direction='row'>
+          {origin ? <TextField id="origin-text" label="Origin" variant='outlined'
+          value={origin ? typeof origin === 'object' ? origin.lat + ',' + origin.lng : origin : ''} 
+            onChange={(e) => setOrigin(e.target.value)} /> : null }
+          {destination ? <TextField id="destination-text" label="Destination" variant='outlined'
+            value={destination ? typeof destination === 'object' ? destination.lat + ',' + destination.lng : destination : ''} 
+            onChange={(e) => setDestination(e.target.value)} /> : null}
+        </Stack>
+      </Stack>
+      {directions && (
+        <div>
+          <h2>Directions Details</h2>
+          {directions.routes[0].legs.map((leg, legIndex) => (
+            <div key={legIndex}>
+              <h3>Leg {legIndex + 1}</h3>
+              <p>Distance: {leg.distance.text}</p>
+              <p>Duration: {leg.duration.text}</p>
+              <ul>
+                {leg.steps.map((step, stepIndex) => (
+                  <li key={stepIndex} dangerouslySetInnerHTML={{ __html: step.instructions }} />
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+          </div>
     </React.Fragment>
   ) : (
     <></>
