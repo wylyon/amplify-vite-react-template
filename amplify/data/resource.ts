@@ -457,6 +457,13 @@ const schema = a.schema({
       isDisabled: a.boolean()
     })
     .authorization((allow) => [allow.publicApiKey()]),
+  Log: a
+    .model({
+      userName: a.string(),
+      content: a.string(),
+      transactionDate: a.datetime()
+    })
+    .authorization((allow) => [allow.publicApiKey()]),
 });
 
 const combinedSchema = a.combine([schema, sqlSchema]);

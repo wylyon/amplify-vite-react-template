@@ -357,7 +357,8 @@ export default function TransactionStatus(props) {
 			setOpen(true);	
 		} else {
 			if (userData.length == 0 || (userData.length == 1 && userData[0].id == "")) {
-				setUserData(updateTransformArray(theGrid, id, newStatus, newReason));
+				theGrid = updateTransformArray(theGrid, id, newStatus, newReason);
+				setUserData(theGrid);
 			} else {
 				theGrid = updateTransformArray(userData, id, newStatus, newReason);
 				setUserData(theGrid);
@@ -498,6 +499,10 @@ export default function TransactionStatus(props) {
 				updateTransaction(batchIds[indx], stat, reas);
 			}
 		} else {
+			const row = theGrid.filter((row) => row.transactionId == id);
+			if (row.length < 1) {
+				return;
+			}
 			updateTransaction(id, stat, reas);
 		}
 	}
