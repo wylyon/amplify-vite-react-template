@@ -1,14 +1,54 @@
 
 // @ts-nocheck
+import { useState, useEffect } from "react";
 import AdminMain from '../src/AdminMain';
 import AdminSuper from '../src/AdminSuper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '../amplify/data/resource';
 
 export default function AdminMode(props) {
-  const handleOnSignOut = (e) => {
-    props.onSubmitChange(false);
-  };
+
+	const [loggedIn, setLoggedIn] = useState(false);
+	const client = generateClient<Schema>();
+
+	const handleLogIn = async() => {
+		if (loggedIn) {
+			return;
+		}
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+			userName: props.userId,
+			content: 'Admin Login',
+			transactionDate: now
+		});
+		if (errors) {
+			console.log('Cant create login log entry: ', errors);
+		}
+	}
+
+	const handleLogOut = async() => {
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+			userName: props.userId,
+			content: 'Admin Logout',
+			transactionDate: now
+		});
+		if (errors) {
+			console.log('Cant create logout log entry: ', errors);
+		}
+	}
+
+  	const handleOnSignOut = (e) => {
+		handleLogOut();
+    	props.onSubmitChange(false);
+  	};
+
+	useEffect(() => {
+		handleLogIn();
+		setLoggedIn(true);
+	}, []);
 
   return (
     <main>

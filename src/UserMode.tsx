@@ -48,7 +48,35 @@ export default function UserMode(props) {
 	const [foundTemplate, setFoundTemplate] = useState(false);
 	const [install, setInstall] = useState(false);
 	const [iconURL, setIconURL] = useState('');
+	const [loggedIn, setLoggedIn] = useState(false);
 	
+	const handleLogIn = async() => {
+		if (loggedIn) {
+			return;
+		}
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+			userName: props.userId,
+			content: 'Logging App Login',
+			transactionDate: now
+		});
+		if (errors) {
+			console.log('Cant create login log entry: ', errors);
+		}
+	}
+
+	const handleLogOut = async() => {
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+			userName: props.userId,
+			content: 'Logging App Logout',
+			transactionDate: now
+		});
+		if (errors) {
+			console.log('Cant create logout log entry: ', errors);
+		}
+	}
+
 	const handleVerifiedDate = async(id) => {
 		const now = new Date();
 		const currentDateTime = now.toLocaleString();
@@ -199,6 +227,8 @@ export default function UserMode(props) {
 	  }
 
 	useEffect(() => {
+	  handleLogIn();
+	  setLoggedIn(true);
 	  getUserPageDetails(props.userId);
 	  handleS3Icon();
 	  if (reload) {
@@ -207,6 +237,7 @@ export default function UserMode(props) {
 	}, [reload]);
 
   const handleOnSignOut = (e) => {
+	handleLogOut();
     props.onSubmitChange(false);
   };
 

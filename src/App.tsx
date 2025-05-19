@@ -5,8 +5,6 @@ import { getCurrentUser } from 'aws-amplify/auth';
 import '@aws-amplify/ui-react/styles.css';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
-import AdminMode from '../src/AdminMode';
-import UserMode from '../src/UserMode';
 import DisableMode from '../src/DisableMode';
 import DetermineMode from '../src/DetermineMode';
 import { signOut } from 'aws-amplify/auth';

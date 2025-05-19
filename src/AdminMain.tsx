@@ -87,6 +87,18 @@ export default function AdminMain(props) {
 
 	const client = generateClient<Schema>();
 
+	const handleLog = async(content) => {
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+			userName: props.userId,
+			content: content,
+			transactionDate: now
+		});
+		if (errors) {
+			console.log('Cant create log entry for ' + content, errors);
+		}
+	}
+
 	const getCompanyById = async (compId) => {
 		const { data: item, errors } = await client.models.company.get({
 		  id: compId
@@ -102,6 +114,17 @@ export default function AdminMain(props) {
 	const handleChange = (event: React.SyntheticEvent, newValue: number) => {
 	  setId(null);
 	  setValue(newValue);
+	  handleLog(
+		newValue == 0 ? "Log Apps" :
+		newValue == 1 ? "Users" :
+		newValue == 2 && isDivisions ? "Divisions" :
+		newValue == 2 ? "Transaction Status" :
+		newValue == 3 && isDivisions ? "Transaction Status" :
+		newValue == 3 ? "Reports"  :
+		newValue == 4 && isDivisions ? "Reports" :
+		newValue == 4 ? "Profile" :
+		newValue == 5 ? "Profile" : ''
+	  );
 	};
 
 	const handleTurnOnDivision = (isDivision) => {
@@ -111,6 +134,13 @@ export default function AdminMain(props) {
 	const handleReportChange = (event: React.SyntheticEvent, newValue: number) => {
 		setTemplateId(null);
 		setHValue(newValue);
+		handleLog(
+			newValue == 0 ? "Reports - Summary All Results" :
+			newValue == 1 ? "Reports - Summary By Logging App" :
+			newValue == 2 ? "Reports - Detailed Report By Logging App" :
+			newValue == 3 ? "Reports - Transaction Detail By Company" :
+			newValue == 4 ? "Reports - Other Analytics" : ''
+		);
 	  };
 
 
