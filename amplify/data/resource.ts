@@ -461,7 +461,10 @@ const schema = a.schema({
     .model({
       userName: a.string(),
       content: a.string(),
-      transactionDate: a.datetime()
+      detail: a.string(),
+      refDoc: a.string(),
+      transactionDate: a.datetime(),
+      refDate: a.datetime(),
     })
     .authorization((allow) => [allow.publicApiKey()]),
 });
