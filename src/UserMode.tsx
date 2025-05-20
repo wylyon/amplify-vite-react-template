@@ -58,7 +58,10 @@ export default function UserMode(props) {
 		const { data: items, errors } = await client.models.Log.create ({
 			userName: props.userId,
 			content: 'Logging App Login',
-			transactionDate: now
+			detail: '',
+			refDoc: null,
+			transactionDate: now,
+			refDate: now,
 		});
 		if (errors) {
 			console.log('Cant create login log entry: ', errors);
@@ -70,21 +73,26 @@ export default function UserMode(props) {
 		const { data: items, errors } = await client.models.Log.create ({
 			userName: props.userId,
 			content: 'Logging App Logout',
-			transactionDate: now
+			detail: '',
+			refDoc: null,
+			transactionDate: now,
+			refDate: now,
 		});
 		if (errors) {
 			console.log('Cant create logout log entry: ', errors);
 		}
 	}
 
-	const handleTemplateAssign = async(loggingApp) => {
+	const handleTemplateAssign = async(loggingApp, tempId) => {
 
 		const now = new Date();
 		const { data: items, errors } = await client.models.Log.create ({
 			userName: props.userId,
 			content: 'Logging App Assignment',
 			detail: loggingApp,
-			transactionDate: now
+			refDoc: tempId,
+			transactionDate: now,
+			refDate: now,
 		});
 		if (errors) {
 			console.log('Cant create logApp assignment log entry: ', errors);
@@ -144,7 +152,7 @@ export default function UserMode(props) {
 		setTemplateQuestion(items);
 		if (isRefresh) {
 			setFoundTemplate(true);
-			handleTemplateAssign(templateName);
+			handleTemplateAssign(templateName, tempId);
 		}
 	};
 

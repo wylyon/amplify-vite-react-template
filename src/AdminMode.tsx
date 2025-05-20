@@ -21,7 +21,10 @@ export default function AdminMode(props) {
 		const { data: items, errors } = await client.models.Log.create ({
 			userName: props.userId,
 			content: 'Admin Login',
-			transactionDate: now
+			detail: '',
+			refDoc: null,
+			transactionDate: now,
+			refDate: now,
 		});
 		if (errors) {
 			console.log('Cant create login log entry: ', errors);
@@ -33,7 +36,10 @@ export default function AdminMode(props) {
 		const { data: items, errors } = await client.models.Log.create ({
 			userName: props.userId,
 			content: 'Admin Logout',
-			transactionDate: now
+			detail: '',
+			refDoc: null,
+			transactionDate: now,
+			refDate: now,
 		});
 		if (errors) {
 			console.log('Cant create logout log entry: ', errors);

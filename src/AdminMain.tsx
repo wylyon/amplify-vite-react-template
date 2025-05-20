@@ -92,7 +92,10 @@ export default function AdminMain(props) {
 		const { data: items, errors } = await client.models.Log.create ({
 			userName: props.userId,
 			content: content,
-			transactionDate: now
+			detail: 'Admin - ' + company.name,
+			refDoc: props.companyId,
+			transactionDate: now,
+			refDate: now,
 		});
 		if (errors) {
 			console.log('Cant create log entry for ' + content, errors);

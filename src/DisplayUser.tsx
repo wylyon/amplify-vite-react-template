@@ -311,8 +311,8 @@ export default function DisplayUser(props) {
       content: 'Logging App Save Transaction',
       detail: props.userData[0].title,
       refDoc: transactionId,
+      transactionDate: tranDateTime,
       refDate: now,
-      transactionDate: tranDateTime
     });
     if (errors) {
       console.log('Cant create logApp transaction log entry: ', errors);
