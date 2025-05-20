@@ -77,6 +77,20 @@ export default function UserMode(props) {
 		}
 	}
 
+	const handleTemplateAssign = async(loggingApp) => {
+
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+			userName: props.userId,
+			content: 'Logging App Assignment',
+			detail: loggingApp,
+			transactionDate: now
+		});
+		if (errors) {
+			console.log('Cant create logApp assignment log entry: ', errors);
+		}
+	}
+
 	const handleVerifiedDate = async(id) => {
 		const now = new Date();
 		const currentDateTime = now.toLocaleString();
@@ -119,7 +133,7 @@ export default function UserMode(props) {
 		setTemplates(templateIdAndTitle);
 	  }
 
-	const getQuestionsByTemplate = async (tempId, isRefresh) => {
+	const getQuestionsByTemplate = async (tempId, isRefresh, templateName) => {
 		const { data: items, errors } = await client.queries.listQuestionsByTemplateId({
 		  templateId: tempId
 		});
@@ -130,6 +144,7 @@ export default function UserMode(props) {
 		setTemplateQuestion(items);
 		if (isRefresh) {
 			setFoundTemplate(true);
+			handleTemplateAssign(templateName);
 		}
 	};
 
@@ -156,7 +171,7 @@ export default function UserMode(props) {
 				  setIsDefaultPage(false);
 				  setIsDefaultPage2(true);
 				  setUserData(translateUserTemplate (firstItem));
-				  getQuestionsByTemplate(firstItem.template_id);
+				  getQuestionsByTemplate(firstItem.template_id, false, firstItem.title);
 				  setFoundTemplate(true);
 				} else {
 				// here we have multiple templates...need to show list of templates to choose.
@@ -178,7 +193,7 @@ export default function UserMode(props) {
 						setIsDefaultPage(false);
 						setIsDefaultPage2(true);
 						setUserData(translateUserTemplate (item))	
-						getQuestionsByTemplate(firstItem.template_id, false);
+						getQuestionsByTemplate(firstItem.template_id, false, firstItem.title);
 						return;						
 					}
 				  }
@@ -209,7 +224,7 @@ export default function UserMode(props) {
 				setIsDefaultPage(false);
 				setIsDefaultPage2(true);
 				setUserData(translateUserTemplate (item))	
-				getQuestionsByTemplate(templateId, true);				
+				getQuestionsByTemplate(templateId, true, item.title);				
 			}
 		}
 	};

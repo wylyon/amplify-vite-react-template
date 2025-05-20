@@ -303,6 +303,22 @@ export default function DisplayUser(props) {
 		return new Date(value);
 	  }
 
+  const logTransaction = async(tranDateTime, transactionId) => {
+
+    const now = new Date();
+    const { data: items, errors } = await client.models.Log.create ({
+      userName: props.userId,
+      content: 'Logging App Save Transaction',
+      detail: props.userData[0].title,
+      refDoc: transactionId,
+      refDate: now,
+      transactionDate: tranDateTime
+    });
+    if (errors) {
+      console.log('Cant create logApp transaction log entry: ', errors);
+    }
+  }
+
   const saveTransaction = async(lat, long, what3words) => {
     const now = new Date();
     const { errors, data: items } = await client.models.transactions.create({
@@ -321,6 +337,8 @@ export default function DisplayUser(props) {
       setTheSeverity("error");
       setAlertMessage(errors[0].message);
       setIsAlert(true);
+    } else {
+      logTransaction(now, props.transaction);
     }
   }
 

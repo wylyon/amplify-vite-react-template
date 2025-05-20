@@ -110,6 +110,19 @@ export default function PopupWelcome(props) {
     setPage(value);
   }
 
+	const logWelcome = async() => {
+
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+			userName: props.userId,
+			content: 'Admin Welcome',
+			transactionDate: now
+		});
+		if (errors) {
+			console.log('Cant create welcome log entry: ', errors);
+		}
+	}
+
   const handleNext = () => {
     setPrevent(true);
     let newSkipped = skipped;
@@ -162,6 +175,7 @@ export default function PopupWelcome(props) {
   };
 
   useEffect(() => {
+    logWelcome();
 	}, []);
 
   const handleShowWarning = () => {
