@@ -116,7 +116,10 @@ export default function PopupWelcome(props) {
 		const { data: items, errors } = await client.models.Log.create ({
 			userName: props.userId,
 			content: 'Admin Welcome',
-			transactionDate: now
+			detail: '',
+			refDoc: null,
+			transactionDate: now,
+			refDate: now,
 		});
 		if (errors) {
 			console.log('Cant create welcome log entry: ', errors);

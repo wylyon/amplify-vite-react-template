@@ -139,6 +139,23 @@ export default function TransactionStatus(props) {
 	const filterJSON = localStorage.getItem("transactionStatus_filter");
 	const initialFilterModel = (filterJSON) ? JSON.parse(filterJSON) : {items: []};
 	const [filterModel, setFilterModel] = useState<GridFilterModel>(initialFilterModel);
+
+	const logTransaction = async(isUpdate, transactionId, tranDateTime,  newStatus, newReason) => {
+
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+		  userName: props.userId,
+		  content: isUpdate ? 'Admin - Transaction Status Change' : 'Admin - Transaction Status Delete',
+		  detail: newReason == null ? newStatus : newStatus + " - " + newReason,
+		  refDoc: transactionId,
+		  transactionDate: tranDateTime,
+		  refDate: now,
+		});
+		if (errors) {
+		  console.log('Cant create log transaction status change log entry: ', errors);
+		}
+	  }
+
 	function getDate(value) {
 		if (value == null) {
 			return null
@@ -356,6 +373,7 @@ export default function TransactionStatus(props) {
 			setError(errors[0].message);
 			setOpen(true);	
 		} else {
+			logTransaction(true, id, now, newStatus, newReason);
 			if (userData.length == 0 || (userData.length == 1 && userData[0].id == "")) {
 				theGrid = updateTransformArray(theGrid, id, newStatus, newReason);
 				setUserData(theGrid);
@@ -414,6 +432,7 @@ export default function TransactionStatus(props) {
 	const handleDeleteTransaction = async() => {
 		setOpenDelete(false);
 		setIsWaiting(true);
+		const now = new Date();
 		// delete any pictures first
 		const row = theGrid.filter((row) => row.transactionId == tranyId);
 		if (row.length > 0 && row[0].questionType == 'photo') {
@@ -434,6 +453,8 @@ export default function TransactionStatus(props) {
 		if (errors) {
 			setError(errors[0].message);
 			setOpen(true);	
+		} else {
+			logTransaction(false, tranyId, now, null, null);
 		}
 		setTranyId(null);
 		setIsWaiting(false);
