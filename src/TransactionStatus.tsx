@@ -834,7 +834,9 @@ function CustomToolbar() {
 			<FormGroup>
 				<Typography variant='caption'>NOTE:  Click a Marker to zoom in more; right mouseclick Marker to zoom out</Typography>
 			</FormGroup>
-			<MapMultipleWithGoogleAlt props={props} points={showPoints} markers={userData} custom={customQuestions} googleAPI={props.googleAPI} />		
+			<MapMultipleWithGoogleAlt props={props} points={showPoints} markers={
+				statusFilter == 'All' ? userData.filter(comp => comp.id != '') : userData.filter(comp => comp.status == statusFilter)
+			} custom={customQuestions} googleAPI={props.googleAPI} />		
         </DialogContent>
         <DialogActions>
           <Button variant='contained' color='error' onClick={handleOverviewCloseMap} autoFocus>
@@ -856,12 +858,14 @@ function CustomToolbar() {
 			</ToggleButtonGroup>
 			<Button variant="contained" color="primary" aria-label="change status" disabled={batchIds.length == 0} onClick={handleBatchStatus}>Update Status For Selected Items</Button>
 			<Tooltip title="Press to see overview map of each transaction" placement="top">
-				<Button variant="contained" color="secondary" aria-label="overview map" onClick={handleOverviewMapIt()} startIcon={<MapIcon />}>Overview Map</Button>
+				<Button variant="contained" color="secondary" disabled={
+					statusFilter == 'All' ? userData.filter(comp => comp.id != '').length == 0 : userData.filter(comp => comp.status == statusFilter).length == 0
+				} aria-label="overview map" onClick={handleOverviewMapIt()} startIcon={<MapIcon />}>Overview Map</Button>
 			</Tooltip>
 		</Stack>
 		<Paper sx={{ height: 600, width: '100%' }} elevation={4}>
 			<DataGrid
-				rows={statusFilter == 'All' ? userData : userData.filter(comp => comp.status == statusFilter)}
+				rows={statusFilter == 'All' ? userData.filter(comp => comp.id != '') : userData.filter(comp => comp.status == statusFilter)}
 				slots={{ toolbar: CustomToolbar}}
 				loading={loading}
 				columns={columnsNew.length < 1 ? columns : columnsNew}

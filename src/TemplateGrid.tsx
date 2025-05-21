@@ -383,7 +383,24 @@ export default function TemplateGrid(props) {
 	const handleRowChangeEvent: GridEventListener<'rowCountChange'> = (params, event, details) => {
 	}
   
-	const handleDeactiveOrActivate = async(id, isDeactive) => {
+
+	const logActivateDeactivateTransaction = async(isActivate, transactionId, tranDateTime, templateName) => {
+
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+		  userName: props.userId,
+		  content: isActivate ? 'Admin - Logging Activate' : 'Admin - Logging Deactivate',
+		  detail: isActivate ? 'Activating ' + templateName : 'Deactivating ' + templateName,
+		  refDoc: transactionId,
+		  transactionDate: tranDateTime,
+		  refDate: now,
+		});
+		if (errors) {
+		  console.log('Cant create log logging App activate-deactivate log entry: ', errors);
+		}
+	}
+
+	const handleDeactiveOrActivate = async(id, isDeactive, templateName) => {
 		const now = new Date();
 		const { errors, data: updatedData } = await client.models.template.update({
 			id: id,
@@ -392,6 +409,8 @@ export default function TemplateGrid(props) {
 		if (errors) {
 			setError(errors[0].message);
 			setOpen(true);
+		} else {
+			logActivateDeactivateTransaction(isDeactive ? false : true, id, now, templateName);
 		}
 		setLoading(true);
 		getTemplates(true);
@@ -426,6 +445,22 @@ export default function TemplateGrid(props) {
 			});
 	}
 
+	const logDeleteTransaction = async(transactionId, tranDateTime, templateName) => {
+
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+		  userName: props.userId,
+		  content: 'Admin - Logging App Delete',
+		  detail: 'Deleted ' + templateName,
+		  refDoc: transactionId,
+		  transactionDate: tranDateTime,
+		  refDate: now,
+		});
+		if (errors) {
+		  console.log('Cant create log logging App delete log entry: ', errors);
+		}
+	}
+
 	const handleDeleteRow = async(id) => {
 		const { errors, data: deletedData } = await client.models.template.delete({
 			id: id
@@ -454,16 +489,18 @@ export default function TemplateGrid(props) {
 		}
 	}
 
-	const handlePreDeleteRow = async(id) => {
+	const handlePreDeleteRow = async(id, title) => {
+		const now = new Date();
 		if (isBackups) {
 			const { errors: err, data: items } =
 				await client.mutations.backupTemplateById({
 					id: id
 				});
-			handleDeleteRow(id);
+			await handleDeleteRow(id);
 		} else {
-			handleDeleteRow(id);
+			await handleDeleteRow(id);
 		}
+		logDeleteTransaction(id, now, title);
 	}
 
 	const handlePrePostAttributeUpdate = async(id, pre, post) => {
@@ -526,18 +563,21 @@ export default function TemplateGrid(props) {
 	}
 
 	const handleDeactivate = (id: GridRowId) => () => {
-		handleDeactiveOrActivate(id, true);
+		const row = rows.filter((row) => row.id === id);
+		handleDeactiveOrActivate(id, true, row[0].title);
 	}
 
 	const handleActivate = (id: GridRowId) => () => {
-		handleDeactiveOrActivate(id, false);
+		const row = rows.filter((row) => row.id === id);
+		handleDeactiveOrActivate(id, false, row[0].title);
 	}
 	
 	const handleDeleteClick = (id: GridRowId) => () => {
+		const row = rows.filter((row) => row.id === id);
 		setOpen(false);
 		setError('');
 		setRows(rows.filter((row) => row.id !== id));
-		handlePreDeleteRow(id);
+		handlePreDeleteRow(id, row[0].title);
 	};	
 
 	const handleDelete = (id: GridRowId) => () => {

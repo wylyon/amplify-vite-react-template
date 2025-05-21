@@ -638,6 +638,22 @@ export default function UserGrid(props) {
 		}
 	}
 
+	const logTransaction = async(transactionId, tranDateTime, userName) => {
+
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+		  userName: props.userId,
+		  content: isAdmin ? 'Admin - Admin User Delete' : 'Admin - User Delete',
+		  detail: 'Deleted ' + userName,
+		  refDoc: transactionId,
+		  transactionDate: tranDateTime,
+		  refDate: now,
+		});
+		if (errors) {
+		  console.log('Cant create log user delete log entry: ', errors);
+		}
+	  }
+
 	const handleDeleteRow = async(id) => {
 		const { errors, data: deletedData } = 
 		(isAdmin) ?
@@ -655,7 +671,8 @@ export default function UserGrid(props) {
 		deletePrepAllReferences(id, row);
 	}
 
-	const handleDeletePrep = async(id) => {
+	const handleDeletePrep = async(id, userName) => {
+		const now = new Date();
 		if (isBackups) {
 			const { errors: err, data: items } =
 			(isAdmin) ?
@@ -665,10 +682,11 @@ export default function UserGrid(props) {
 				await client.mutations.backupUserById({
 					id: id
 				});
-			handleDeleteRow(id);
+			await handleDeleteRow(id);
 		} else {
-			handleDeleteRow(id);
+			await handleDeleteRow(id);
 		}
+		logTransaction(id, now, userName);
 	}
 
 	const handleAddRow = async(newRow:GridRowModel) => {
@@ -808,7 +826,7 @@ export default function UserGrid(props) {
 			return;
 		}
 		setRows(rows.filter((row) => row.id !== id));
-		handleDeletePrep(id);
+		handleDeletePrep(id, row[0].email);
 	};	
 
 	const handleDelete = (id: GridRowId) => () => {

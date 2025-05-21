@@ -77,7 +77,23 @@ export default function AssociateUsers(props) {
     props.onSubmitChange(false);
   };
 
-  const handleOnDelete = async(id, activeDate) => {
+	const logAssociateTransaction = async(isDelete, isAssociate, userName, transactionId, tranDateTime, templateName) => {
+
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+		  userName: props.userId,
+		  content: isDelete ? 'Admin - Logging App Delete Association' : isAssociate ? 'Admin - Logging App Add User to Logging App' : 'Admin - Logging App DisAssociate User from Logging App',
+		  detail: isDelete ? 'Deleted ' + userName + ' from ' + templateName : isAssociate ? 'Add ' + userName + ' to ' + templateName : 'DisAssociate ' + userName + ' From ' + templateName,
+		  refDoc: transactionId,
+		  transactionDate: tranDateTime,
+		  refDate: now,
+		});
+		if (errors) {
+		  console.log('Cant create log logging App associations log entry: ', errors);
+		}
+	}
+
+  const handleOnDelete = async(id, activeDate, userName) => {
     const now = new Date();
     const currentDateTime = now.toLocaleString();
     const isNull = (!activeDate);
@@ -87,11 +103,13 @@ export default function AssociateUsers(props) {
 	    enabled_date: (isNull) ? now : null});
     if (errors) {
       alert(errors[0].message);
+    } else {
+      logAssociateTransaction(false, false, userName, id, now, props.name);
     }
     getPermissionsByDivisionTemplate(props.divisionId, props.id);
   }
 
-  const handleAddUser = async(userId, templateUserId) => {
+  const handleAddUser = async(userId, templateUserId, userName) => {
     const now = new Date();
     const uuid = uuidv4();
     if (!templateUserId) {
@@ -104,6 +122,8 @@ export default function AssociateUsers(props) {
 	      created_by: props.userId});
       if (errors) {
         alert(errors[0].message);
+      } else {
+        logAssociateTransaction(false, true, userName, uuid, now, props.name);
       }
     } else {
       const { errors, data: deletedTemplatePermission } = await client.models.template_permissions.delete({
@@ -111,6 +131,8 @@ export default function AssociateUsers(props) {
       });
       if (errors) {
         alert(errors[0].message);
+      } else {
+        logAssociateTransaction(true, false, userName, templateUserId, now, props.name);
       }
     }
     getPermissionsByDivisionTemplate(props.divisionId, props.id);
@@ -150,11 +172,11 @@ export default function AssociateUsers(props) {
 	        <td>{comp.emailAddress}</td>
 	        <td>{comp.firstName + " " + comp.lastName}</td>
 	        <td ><button className={(!comp.templateUserId) ? "activateButton" : "cancelButton"}
-		        onClick={() => handleAddUser(comp.id, comp.templateUserId)}>{(!comp.templateUserId) ? "Add To Template" : 
+		        onClick={() => handleAddUser(comp.id, comp.templateUserId, comp.emailAddress)}>{(!comp.templateUserId) ? "Add To Template" : 
             "Delete From Template"}</button></td>
           {!comp.templateUserId ? <td>{comp.enabledDate}</td> : 
             <td><button className={(!comp.enabledDate) ? "activateButton" : "cancelButton"}
-            onClick={() => handleOnDelete(comp.templateUserId, comp.enabledDate)}>{(!comp.enabledDate) ? "Activate" : "DeActivate"}</button></td>}
+            onClick={() => handleOnDelete(comp.templateUserId, comp.enabledDate, comp.emailAddress)}>{(!comp.enabledDate) ? "Activate" : "DeActivate"}</button></td>}
           <td>{comp.verifiedDate}</td>
 	      </tr>)}
 	    </tbody>

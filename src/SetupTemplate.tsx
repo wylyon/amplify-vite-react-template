@@ -377,6 +377,22 @@ export default function SetupTemplate(props) {
     alert("Form completed!");
   }
 
+	const logTransaction = async(transactionId, tranDateTime, templateName) => {
+
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+		  userName: props.userId,
+		  content: 'Admin - Logging App Template Add/Change',
+		  detail: templateName,
+		  refDoc: transactionId,
+		  transactionDate: tranDateTime,
+		  refDate: now,
+		});
+		if (errors) {
+		  console.log('Cant create log logging App add log entry: ', errors);
+		}
+	}
+
   const handleSaveAll = async() => {
     if (props.isWizard || !isAnyChanges) {
       setOpenSetup(false);
@@ -475,6 +491,7 @@ export default function SetupTemplate(props) {
           }
         }
       }
+      logTransaction(props.templateId, now, props.name);
     }
     setIsWaiting(false);
     setOpenSetup(false);

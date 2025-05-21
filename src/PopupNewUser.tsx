@@ -231,6 +231,22 @@ export default function PopupNewUser(props) {
     }
   }
 
+	const logTransaction = async(transactionId, tranDateTime, userName) => {
+
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+		  userName: props.userId,
+		  content: props.props.isAdmin ? 'Admin - Admin User Add' : 'Admin - User Add',
+		  detail: 'Added ' + userName,
+		  refDoc: transactionId,
+		  transactionDate: tranDateTime,
+		  refDate: now,
+		});
+		if (errors) {
+		  console.log('Cant create log user add log entry: ', errors);
+		}
+	}
+
   const handleAddRow = async(email, firstName, middleName, lastName, notes, password) => {
 		const now = new Date();
     setIsWaiting(true);
@@ -282,6 +298,7 @@ export default function PopupNewUser(props) {
     if (password != null) {
       signThemUp(email, password);
     }
+    logTransaction(id, now, email);
     setIsWaiting(false);
     handleSubmitValues(item);
 	}
