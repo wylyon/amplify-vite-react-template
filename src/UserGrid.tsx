@@ -495,6 +495,22 @@ export default function UserGrid(props) {
 		getUsers(isAdmin, true);		
 	}
 
+	const logActivateDeActivateTransaction = async(isActivate, transactionId, tranDateTime, userName) => {
+
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+		  userName: props.userId,
+		  content: isAdmin && isActivate ? 'Admin - Admin User Activated' : isAdmin ? 'Admin - Admin User Deactivated' : isActivate ? 'Admin - User Activated' : 'Admin - User Deactivated',
+		  detail: userName,
+		  refDoc: transactionId,
+		  transactionDate: tranDateTime,
+		  refDate: now,
+		});
+		if (errors) {
+		  console.log('Cant create log user activate log entry: ', errors);
+		}
+	  }
+
 	const handleDeactiveOrActivate = async(id, isDeactive, emailAddress) => {
 		const now = new Date();
 		const row = rows.filter((row) => row.id === id);
@@ -554,8 +570,8 @@ export default function UserGrid(props) {
 							UserPoolId: userPoolId,
 							Username: row[0].userName[1]
 						});
-				}
-
+				}``
+			logActivateDeActivateTransaction(!isDeactive, id, now, emailAddress);
 		}
 		setLoading(true);
 		getUsers(isAdmin, true);
@@ -638,7 +654,7 @@ export default function UserGrid(props) {
 		}
 	}
 
-	const logTransaction = async(transactionId, tranDateTime, userName) => {
+	const logDeleteTransaction = async(transactionId, tranDateTime, userName) => {
 
 		const now = new Date();
 		const { data: items, errors } = await client.models.Log.create ({
@@ -686,8 +702,24 @@ export default function UserGrid(props) {
 		} else {
 			await handleDeleteRow(id);
 		}
-		logTransaction(id, now, userName);
+		logDeleteTransaction(id, now, userName);
 	}
+
+	const logAddChangeTransaction = async(isAdd, transactionId, tranDateTime, userName) => {
+
+		const now = new Date();
+		const { data: items, errors } = await client.models.Log.create ({
+		  userName: props.userId,
+		  content: isAdd && isAdmin ? 'Admin - Admin User Add' : isAdd ? 'Admin - User Add' : isAdmin ? 'Admin - Admin User Update' : 'Admin - User Update',
+		  detail: userName,
+		  refDoc: transactionId,
+		  transactionDate: tranDateTime,
+		  refDate: now,
+		});
+		if (errors) {
+		  console.log('Cant create log user add-change log entry: ', errors);
+		}
+	  }
 
 	const handleAddRow = async(newRow:GridRowModel) => {
 		const now = new Date();
@@ -726,6 +758,7 @@ export default function UserGrid(props) {
 				setOpen(true);
 			}	
 		}
+		logAddChangeTransaction(true, newRow.id, now, newRow.email);
 	}
 
 	const handleUpdateRow = async(newRow: GridRowModel) => {
@@ -754,6 +787,8 @@ export default function UserGrid(props) {
 		if (errors) {
 			setError(errors[0].message);
 			setOpen(true);
+		} else {
+			logAddChangeTransaction(false, newRow.id, now, newRow.email);
 		}
 	}
 
