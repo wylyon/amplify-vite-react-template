@@ -49,10 +49,11 @@ import Pagination from '@mui/material/Pagination';
 export default function PopupWelcome(props) {
   const [isWaiting, setIsWaiting] = useState(false);
   const [openGenerate, setOpenGenerate] = useState(false);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [openName, setOpenName] = useState(false);
   const [checked, setChecked] = useState(true);
+  const [openWelcome, setOpenWelcome] = useState(true);
   const [openError, setOpenError] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
   const [error, setError] = useState('');
@@ -91,7 +92,7 @@ export default function PopupWelcome(props) {
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const client = generateClient<Schema>();
-  const steps = ['Select your Profile', 'Build a Logging App - Define', 'Build a Logging App - Create', 'Setup Users for that Logging App'];
+  const steps = ['Select your Profile', 'Build a Logging App - Define', 'Build a Logging App - Create', 'Setup Users for that Logging App - Optional'];
   const descriptions = ['The first step is to complete your profile.   Please enter the name of the Company and a Contact, that will be associated with this account.', 
     'Step 2 is to define a logging app to collect your data that you want captured.  Do not worry, you can always change or delete this later, but we want to walk you through how easy it is.',
     'Step 3 is to create the logging app controls and characteristics.',
@@ -179,6 +180,7 @@ export default function PopupWelcome(props) {
 
   useEffect(() => {
     logWelcome();
+    setOpenWelcome(true);
 	}, []);
 
   const handleShowWarning = () => {
@@ -193,6 +195,11 @@ export default function PopupWelcome(props) {
 
   const handleCancel = () => {
     setOpenCancel(false);
+  }
+
+  const handleWelcomeClose = () => {
+    setOpenWelcome(false);
+    setOpen(true);
   }
 
   const handleSubmitValues = (item) => {
@@ -316,6 +323,34 @@ export default function PopupWelcome(props) {
   return (
     <React.Fragment>
       <Dialog
+        open={openWelcome}
+        aria-labelledby="alert-dialog-welcome"
+        aria-describedby="alert-dialog-description-welcome"
+      >
+        <DialogTitle id="alert-dialog-title-welcome">
+          Welcome to logit.pro!
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description-welcome-text">
+            The following wizard will set you up as an Admin user for your business/self 
+            and will help get you started to build your first Logging App.   <br />NOTE:  If you are uncomfortable building your
+            Logging App, you can ask us to help build it for you, via our homepage, Contact Us, Help to Get Started, where 
+            you can give us information about what you want to log data for, and we will build it and set you up.<br /><br />
+            Alternately, we encourage you to try and build your own logging app, which this wizard will guide you through.
+            This wizard will ask you some generic information about what you want to call your Logging App, 
+            provide you with the ability to build (create) that Logging App, and then allow you to add users for 
+            this app, or just complete the wizard with no new users and use it yourself.<br /><br />
+            Once you have completed the wizard, you will be presented with the Admin console. where you can edit the 
+            Logging App, Reports, or add users.
+            To run the Logging App on your mobile device, you would want to go to logit-app.pro from Chrome on your
+            mobile device (phone).   Once signing in, your Logging App will run!
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button variant='contained' color='error' onClick={handleWelcomeClose} autoFocus>Close</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
         open={openCancel}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
@@ -363,7 +398,7 @@ export default function PopupWelcome(props) {
       <DialogTitle>Welcome to logit.pro!</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Lets walk you through setting up logit.pro and create your first data capture application (template)
+          Lets walk you through setting up logit.pro and create your first data capture application (Logging App)
           <br /><br />
         </DialogContentText>
         {openError &&  <Alert severity="error" onClose={handleCloseError}>

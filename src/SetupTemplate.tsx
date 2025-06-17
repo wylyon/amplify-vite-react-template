@@ -41,6 +41,8 @@ import Slider from "@mui/material/Slider";
 import Stack from '@mui/material/Stack';
 import DisplayQuestion from "../src/DisplayQuestion";
 import CircularProgress from '@mui/material/CircularProgress';
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import { downloadData } from 'aws-amplify/storage';
 import Pagination from '@mui/material/Pagination';
 import PopupReview from "../src/PopupPreview";
 import MoveUpIcon from '@mui/icons-material/MoveUp';
@@ -94,6 +96,14 @@ export default function SetupTemplate(props) {
   const [sortDirection, setSortDirection] = useState('none');
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
   const [openCancel, setOpenCancel] = useState(false);
+  const [openQuestion, setOpenQuestion] = useState(false);
+  const [questionIs, setQuestionIs] = useState('photo');
+  const [iconPhotoURL, setIconPhotoURL] = useState('');
+  const [iconDropDownURL, setIconDropDownURL] = useState('');
+  const [iconListURL, setIconListURL] = useState('');
+  const [iconInputURL, setIconInputURL] = useState('');
+  const [iconMultiListURL, setIconMultiListURL] = useState('');
+  const [iconMultiDropdownURL, setIconMultiDropdownURL] = useState('');
   const [isAnyChanges, setIsAnyChanges] = useState(false);
   const [color, setColor] = useState ("#b32aa9");
 
@@ -138,6 +148,40 @@ export default function SetupTemplate(props) {
 
   const handleCloseNow = () => {
     setOpen(false);
+  }
+
+  const handlePhotoQuestion = () => {
+    setQuestionIs('photo');
+    setOpenQuestion(true);
+  }
+
+  const handleDropDownQuestion = () => {
+    setQuestionIs('dropdown');
+    setOpenQuestion(true);
+  }
+
+  const handleListQuestion = () => {
+    setQuestionIs('list');
+    setOpenQuestion(true);
+  }
+
+  const handleInputQuestion = () => {
+    setQuestionIs('input');
+    setOpenQuestion(true);
+  }
+
+  const handleMultiDropDownQuestion = () => {
+    setQuestionIs('multi-dropdown');
+    setOpenQuestion(true);
+  }
+
+  const handleMultiListQuestion = () => {
+    setQuestionIs('multi-list');
+    setOpenQuestion(true);
+  }
+
+  const handleCloseQuestion = () => {
+    setOpenQuestion(false);
   }
 
   const handlePreClose = () => {
@@ -708,10 +752,48 @@ export default function SetupTemplate(props) {
     setIsAdvanced(event.target.checked);
   }
 
+  const monitorDownloadIcon = async() => {
+		const downloadPhotoResult = await downloadData({
+				path: "picture-submissions/icon/photo-sample.png"
+			}).result;
+		const myFile = await downloadPhotoResult.body.blob();
+		setIconPhotoURL(URL.createObjectURL(myFile));
+    const downloadListResult = await downloadData({
+      path: "picture-submissions/icon/list-sample.png"
+    }).result;
+    const myFile2 = await downloadListResult.body.blob();
+		setIconListURL(URL.createObjectURL(myFile2));
+    const downloadDropDownResult = await downloadData({
+      path: "picture-submissions/icon/dropdown-sample.png"
+    }).result;
+    const myFile3 = await downloadDropDownResult.body.blob();
+		setIconDropDownURL(URL.createObjectURL(myFile3));
+    const downloadInputResult = await downloadData({
+      path: "picture-submissions/icon/input-sample.png"
+    }).result;
+    const myFile4 = await downloadInputResult.body.blob();
+		setIconInputURL(URL.createObjectURL(myFile4));
+    const downloadMultiDropDownResult = await downloadData({
+      path: "picture-submissions/icon/multi-dropdown-sample.png"
+    }).result;
+    const myFile5 = await downloadMultiDropDownResult.body.blob();
+		setIconMultiDropdownURL(URL.createObjectURL(myFile5));
+    const downloadMultiListResult = await downloadData({
+      path: "picture-submissions/icon/multi-list.png"
+    }).result;
+    const myFile6 = await downloadMultiListResult.body.blob();
+		setIconMultiListURL(URL.createObjectURL(myFile6));
+	}
+	
+	const handleS3Icon = async() => {
+		await monitorDownloadIcon();
+	}
+
   useEffect(() => {
     if (isFirst) {
       getQuestionsByTemplate(props.templateId, false);
       setIsFirst(false);
+      handleS3Icon();
     } else {
       const stuff = table.getState().rowSelection;
       const selectedRows = table.getSelectedRowModel().rows;
@@ -974,6 +1056,42 @@ export default function SetupTemplate(props) {
         </DialogActions>
       </Dialog>
       <Dialog
+        open={openQuestion}
+        onClose={handleCloseQuestion}
+        aria-labelledby="alert-dialog-title-question"
+        aria-describedby="alert-dialog-description-question"
+      >
+        <DialogTitle id="alert-dialog-title-question-title">
+          {questionIs == 'photo' ? 'Select This For a Picture or Video' :
+           questionIs == 'dropdown' ? 'Select This for a dropdown list of values' :
+           questionIs == 'list' ? 'Select This for a list of buttons' : 
+           questionIs == 'input' ? 'Select This for Input' :
+           questionIs == 'multi-dropdown' ? 'Select This for Multiple dropdown list of values' :
+           questionIs == 'multi-list' ? 'Select This for Multiple list of buttons' : null }
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {questionIs == 'photo' ? 'Selecting this control will add the ability to take a picture or video.   It will look like below:' : 
+             questionIs == 'dropdown' ? 'Select this control to show a dropdown list of values to select a single one of. It will look like below:' :
+             questionIs == 'list' ? 'Select this control to show a list of buttons to select a single one of.  It will look like below:' :
+             questionIs == 'input' ? 'Select this control to allow text input.   It will look like below:': 
+             questionIs == 'multi-dropdown' ? 'Select this control to show a dropdown list of checkbox values to select multiple of.   It will look like below:' :
+             questionIs == 'multi-list' ? 'Select this control to show a list of buttons to select multile of.   It will look like below:' : null}
+          </DialogContentText>
+          < br />
+          <img src={questionIs == 'photo' ? iconPhotoURL : 
+            questionIs == 'dropdown' ? iconDropDownURL: 
+            questionIs == 'list' ? iconListURL : 
+            questionIs == 'input' ? iconInputURL :
+            questionIs == 'multi-dropdown' ? iconMultiDropdownURL :
+            questionIs == 'multi-list' ? iconMultiListURL : null} 
+            alt={questionIs} width="150" height="150" />
+        </DialogContent>
+        <DialogActions>
+          <Button variant='contained' color='error' onClick={handleCloseQuestion} autoFocus>Close</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
         open={openCancel}
         onClose={handleCloseCancel}
         aria-labelledby="alert-dialog-title"
@@ -1199,7 +1317,7 @@ export default function SetupTemplate(props) {
             </h4>
             <FormControl>
               <Stack direction="row" spacing={2}>
-                <Box sx={{ width: '200px'}}>
+                <Box sx={{ width: '220px'}}>
                   <RadioGroup
                     aria-labelledby="question-group-label"
                     defaultValue="photo"
@@ -1208,46 +1326,81 @@ export default function SetupTemplate(props) {
                       {props.isWizard || !isAdvanced ? 
                       <Paper elevation={3}>
                         <Tooltip title="Select a Control here.   A control is the type of input you want your user to use." placement="top">
-                        <Typography variant="h6" alignContent="center">Step 1: Select Control</Typography>
+                          <Typography variant="h6" alignContent="center">Step 1: Select Control</Typography>
                         </Tooltip>
                         <Tooltip title="Select this to input a photo" placement="top">
-                        <FormControlLabel value="photo" disabled={!isValuesDisabled && isUpdate}
-                          control={(formData.questionType=="photo") ? <Radio checked size="small"/> : <Radio size="small"/>} 
-                          label="Add a Photo" 
-                          onClick={handlePhotoClick} onChange={handleChange}/></Tooltip>
+                        <Stack direction="row">
+                          <FormControlLabel value="photo" disabled={!isValuesDisabled && isUpdate}
+                            control={(formData.questionType=="photo") ? <Radio checked size="small"/> : <Radio size="small"/>} 
+                            label="Add a Photo" 
+                            onClick={handlePhotoClick} onChange={handleChange}/>
+                            <IconButton aria-label="photo-question" size="small" onClick={handlePhotoQuestion}>
+                              <QuestionMarkIcon  fontSize="inherit" />
+                            </IconButton>
+                        </Stack>
+                        </Tooltip>
                         <Stack direction="column" spacing={3}>
                           <Paper elevation={3}>
                             <Typography variant="caption">Single Input Controls</Typography>
                             <Tooltip title="Select this to input a dropdown for a single input" placement="right">
-                            <FormControlLabel value="dropdown" disabled={isValuesDisabled && isUpdate}
-                              control={(formData.questionType=="dropdown") ? <Radio checked size="small"/> : <Radio  size="small"/>} 
-                              label="Add a Dropdown of Values" 
-                              onClick={handleDropDownClick} onChange={handleChange}/></Tooltip>
+                              <Stack direction="row">
+                                <FormControlLabel value="dropdown" disabled={isValuesDisabled && isUpdate}
+                                  control={(formData.questionType=="dropdown") ? <Radio checked size="small"/> : <Radio  size="small"/>} 
+                                  label="Add a Dropdown of Values" 
+                                  onClick={handleDropDownClick} onChange={handleChange}/>
+                                <IconButton aria-label="dropdown-question" size="small" onClick={handleDropDownQuestion}>
+                                  <QuestionMarkIcon fontSize="inherit"  />
+                                </IconButton>
+                              </Stack>
+                            </Tooltip>
                             <Tooltip title="Select this for a toggle button" placement="right">
-                            <FormControlLabel value="toggle_button"  disabled={isValuesDisabled && isUpdate}
-                              control={formData.questionType=="toggle_button" ? <Radio checked size="small"/> : <Radio  size="small"/>} 
-                              label="Add a List of Buttons" 
-                              onClick={handleToggleButtonClick} onChange={handleChange}/></Tooltip>
+                            <Stack direction="row">
+                              <FormControlLabel value="toggle_button"  disabled={isValuesDisabled && isUpdate}
+                                  control={formData.questionType=="toggle_button" ? <Radio checked size="small"/> : <Radio  size="small"/>} 
+                                  label="Add a List of Buttons" 
+                                  onClick={handleToggleButtonClick} onChange={handleChange}/>
+                                <IconButton aria-label="list-question" size="small" onClick={handleListQuestion}>
+                                  <QuestionMarkIcon fontSize="inherit"  />
+                                </IconButton>
+                            </Stack>
+                            </Tooltip>
                           </Paper>
                           <Paper elevation={3}>
                           <Tooltip title="Select this to input text input for data" placement="right">
-                            <FormControlLabel value="text" 
-                              control={formData.questionType=="text" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
-                              label="Input/Text" 
-                              onClick={handleTextClick} onChange={handleChange}/>
+                            <Stack direction="row">
+                              <FormControlLabel value="text" 
+                                  control={formData.questionType=="text" ? <Radio checked="true" size="small"/> : <Radio  size="small"/>} 
+                                  label="Input/Text" 
+                                  onClick={handleTextClick} onChange={handleChange}/>
+                              <IconButton aria-label="input-question" size="small" onClick={handleInputQuestion}>
+                                <QuestionMarkIcon fontSize="inherit"  />
+                              </IconButton>
+                            </Stack>
                           </Tooltip>
                           </Paper>
                           <Paper elevation={3}>
                             <Typography variant="caption">Multiple Input Controls</Typography>
                             <Tooltip title="Select this to input a dropdown for multiple inputs" placement="right">
-                            <FormControlLabel value="multiple_dropdown"  disabled={isValuesDisabled && isUpdate}
-                              control={formData.questionType=="multiple_dropdown" ? <Radio checked size="small"/> : <Radio size="small" />} 
-                              label="Add a Dropdown for multiple selections" onClick={handleMultipleDropDownClick} onChange={handleChange}/></Tooltip>
+                              <Stack direction="row">
+                                <FormControlLabel value="multiple_dropdown"  disabled={isValuesDisabled && isUpdate}
+                                  control={formData.questionType=="multiple_dropdown" ? <Radio checked size="small"/> : <Radio size="small" />} 
+                                  label="Add a Dropdown for multiple selections" onClick={handleMultipleDropDownClick} onChange={handleChange}/>          
+                                <IconButton aria-label="multi-dropdown-question" size="small" onClick={handleMultiDropDownQuestion}>
+                                  <QuestionMarkIcon fontSize="inherit"  />
+                                </IconButton>                                                        
+                              </Stack>
+                            </Tooltip>
                             <Tooltip title="Select this for a multi-select toggle button" placement="right">
-                            <FormControlLabel value="checkbox_button"  disabled={isValuesDisabled && isUpdate}
-                              control={formData.questionType=="checkbox_button" ? <Radio checked size="small"/> : <Radio  size="small"/>} 
-                              label="Add a List of Buttons with multiple selections" 
-                              onClick={handleMultipleToggleButtonClick} onChange={handleChange}/></Tooltip>
+                              <Stack direction="row">
+                                <FormControlLabel value="checkbox_button"  disabled={isValuesDisabled && isUpdate}
+                                  control={formData.questionType=="checkbox_button" ? <Radio checked size="small"/> : <Radio  size="small"/>} 
+                                  label="Add a List of Buttons with multiple selections" 
+                                  onClick={handleMultipleToggleButtonClick} onChange={handleChange}/>       
+                                <IconButton aria-label="multi-list-question" size="small" onClick={handleMultiListQuestion}>
+                                  <QuestionMarkIcon fontSize="inherit"  />
+                                </IconButton>                                                              
+                              </Stack>
+                            </Tooltip>
                           </Paper>
                         </Stack>
                       </Paper>
