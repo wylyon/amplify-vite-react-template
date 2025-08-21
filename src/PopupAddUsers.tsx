@@ -39,7 +39,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource'; // Path to your backend resource definition
 import { FormLabel, IconButton } from "@mui/material";
-import ConfirmPassword from "../src/ConfirmPassword";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import SubjectIcon from '@mui/icons-material/Subject';
 import { useSvgRef } from "@mui/x-charts";
@@ -55,7 +54,6 @@ export default function PopupAddUsers(props) {
   const [error, setError] = useState('');
   const [checked, setChecked] = useState(true);
   const [isAdd, setIsAdd] = useState(false);
-  const [confirm, setConfirm] = useState(false);
   const [isDeleteActive, setIsDeleteActive] = useState(false);
   const [password, setPassword] = useState('');
   const [arrayDivisions, setArrayDivisions] = useState([{}]);
@@ -113,11 +111,6 @@ export default function PopupAddUsers(props) {
     setIsAdd(false);
     setEmail('');
   }
-  const handlePasswordConfirm = (event) => {
-    event.preventDefault();
-    setPassword(event.target.value as string);
-    setConfirm(true);
-  }
 
   const handlePasswordVisibility = (event) => {
     setTextType(textType == 'password' ? 'text' : 'password');
@@ -151,27 +144,6 @@ export default function PopupAddUsers(props) {
 		}
 		return new Date(value);
 	  }
-
-  const signThemUp = async(username, password) => {
-
-    try {
-      const  user  = await signUp({
-        username,
-        options: {
-          userAttributes: {
-            email: username
-          }
-        },
-        autoSignIn: {
-          enabled: true
-        }
-      });
-    } catch (error) {
-      setError("Warning...could not signup on cloud...could already be defined.");
-      setOpenError(true);
-      return;
-    }
-  }
 
   const handleAddEmail = (event) => {
     const existing = addedUsers.filter(comp => comp.email == email);
@@ -208,48 +180,6 @@ export default function PopupAddUsers(props) {
     { field: 'id', headerName: 'ID', width: 70 },
     { field: 'email', headerName: 'Email Address', width: 230 },
   ];
-
-  const handleAddRow = async(email, firstName, middleName, lastName, notes, password) => {
-		const now = new Date();
-    setIsWaiting(true);
-    const id = uuidv4();
-		const { errors, data: item } =
-      props.props.isAdmin ?
-        await client.models.admin.create({
-          id: id,
-          email_address: email,
-          company_id: props.company.id,
-          first_name: firstName,
-          middle_name: middleName,
-          last_name: lastName,
-          active_date: now.toISOString().slice(0, 10),
-          created: now,
-          created_by: 0,         
-        }) : 
-        await client.models.user.create({
-          id: id,
-          division_id: selectDivision,
-          email_address: email, 
-          first_name: firstName,
-          middle_name: middleName,
-          last_name: lastName,
-          active_date: now.toISOString().slice(0, 10),
-          notes: notes,
-          created: now,
-          created_by: 0,
-        }) ;
-		if (errors) {
-      setIsWaiting(false);
-			setError("Can't create user...could be a duplicate email.");
-			setOpenError(true);
-      return false;
-		}
-    if (password != null) {
-      signThemUp(email, password);
-    }
-    setIsWaiting(false);
-    handleSubmitValues(item);
-	}
 
   const deleteUsers = (rowId) => {
     const newUserArray = [];
@@ -369,7 +299,6 @@ export default function PopupAddUsers(props) {
       {openError &&  <Alert severity="error" onClose={handleCloseError}>
             {error}
           </Alert>}
-      {confirm && <ConfirmPassword props={props} password={password} onGoodPassword={handleGoodPassword} onBadPassword={handleBadPassword} />}
         <Stack direction="row" spacing={3} >
             <Paper elevation={3} sx={{ height: '130px', width: '300px'}}>
               <br />

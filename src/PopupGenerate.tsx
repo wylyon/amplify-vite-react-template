@@ -48,62 +48,10 @@ export default function PopupGenerate(props) {
   const [alertMessage, setAlertMessage] = useState('');
   const client = generateClient<Schema>();
   const [addedUsers, setAddedUsers] = useState([]);
-  const [access, setAccess] = useState('');
-  const [secret, setSecret] = useState('');
-  const [region, setRegion] = useState('');
-  const [ourWord, setOurWord] = useState('');
-  const [userPoolId, setUserPoolId] = useState('');
 
   var isProfile = false;
   var isTemplate = false;
   var isLogins = false;
-
-  const getAppSettings = async() => {
-    const { data: items, errors } = await client.models.app_settings.list();
-    if (errors) {
-      alert(errors[0].message);
-    } else {
-      const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY'));
-      if (what3words.length < 1) {
-        setError("Cant get credentials for Admin.");
-        setOpenError(true);    
-        return;   
-      }
-      setOurWord(what3words[0].value + what3words[0].value);
-      const domain = window.location.hostname;
-      const userPool = domain.includes('localhost') ? items.filter(map => map.code.includes('USERPOOLID-DEV')) : items.filter(map => map.code.includes('USERPOOLID-PRD'));
-      if (userPool.length < 1) {
-        setError("Cant get userPool for Admin.");
-        setOpenError(true);    
-        return;   
-      }
-      setUserPoolId(userPool[0].value);
-      const creds = items.filter(map => map.code.includes('ACCESS'));
-      if (creds.length < 1) {
-        setError("Cant get access credentials for Admin.");
-        setOpenError(true);
-      } else {
-        const accessId = creds[0].value;
-        const secret = items.filter(map => map.code.includes('SECRET'));
-        if (secret.length < 1) {
-          setError("Cant get secret credentials for Admin.");
-          setOpenError(true);
-        } else {
-          const secretId = secret[0].value;
-          const region = items.filter(map => map.code.includes('REGION'));
-          if (region.length < 1) {
-            setError("Cant get region credentials for Admin.");
-            setOpenError(true);
-          } else {
-            const regionId = region[0].value;
-            setAccess(accessId);
-            setSecret(secretId);
-            setRegion(regionId);
-          }
-        }
-      }
-    }
-  }
 
   const handleCloseValues = () => {
     setOpen(false);
@@ -300,37 +248,94 @@ export default function PopupGenerate(props) {
       handleCloseValues();
       return;
     }
-    const cognito = new CognitoIdentityProvider({
-      region: region,
-      credentials: {
-        accessKeyId: CryptoJS.AES.decrypt(access, ourWord).toString(CryptoJS.enc.Utf8),
-        secretAccessKey: CryptoJS.AES.decrypt(secret, ourWord).toString(CryptoJS.enc.Utf8),
-      }
-    });
-    // now lets add the Cognito logins
-    var anyErrors = false;
-    for (var i = 0; i < props.addedUsers.length; i++) {
-      try {
-        const response = await cognito.adminCreateUser({
-          UserPoolId: userPoolId,
-          Username: props.addedUsers[i].email,
-          UserAttributes: [{
-            Name: 'email',
-            Value: props.addedUsers[i].email
-          }],
-          TemporaryPassword: 'tempPassword@123',
-        }).promise();
-  
-      } catch (error) {
-      }
-    }
-    if (!anyErrors) {
-      setProgress(100);
-      setAlertMessage('Setup Admin/User Permission for Logging App.');
-      setTheSeverity('success');
+
+    const { data: items, errors } = await client.models.app_settings.list();
+    if (errors) {
+      setAlertMessage(errors[0].message);
+      console.log("app_settings.list." + errors[0].message);
+      setTheSeverity('error');
       setIsAlert(true);
-      handleCloseValues();
+      setProgress(100);
+      return;
+    } else {
+      const what3words = items.filter(map => map.code.includes('WHAT3WORDS_API_KEY'));
+      if (what3words.length < 1) {
+        setError("Cant get credentials for Admin.");
+        setOpenError(true);    
+        return;   
+      }
+      const ourWord = what3words[0].value + what3words[0].value;
+      const domain = window.location.hostname;
+      const userPool = domain.includes('localhost') ? items.filter(map => map.code.includes('USERPOOLID-DEV')) : items.filter(map => map.code.includes('USERPOOLID-PRD'));
+      if (userPool.length < 1) {
+        setAlertMessage("Cant get userPool for Admin.");
+        setTheSeverity('error');
+        setIsAlert(true);
+        setProgress(100);
+        return;   
+      }
+      const userPoolId = userPool[0].value;
+      const creds = items.filter(map => map.code.includes('ACCESS'));
+      if (creds.length < 1) {
+        setAlertMessage("Cant get access credentials for Admin.");
+        setTheSeverity('error');
+        setIsAlert(true);
+        setProgress(100);
+        return;   
+      } else {
+        const accessId = creds[0].value;
+        const secret = items.filter(map => map.code.includes('SECRET'));
+        if (secret.length < 1) {
+          setAlertMessage("Cant get secret credentials for Admin.");
+          setTheSeverity('error');
+          setIsAlert(true);
+          setProgress(100);
+          return;   
+        } else {
+          const secretId = secret[0].value;
+          const region = items.filter(map => map.code.includes('REGION'));
+          if (region.length < 1) {
+            setAlertMessage("Cant get region credentials for Admin.");
+            setTheSeverity('error');
+            setIsAlert(true);
+            setProgress(100);
+            return;
+          } else {
+            const regionId = region[0].value;
+            const cognito = new CognitoIdentityProvider({
+              region: regionId,
+              credentials: {
+                accessKeyId: CryptoJS.AES.decrypt(accessId, ourWord).toString(CryptoJS.enc.Utf8),
+                secretAccessKey: CryptoJS.AES.decrypt(secretId, ourWord).toString(CryptoJS.enc.Utf8),
+              }
+            });
+            // now lets add the Cognito logins
+            for (var i = 0; i < props.addedUsers.length; i++) {
+              try {
+                const response = await cognito.adminCreateUser({
+                  UserPoolId: userPoolId,
+                  Username: props.addedUsers[i].email,
+                  UserAttributes: [{
+                    Name: 'email',
+                    Value: props.addedUsers[i].email
+                  }],
+                  TemporaryPassword: 'PW123456',
+                }).promise();
+          
+              } catch (error) {
+                console.log("adminCreateUser Failure on " + props.addedUsers[i].email);
+              }
+            }
+          }
+        }
+      }
     }
+
+    setProgress(100);
+    setAlertMessage('Setup Admin/User Permission for Logging App.');
+    setTheSeverity('success');
+    setIsAlert(true);
+    handleCloseValues();
   }
 
   const createCompanyDivisionAdminRow = async() => {
@@ -422,7 +427,6 @@ export default function PopupGenerate(props) {
 
   useEffect(() => {
     setAddedUsers(props.addedUsers);
-    getAppSettings();
     createCompanyDivisionAdminRow();
   }, []);
 
